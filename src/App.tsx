@@ -13,6 +13,9 @@ import OrganizationsPage from "./pages/OrganizationsPage";
 import OrganizationDetailPage from "./pages/OrganizationDetailPage";
 import FormSubmissionsPage from "./pages/FormSubmissionsPage";
 import FormsPage from "./pages/FormsPage";
+import FormCreatePage from "./pages/FormCreatePage";
+import FormEditPage from "./pages/FormEditPage";
+import FormViewPage from "./pages/FormViewPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 
@@ -33,6 +36,9 @@ const App = () => (
             <Route path="/organizations" element={<ProtectedRoute><OrganizationsPage /></ProtectedRoute>} />
             <Route path="/organizations/:id" element={<ProtectedRoute><OrganizationDetailPage /></ProtectedRoute>} />
             <Route path="/forms" element={<ProtectedRoute><FormsPage /></ProtectedRoute>} />
+            <Route path="/forms/create" element={<ProtectedRoute><FormCreatePage /></ProtectedRoute>} />
+            <Route path="/forms/edit/:id" element={<ProtectedRoute><FormEditPage /></ProtectedRoute>} />
+            <Route path="/forms/view/:id" element={<ProtectedRoute><FormViewPage /></ProtectedRoute>} />
             <Route path="/form-submissions" element={<ProtectedRoute><FormSubmissionsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

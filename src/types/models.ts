@@ -48,6 +48,27 @@ export interface JobHistory {
   updatedAt: string;
 }
 
+export interface Form {
+  id: string;
+  title: string;
+  description?: string;
+  status: 'active' | 'draft' | 'archived';
+  fields: FormField[];
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}
+
+export interface FormField {
+  id: string;
+  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'email' | 'number' | 'date';
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  options?: string[]; // For select, checkbox, radio
+  defaultValue?: string;
+}
+
 export interface FormSubmission {
   id: string;
   type: 'update' | 'new-info' | 'event-rsvp' | 'volunteer' | 'other';
