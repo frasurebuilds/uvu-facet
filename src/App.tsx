@@ -16,6 +16,8 @@ import FormsPage from "./pages/FormsPage";
 import FormCreatePage from "./pages/FormCreatePage";
 import FormEditPage from "./pages/FormEditPage";
 import FormViewPage from "./pages/FormViewPage";
+import PublicFormPage from "./pages/PublicFormPage";
+import FormSubmittedPage from "./pages/FormSubmittedPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 
@@ -40,6 +42,11 @@ const App = () => (
             <Route path="/forms/edit/:id" element={<ProtectedRoute><FormEditPage /></ProtectedRoute>} />
             <Route path="/forms/view/:id" element={<ProtectedRoute><FormViewPage /></ProtectedRoute>} />
             <Route path="/form-submissions" element={<ProtectedRoute><FormSubmissionsPage /></ProtectedRoute>} />
+            
+            {/* Public routes for form submission (no authentication required) */}
+            <Route path="/public-form/:id" element={<PublicFormPage />} />
+            <Route path="/form-submitted/:id" element={<FormSubmittedPage />} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

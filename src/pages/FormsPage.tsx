@@ -13,7 +13,8 @@ import {
   AlertCircle,
   CheckCircle2,
   ArchiveIcon,
-  Clock
+  Clock,
+  ExternalLink
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -353,7 +354,13 @@ const FormCard = ({
   onDelete, 
   onStatusChange 
 }: FormCardProps) => {
+  const navigate = useNavigate();
   const fieldCount = form.fields.length;
+  
+  const handleOpenPublicForm = () => {
+    // Open in a new tab
+    window.open(`/public-form/${form.id}`, '_blank');
+  };
   
   return (
     <Card className="uvu-card card-hover-effect">
@@ -388,6 +395,17 @@ const FormCard = ({
             <Eye className="h-4 w-4 mr-2" />
             View
           </Button>
+          {form.status === 'active' && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="bg-uvu-green hover:bg-uvu-green-medium"
+              onClick={handleOpenPublicForm}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open
+            </Button>
+          )}
         </div>
         
         <div className="flex">
