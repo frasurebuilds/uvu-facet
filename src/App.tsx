@@ -10,6 +10,7 @@ import AlumniDetailPage from "./pages/AlumniDetailPage";
 import OrganizationsPage from "./pages/OrganizationsPage";
 import OrganizationDetailPage from "./pages/OrganizationDetailPage";
 import FormSubmissionsPage from "./pages/FormSubmissionsPage";
+import FormsPage from "./pages/FormsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/alumni/:id" element={<AlumniDetailPage />} />
           <Route path="/organizations" element={<OrganizationsPage />} />
           <Route path="/organizations/:id" element={<OrganizationDetailPage />} />
+          <Route path="/forms" element={<FormsPage />} />
           <Route path="/form-submissions" element={<FormSubmissionsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
