@@ -14,15 +14,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Alumni } from "@/types/models";
-import { Search, UserPlus, Phone, Mail, Linkedin } from "lucide-react";
+import { Search, UserPlus, Phone, Mail, Linkedin, Copy, CheckCircle, ExternalLink } from "lucide-react";
 import { fetchAlumni } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 
 const AlumniPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -61,6 +68,51 @@ const AlumniPage = () => {
     navigate(`/alumni/${id}`);
   };
 
+  const handleCopy = (text: string, label: string) => {
+    if (!text) return;
+    
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        // Set copied state for this specific value
+        setCopiedValues({ ...copiedValues, [text]: true });
+        
+        // Show toast notification
+        toast({
+          title: "Copied!",
+          description: `${label} copied to clipboard`,
+        });
+        
+        // Reset icon after 2 seconds
+        setTimeout(() => {
+          setCopiedValues({ ...copiedValues, [text]: false });
+        }, 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy text: ', err);
+        toast({
+          title: "Error",
+          description: "Failed to copy to clipboard",
+          variant: "destructive",
+        });
+      });
+  };
+
+  const handleOpenLinkedIn = (linkedInUrl: string) => {
+    if (!linkedInUrl) return;
+    
+    // Add http:// prefix if not present
+    const fullUrl = linkedInUrl.startsWith('http') ? linkedInUrl : `https://${linkedInUrl}`;
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleAddAlumni = () => {
+    // For now, show a toast notification; we'll implement the full feature later
+    toast({
+      title: "Coming Soon",
+      description: "Alumni creation functionality will be available soon",
+    });
+  };
+
   const renderTable = () => (
     <div className="rounded-md border">
       <Table>
@@ -97,29 +149,55 @@ const AlumniPage = () => {
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                   {alum.phone && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-500 hover:text-uvu-green"
-                    >
-                      <Phone size={16} />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-500 hover:text-uvu-green"
+                          onClick={() => handleCopy(alum.phone || "", "Phone number")}
+                        >
+                          {copiedValues[alum.phone || ""] ? <CheckCircle size={16} /> : <Phone size={16} />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy Phone Number</p>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-gray-500 hover:text-uvu-green"
-                  >
-                    <Mail size={16} />
-                  </Button>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-gray-500 hover:text-uvu-green"
+                        onClick={() => handleCopy(alum.email, "Email")}
+                      >
+                        {copiedValues[alum.email] ? <CheckCircle size={16} /> : <Mail size={16} />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Copy Email</p>
+                    </TooltipContent>
+                  </Tooltip>
+
                   {alum.linkedIn && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-500 hover:text-uvu-green"
-                    >
-                      <Linkedin size={16} />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-500 hover:text-uvu-green"
+                          onClick={() => handleOpenLinkedIn(alum.linkedIn || "")}
+                        >
+                          <Linkedin size={16} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Open LinkedIn Profile</p>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </div>
               </TableCell>
@@ -137,6 +215,9 @@ const AlumniPage = () => {
           key={alum.id} 
           alumni={alum} 
           onClick={() => handleAlumniClick(alum.id)}
+          onCopy={handleCopy}
+          onOpenLinkedIn={handleOpenLinkedIn}
+          copiedValues={copiedValues}
         />
       ))}
     </div>
@@ -147,7 +228,10 @@ const AlumniPage = () => {
       title="Alumni Directory"
       subtitle="Manage and view UVU alumni records"
       actionButton={
-        <Button className="bg-uvu-green hover:bg-uvu-green-medium">
+        <Button 
+          className="bg-uvu-green hover:bg-uvu-green-medium"
+          onClick={handleAddAlumni}
+        >
           <UserPlus className="mr-2 h-4 w-4" />
           Add Alumni
         </Button>
@@ -196,7 +280,21 @@ const AlumniPage = () => {
   );
 };
 
-const AlumniCard = ({ alumni, onClick }: { alumni: Alumni; onClick: () => void }) => {
+interface AlumniCardProps {
+  alumni: Alumni;
+  onClick: () => void;
+  onCopy: (text: string, label: string) => void;
+  onOpenLinkedIn: (url: string) => void;
+  copiedValues: Record<string, boolean>;
+}
+
+const AlumniCard = ({ 
+  alumni, 
+  onClick, 
+  onCopy,
+  onOpenLinkedIn,
+  copiedValues
+}: AlumniCardProps) => {
   const initials = `${alumni.firstName[0]}${alumni.lastName[0]}`;
 
   return (
@@ -233,29 +331,55 @@ const AlumniCard = ({ alumni, onClick }: { alumni: Alumni; onClick: () => void }
 
           <div className="mt-4 pt-4 border-t flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
             {alumni.phone && (
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <Phone size={14} />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onCopy(alumni.phone || "", "Phone number")}
+                  >
+                    {copiedValues[alumni.phone || ""] ? <CheckCircle size={14} /> : <Phone size={14} />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy Phone Number</p>
+                </TooltipContent>
+              </Tooltip>
             )}
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-            >
-              <Mail size={14} />
-            </Button>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onCopy(alumni.email, "Email")}
+                >
+                  {copiedValues[alumni.email] ? <CheckCircle size={14} /> : <Mail size={14} />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy Email</p>
+              </TooltipContent>
+            </Tooltip>
+            
             {alumni.linkedIn && (
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <Linkedin size={14} />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onOpenLinkedIn(alumni.linkedIn || "")}
+                  >
+                    <Linkedin size={14} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Open LinkedIn Profile</p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
         </div>
