@@ -350,11 +350,11 @@ const AlumniCard = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    className={`h-8 w-8 ${alum.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => !alum.doNotContact && onCopy(alumni.phone || "", "Phone number")}
-                    disabled={alum.doNotContact}
+                    className={`h-8 w-8 ${alumni.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => !alumni.doNotContact && onCopy(alumni.phone || "", "Phone number")}
+                    disabled={alumni.doNotContact}
                   >
-                    {copiedValues[alum.phone || ""] ? <CheckCircle size={14} /> : <Phone size={14} />}
+                    {copiedValues[alumni.phone || ""] ? <CheckCircle size={14} /> : <Phone size={14} />}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -368,9 +368,9 @@ const AlumniCard = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  className={`h-8 w-8 ${alum.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={() => !alum.doNotContact && onCopy(alum.email, "Email")}
-                  disabled={alum.doNotContact}
+                  className={`h-8 w-8 ${alumni.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => !alumni.doNotContact && onCopy(alumni.email, "Email")}
+                  disabled={alumni.doNotContact}
                 >
                   {copiedValues[alum.email] ? <CheckCircle size={14} /> : <Mail size={14} />}
                 </Button>
@@ -386,9 +386,9 @@ const AlumniCard = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    className={`h-8 w-8 ${alum.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => !alum.doNotContact && onOpenLinkedIn(alum.linkedIn || "")}
-                    disabled={alum.doNotContact}
+                    className={`h-8 w-8 ${alumni.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => !alumni.doNotContact && onOpenLinkedIn(alum.linkedIn || "")}
+                    disabled={alumni.doNotContact}
                   >
                     <Linkedin size={14} />
                   </Button>

@@ -163,6 +163,7 @@ const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
                   value={formData.linkedIn || ''}
                   onChange={handleInputChange}
                   className="mt-1"
+                  placeholder="linkedin.com/in/username"
                 />
               ) : (
                 <p>{alumni.linkedIn || 'No LinkedIn profile'}</p>
