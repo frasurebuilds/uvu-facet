@@ -1,143 +1,235 @@
 
 import { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Users,
+  Building2,
+  LayoutDashboard,
+  FileText,
+  ClipboardList,
+  Menu,
+  X,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, FileText, Home, Menu, X, FormInput } from "lucide-react";
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/",
-    icon: Home
-  }, 
-  {
-    title: "Alumni",
-    href: "/alumni",
-    icon: Users
-  }, 
-  {
-    title: "Organizations",
-    href: "/organizations",
-    icon: Building2
-  },
-  {
-    title: "Forms",
-    href: "/forms",
-    icon: FormInput
-  },
-  {
-    title: "Form Submissions",
-    href: "/form-submissions",
-    icon: FileText
-  }
-];
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
+import logo from "/lovable-uploads/9f7e0c80-4ba0-4e4b-a293-620fa15d35f0.png";
 
 const Sidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const isMobile = useMobile();
+  const [isOpen, setIsOpen] = useState(false);
+  const { signOut, user } = useAuth();
+  const { toast } = useToast();
 
+  // Close mobile sidebar when route changes
   useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth < 768) {
-        setIsCollapsed(true);
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Close sidebar when ESC key is pressed
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
       }
     };
-
-    // Initial check
-    checkScreenSize();
-
-    // Add event listener
-    window.addEventListener('resize', checkScreenSize);
-
-    // Cleanup
-    return () => window.removeEventListener('resize', checkScreenSize);
+    window.addEventListener("keydown", handleEsc);
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
   }, []);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  // Prevent scrolling when mobile sidebar is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out",
+    });
   };
 
-  const closeMobileMenu = () => {
-    if (isMobile) {
-      setIsMobileMenuOpen(false);
-    }
+  const navItems = [
+    {
+      name: "Dashboard",
+      icon: <LayoutDashboard size={20} />,
+      href: "/",
+    },
+    {
+      name: "Alumni",
+      icon: <Users size={20} />,
+      href: "/alumni",
+    },
+    {
+      name: "Organizations",
+      icon: <Building2 size={20} />,
+      href: "/organizations",
+    },
+    {
+      name: "Forms",
+      icon: <ClipboardList size={20} />,
+      href: "/forms",
+    },
+    {
+      name: "Form Submissions",
+      icon: <FileText size={20} />,
+      href: "/form-submissions",
+    },
+  ];
+
+  // Generate NavLink components
+  const NavLink = ({ item }: { item: typeof navItems[0] }) => {
+    const isActive = location.pathname === item.href;
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to={item.href}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+              "hover:bg-gray-100 dark:hover:bg-gray-800",
+              isActive
+                ? "bg-gray-100 dark:bg-gray-800 text-uvu-green font-medium"
+                : "text-gray-700 dark:text-gray-200"
+            )}
+          >
+            <span className="text-uvu-green">{item.icon}</span>
+            <span className={cn("lg:block", isMobile ? "block" : "hidden")}>
+              {item.name}
+            </span>
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="lg:hidden">
+          {item.name}
+        </TooltipContent>
+      </Tooltip>
+    );
   };
 
   return (
     <>
-      {/* Mobile menu button - only visible on mobile */}
-      {isMobile && (
-        <button 
-          onClick={toggleMobileMenu}
-          className="fixed top-4 left-4 z-50 bg-uvu-green text-white p-2 rounded-md shadow-md"
-        >
-          <Menu size={24} />
-        </button>
-      )}
-
-      {/* Sidebar */}
-      <div 
-        className={cn(
-          "bg-uvu-green text-white flex flex-col transition-all duration-300 fixed top-0 left-0 h-screen z-40",
-          isCollapsed ? "w-[70px]" : "w-[250px]",
-          isMobile && !isMobileMenuOpen ? "-translate-x-full" : "translate-x-0",
-          "shadow-lg"
-        )}
-      >
-        <div className="p-4 flex items-center justify-between border-b border-uvu-green-medium">
-          {!isCollapsed && <h1 className="font-bold text-2xl animate-fade-in">FACET</h1>}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="text-white hover:bg-uvu-green-medium" 
-            onClick={() => {
-              if (isMobile) {
-                setIsMobileMenuOpen(false);
-              } else {
-                setIsCollapsed(!isCollapsed);
-              }
-            }}
-          >
-            {isMobile ? <X size={20} /> : (isCollapsed ? <Menu size={20} /> : <X size={20} />)}
+      {/* Mobile Menu Button */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b p-3 md:hidden">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
+            <Menu size={24} />
           </Button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto p-2">
-          <ul className="space-y-1">
-            {navItems.map(item => (
-              <li key={item.href}>
-                <NavLink 
-                  to={item.href} 
-                  className={({isActive}) => cn(
-                    "flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-uvu-green-medium",
-                    isActive ? "bg-uvu-green-medium" : "transparent",
-                    isCollapsed ? "justify-center" : ""
-                  )}
-                  onClick={closeMobileMenu}
-                >
-                  <item.icon size={20} />
-                  {!isCollapsed && <span className="truncate">{item.title}</span>}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="p-4 border-t border-uvu-green-medium flex items-center">
-          {/* Footer content if needed */}
+          <img src={logo} alt="UVU Logo" className="h-8" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSignOut}
+            title="Sign Out"
+          >
+            <LogOut size={20} />
+          </Button>
         </div>
       </div>
 
-      {/* Overlay for mobile sidebar */}
-      {isMobile && isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setIsMobileMenuOpen(false)}
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
         />
       )}
+
+      {/* Sidebar */}
+      <nav
+        className={cn(
+          "fixed left-0 top-0 h-full bg-white dark:bg-gray-900 border-r z-50",
+          "transition-all duration-300 ease-in-out",
+          "md:w-[70px] md:translate-x-0 md:block",
+          "lg:w-[250px]",
+          isMobile
+            ? isOpen
+              ? "w-[250px] translate-x-0"
+              : "w-[250px] -translate-x-full"
+            : ""
+        )}
+      >
+        {/* Close button for mobile */}
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 md:hidden"
+            onClick={() => setIsOpen(false)}
+          >
+            <X size={20} />
+          </Button>
+        )}
+
+        {/* Logo and Branding */}
+        <div className="p-4 flex flex-col items-center lg:items-start">
+          <img src={logo} alt="UVU Logo" className="h-12 mb-4" />
+          <div className="text-center lg:text-left">
+            <h2 className="font-bold text-uvu-green text-lg">FACET</h2>
+            <p className="text-xs text-gray-500 mt-1 hidden lg:block">
+              UVU Alumni CRM
+            </p>
+          </div>
+        </div>
+
+        {/* Nav Items */}
+        <div className="px-3 py-4 space-y-1">
+          {navItems.map((item) => (
+            <NavLink key={item.name} item={item} />
+          ))}
+        </div>
+
+        {/* User Info & Logout */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+          <div className="flex items-center gap-3 mb-3 hidden lg:flex">
+            <div className="w-8 h-8 rounded-full bg-uvu-green text-white flex items-center justify-center text-sm font-bold">
+              {user?.email?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium truncate">{user?.email}</p>
+            </div>
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                className={cn(
+                  "w-full flex items-center justify-center gap-2",
+                  "lg:justify-start"
+                )}
+              >
+                <LogOut size={18} />
+                <span className={cn("lg:block", isMobile ? "block" : "hidden")}>
+                  Sign Out
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="lg:hidden">
+              Sign Out
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </nav>
     </>
   );
 };
