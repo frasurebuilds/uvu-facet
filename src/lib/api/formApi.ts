@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Form, FormField } from "@/types/models";
+import { parseFormFields } from "./apiUtils";
 
 export const fetchForms = async (): Promise<Form[]> => {
   const { data, error } = await supabase
@@ -17,8 +18,8 @@ export const fetchForms = async (): Promise<Form[]> => {
     id: form.id,
     title: form.title,
     description: form.description,
-    status: form.status,
-    fields: form.fields,
+    status: form.status as "active" | "draft" | "archived",
+    fields: parseFormFields(form.fields),
     createdAt: form.created_at,
     updatedAt: form.updated_at,
     createdBy: form.created_by
@@ -41,8 +42,8 @@ export const fetchFormById = async (id: string): Promise<Form> => {
     id: data.id,
     title: data.title,
     description: data.description,
-    status: data.status,
-    fields: data.fields,
+    status: data.status as "active" | "draft" | "archived",
+    fields: parseFormFields(data.fields),
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     createdBy: data.created_by
@@ -50,11 +51,6 @@ export const fetchFormById = async (id: string): Promise<Form> => {
 };
 
 export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedAt'>): Promise<Form> => {
-  const user = supabase.auth.getUser();
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
   const { data, error } = await supabase
     .from('forms')
     .insert({
@@ -76,8 +72,8 @@ export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedA
     id: data.id,
     title: data.title,
     description: data.description,
-    status: data.status,
-    fields: data.fields,
+    status: data.status as "active" | "draft" | "archived",
+    fields: parseFormFields(data.fields),
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     createdBy: data.created_by
@@ -113,8 +109,8 @@ export const updateForm = async (form: Partial<Form> & { id: string }): Promise<
     id: data.id,
     title: data.title,
     description: data.description,
-    status: data.status,
-    fields: data.fields,
+    status: data.status as "active" | "draft" | "archived",
+    fields: parseFormFields(data.fields),
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     createdBy: data.created_by
