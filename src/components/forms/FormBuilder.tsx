@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FormField, Form } from "@/types/models";
@@ -40,6 +39,7 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
     title: initialForm?.title || '',
     description: initialForm?.description || '',
     status: initialForm?.status || 'draft',
+    formType: initialForm?.formType || 'standard',
     fields: initialForm?.fields || [],
     createdBy: initialForm?.createdBy || (user?.id as string)
   });
@@ -69,6 +69,10 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
 
   const handleStatusChange = (value: 'active' | 'draft' | 'archived') => {
     setFormData(prev => ({ ...prev, status: value }));
+  };
+
+  const handleFormTypeChange = (value: 'standard' | 'anonymous') => {
+    setFormData(prev => ({ ...prev, formType: value }));
   };
 
   const addField = () => {
@@ -148,7 +152,6 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
       let savedForm;
 
       if (initialForm?.id) {
-        // Update existing form
         savedForm = await updateForm({
           id: initialForm.id,
           ...formData
@@ -158,7 +161,6 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
           description: "Your form has been successfully updated",
         });
       } else {
-        // Create new form
         savedForm = await createForm(formData);
         toast({
           title: "Form created",
@@ -218,7 +220,6 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
 
       {!previewMode ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Form settings panel */}
           <div className="md:col-span-1 space-y-4">
             <Card>
               <CardHeader>
@@ -262,6 +263,27 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="form-type">Form Type</Label>
+                  <Select 
+                    value={formData.formType}
+                    onValueChange={(value: any) => handleFormTypeChange(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select form type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">Standard (Requires UVID)</SelectItem>
+                      <SelectItem value="anonymous">Anonymous</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.formType === 'standard' 
+                      ? "Standard forms require the submitter's UVID" 
+                      : "Anonymous forms don't collect any identifying information"}
+                  </p>
+                </div>
                 
                 <Button 
                   onClick={addField}
@@ -285,7 +307,6 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
             )}
           </div>
           
-          {/* Form builder area */}
           <div className="md:col-span-2 space-y-4">
             <Card>
               <CardHeader>
@@ -355,7 +376,6 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
                           </div>
                         </div>
                         
-                        {/* Field editor */}
                         {activeFieldIndex === index && (
                           <FormFieldEditor 
                             field={field} 
@@ -371,7 +391,6 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
           </div>
         </div>
       ) : (
-        // Preview mode
         <Card>
           <CardHeader>
             <CardTitle>Form Preview: {formData.title}</CardTitle>
@@ -379,6 +398,22 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
+              {formData.formType === 'standard' && (
+                <div className="space-y-4 border-b pb-6">
+                  <h3 className="font-medium text-lg">Your Information</h3>
+                  <div className="space-y-2">
+                    <Label htmlFor="uvid">
+                      UVID <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="uvid"
+                      placeholder="Enter your UVID"
+                      disabled={previewMode}
+                    />
+                  </div>
+                </div>
+              )}
+
               {formData.fields.map((field) => (
                 <FormFieldPreview key={field.id} field={field} />
               ))}

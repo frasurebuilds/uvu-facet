@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -21,8 +20,7 @@ const PublicFormPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formValues, setFormValues] = useState<Record<string, any>>({});
-  const [submitterName, setSubmitterName] = useState("");
-  const [submitterEmail, setSubmitterEmail] = useState("");
+  const [uvid, setUvid] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Fetch form data
@@ -61,10 +59,11 @@ const PublicFormPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!submitterName || !submitterEmail) {
+    // For standard forms, validate UVID
+    if (form?.formType === 'standard' && !uvid) {
       toast({
         title: "Missing information",
-        description: "Please provide your name and email address",
+        description: "Please provide your UVID",
         variant: "destructive"
       });
       return;
@@ -87,12 +86,20 @@ const PublicFormPage = () => {
     try {
       setIsSubmitting(true);
 
-      await submitFormResponse({
-        formId: form?.id as string,
-        content: formValues,
-        submittedByName: submitterName,
-        submittedByEmail: submitterEmail
-      });
+      if (form?.formType === 'standard') {
+        await submitFormResponse({
+          formId: form?.id as string,
+          content: formValues,
+          submittedByUvid: uvid
+        });
+      } else {
+        // Anonymous submission
+        await submitFormResponse({
+          formId: form?.id as string,
+          content: formValues,
+          isAnonymous: true
+        });
+      }
 
       toast({
         title: "Form submitted successfully",
@@ -101,8 +108,7 @@ const PublicFormPage = () => {
 
       // Clear form values
       setFormValues({});
-      setSubmitterName("");
-      setSubmitterEmail("");
+      setUvid("");
       
       // Navigate to a thank you screen
       navigate(`/form-submitted/${id}`);
@@ -254,33 +260,24 @@ const PublicFormPage = () => {
               )}
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Submitter Information */}
-              <div className="space-y-4 border-b pb-6">
-                <h3 className="font-medium text-lg">Your Information</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="submitter-name">
-                    Your Name <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="submitter-name"
-                    value={submitterName}
-                    onChange={(e) => setSubmitterName(e.target.value)}
-                    required
-                  />
+              {/* Submitter Information - Only for standard forms */}
+              {form.formType === 'standard' && (
+                <div className="space-y-4 border-b pb-6">
+                  <h3 className="font-medium text-lg">Your Information</h3>
+                  <div className="space-y-2">
+                    <Label htmlFor="uvid">
+                      UVID <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="uvid"
+                      value={uvid}
+                      onChange={(e) => setUvid(e.target.value)}
+                      placeholder="Enter your UVID"
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="submitter-email">
-                    Your Email <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="submitter-email"
-                    type="email"
-                    value={submitterEmail}
-                    onChange={(e) => setSubmitterEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+              )}
 
               {/* Form Fields */}
               {form.fields.length === 0 ? (

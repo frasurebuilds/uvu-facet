@@ -20,6 +20,7 @@ export const fetchForms = async (): Promise<Form[]> => {
     title: form.title,
     description: form.description,
     status: form.status as "active" | "draft" | "archived",
+    formType: form.form_type as "standard" | "anonymous" || "standard", // Default to standard for older forms
     fields: parseFormFields(form.fields),
     createdAt: form.created_at,
     updatedAt: form.updated_at,
@@ -44,6 +45,7 @@ export const fetchFormById = async (id: string): Promise<Form> => {
     title: data.title,
     description: data.description,
     status: data.status as "active" | "draft" | "archived",
+    formType: data.form_type as "standard" | "anonymous" || "standard", // Default to standard for older forms
     fields: parseFormFields(data.fields),
     createdAt: data.created_at,
     updatedAt: data.updated_at,
@@ -59,6 +61,7 @@ export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedA
       title: form.title,
       description: form.description,
       status: form.status,
+      form_type: form.formType,
       fields: form.fields as unknown as Json,
       created_by: form.createdBy
     })
@@ -75,6 +78,7 @@ export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedA
     title: data.title,
     description: data.description,
     status: data.status as "active" | "draft" | "archived",
+    formType: data.form_type as "standard" | "anonymous",
     fields: parseFormFields(data.fields),
     createdAt: data.created_at,
     updatedAt: data.updated_at,
@@ -90,6 +94,7 @@ export const updateForm = async (form: Partial<Form> & { id: string }): Promise<
   if (updateData.title !== undefined) dbData.title = updateData.title;
   if (updateData.description !== undefined) dbData.description = updateData.description;
   if (updateData.status !== undefined) dbData.status = updateData.status;
+  if (updateData.formType !== undefined) dbData.form_type = updateData.formType;
   if (updateData.fields !== undefined) dbData.fields = updateData.fields as unknown as Json;
   
   // Always update the updated_at timestamp
@@ -112,6 +117,7 @@ export const updateForm = async (form: Partial<Form> & { id: string }): Promise<
     title: data.title,
     description: data.description,
     status: data.status as "active" | "draft" | "archived",
+    formType: data.form_type as "standard" | "anonymous",
     fields: parseFormFields(data.fields),
     createdAt: data.created_at,
     updatedAt: data.updated_at,

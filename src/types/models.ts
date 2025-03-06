@@ -1,3 +1,4 @@
+
 // Type definitions for our data models
 
 export interface Alumni {
@@ -53,6 +54,7 @@ export interface Form {
   title: string;
   description?: string;
   status: 'active' | 'draft' | 'archived';
+  formType: 'standard' | 'anonymous';
   fields: FormField[];
   createdAt: string;
   updatedAt: string;
