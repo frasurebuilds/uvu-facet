@@ -1,12 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Card, 
-  CardContent 
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,25 +13,53 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { mockAlumni } from "@/data/mockData";
 import { Alumni } from "@/types/models";
 import { Search, UserPlus, Phone, Mail, Linkedin } from "lucide-react";
+import { fetchAlumni } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 const AlumniPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [alumni, setAlumni] = useState<Alumni[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const filteredAlumni = mockAlumni.filter((alumni) => {
+  useEffect(() => {
+    const loadAlumni = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchAlumni();
+        setAlumni(data);
+      } catch (error) {
+        console.error("Failed to load alumni:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load alumni data.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAlumni();
+  }, [toast]);
+
+  const filteredAlumni = alumni.filter((alum) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      alumni.firstName.toLowerCase().includes(searchLower) ||
-      alumni.lastName.toLowerCase().includes(searchLower) ||
-      alumni.email.toLowerCase().includes(searchLower) ||
-      (alumni.organizationName && 
-        alumni.organizationName.toLowerCase().includes(searchLower)) ||
-      alumni.major.toLowerCase().includes(searchLower)
+      alum.firstName.toLowerCase().includes(searchLower) ||
+      alum.lastName.toLowerCase().includes(searchLower) ||
+      alum.email.toLowerCase().includes(searchLower) ||
+      alum.major.toLowerCase().includes(searchLower)
     );
   });
+
+  const handleAlumniClick = (id: string) => {
+    navigate(`/alumni/${id}`);
+  };
 
   const renderTable = () => (
     <div className="rounded-md border">
@@ -49,18 +75,28 @@ const AlumniPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredAlumni.map((alumni) => (
-            <TableRow key={alumni.id} className="hover:bg-gray-50 cursor-pointer">
+          {filteredAlumni.map((alum) => (
+            <TableRow 
+              key={alum.id} 
+              className="hover:bg-gray-50 cursor-pointer"
+              onClick={() => handleAlumniClick(alum.id)}
+            >
               <TableCell className="font-medium">
-                {alumni.firstName} {alumni.lastName}
+                {alum.firstName} {alum.lastName}
               </TableCell>
-              <TableCell>{alumni.graduationYear}</TableCell>
-              <TableCell className="hidden md:table-cell">{alumni.major}</TableCell>
-              <TableCell className="hidden lg:table-cell">{alumni.jobTitle || "-"}</TableCell>
-              <TableCell className="hidden lg:table-cell">{alumni.organizationName || "-"}</TableCell>
+              <TableCell>{alum.graduationYear}</TableCell>
+              <TableCell className="hidden md:table-cell">{alum.major}</TableCell>
+              <TableCell className="hidden lg:table-cell">
+                {/* This will be populated when we have job history integration */}
+                {"-"}
+              </TableCell>
+              <TableCell className="hidden lg:table-cell">
+                {/* This will be populated when we have job history integration */}
+                {"-"}
+              </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
-                  {alumni.phone && (
+                <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                  {alum.phone && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -76,7 +112,7 @@ const AlumniPage = () => {
                   >
                     <Mail size={16} />
                   </Button>
-                  {alumni.linkedIn && (
+                  {alum.linkedIn && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -96,8 +132,12 @@ const AlumniPage = () => {
 
   const renderCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredAlumni.map((alumni) => (
-        <AlumniCard key={alumni.id} alumni={alumni} />
+      {filteredAlumni.map((alum) => (
+        <AlumniCard 
+          key={alum.id} 
+          alumni={alum} 
+          onClick={() => handleAlumniClick(alum.id)}
+        />
       ))}
     </div>
   );
@@ -117,7 +157,7 @@ const AlumniPage = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
           <Input
-            placeholder="Search alumni by name, email, organization..."
+            placeholder="Search alumni by name, email, major..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -141,7 +181,11 @@ const AlumniPage = () => {
         </div>
       </div>
 
-      {filteredAlumni.length > 0 ? (
+      {loading ? (
+        <div className="text-center py-10">
+          <p className="text-gray-500">Loading alumni data...</p>
+        </div>
+      ) : filteredAlumni.length > 0 ? (
         viewMode === "table" ? renderTable() : renderCards()
       ) : (
         <div className="text-center py-10">
@@ -152,11 +196,11 @@ const AlumniPage = () => {
   );
 };
 
-const AlumniCard = ({ alumni }: { alumni: Alumni }) => {
+const AlumniCard = ({ alumni, onClick }: { alumni: Alumni; onClick: () => void }) => {
   const initials = `${alumni.firstName[0]}${alumni.lastName[0]}`;
 
   return (
-    <Card className="uvu-card card-hover-effect overflow-hidden">
+    <Card className="uvu-card card-hover-effect overflow-hidden cursor-pointer" onClick={onClick}>
       <CardContent className="p-0">
         <div className="h-3 bg-uvu-green w-full" />
         <div className="p-5">
@@ -168,7 +212,7 @@ const AlumniCard = ({ alumni }: { alumni: Alumni }) => {
               <h3 className="font-bold">
                 {alumni.firstName} {alumni.lastName}
               </h3>
-              <p className="text-gray-500 text-sm">{alumni.jobTitle || "Alumni"}</p>
+              <p className="text-gray-500 text-sm">Alumni</p>
             </div>
           </div>
 
@@ -185,15 +229,9 @@ const AlumniCard = ({ alumni }: { alumni: Alumni }) => {
               <span className="text-gray-500">Major:</span>
               <span>{alumni.major}</span>
             </div>
-            {alumni.organizationName && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">Organization:</span>
-                <span>{alumni.organizationName}</span>
-              </div>
-            )}
           </div>
 
-          <div className="mt-4 pt-4 border-t flex justify-end gap-2">
+          <div className="mt-4 pt-4 border-t flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
             {alumni.phone && (
               <Button
                 variant="outline"

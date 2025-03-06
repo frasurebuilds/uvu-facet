@@ -9,7 +9,203 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      alumni: {
+        Row: {
+          avatar: string | null
+          created_at: string
+          degree: string
+          email: string
+          first_name: string
+          graduation_year: number
+          id: string
+          last_contact_date: string | null
+          last_name: string
+          linkedin: string | null
+          major: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string
+          degree: string
+          email: string
+          first_name: string
+          graduation_year: number
+          id?: string
+          last_contact_date?: string | null
+          last_name: string
+          linkedin?: string | null
+          major: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string
+          degree?: string
+          email?: string
+          first_name?: string
+          graduation_year?: number
+          id?: string
+          last_contact_date?: string | null
+          last_name?: string
+          linkedin?: string | null
+          major?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      form_submissions: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          notes: string | null
+          status: string
+          submitted_by_alumni_id: string | null
+          submitted_by_email: string
+          submitted_by_name: string
+          type: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          submitted_by_alumni_id?: string | null
+          submitted_by_email: string
+          submitted_by_name: string
+          type: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          submitted_by_alumni_id?: string | null
+          submitted_by_email?: string
+          submitted_by_name?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_submitted_by_alumni_id_fkey"
+            columns: ["submitted_by_alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_history: {
+        Row: {
+          alumni_id: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          is_current: boolean | null
+          job_title: string
+          organization_id: string | null
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          alumni_id: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          job_title: string
+          organization_id?: string | null
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          alumni_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          job_title?: string
+          organization_id?: string | null
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_history_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          contact_email: string | null
+          contact_person: string | null
+          contact_phone: string | null
+          created_at: string
+          employee_count: number | null
+          id: string
+          industry: string
+          location: string | null
+          logo: string | null
+          name: string
+          notes: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          employee_count?: number | null
+          id?: string
+          industry: string
+          location?: string | null
+          logo?: string | null
+          name: string
+          notes?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          employee_count?: number | null
+          id?: string
+          industry?: string
+          location?: string | null
+          logo?: string | null
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

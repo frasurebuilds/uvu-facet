@@ -10,9 +10,6 @@ export interface Alumni {
   graduationYear: number;
   degree: string;
   major: string;
-  jobTitle?: string;
-  organizationId?: string;
-  organizationName?: string;
   linkedIn?: string;
   notes?: string;
   lastContactDate?: string;
@@ -31,9 +28,22 @@ export interface Organization {
   contactEmail?: string;
   contactPhone?: string;
   employeeCount?: number;
-  partnerships?: string[];
   notes?: string;
   logo?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface JobHistory {
+  id: string;
+  alumniId: string;
+  organizationId?: string;
+  organizationName?: string;
+  jobTitle: string;
+  startDate: string;
+  endDate?: string;
+  isCurrent: boolean;
+  description?: string;
   createdAt: string;
   updatedAt: string;
 }
