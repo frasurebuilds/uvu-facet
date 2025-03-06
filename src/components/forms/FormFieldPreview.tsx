@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 interface FormFieldPreviewProps {
   field: FormField;
+  value?: any;
+  onChange?: (value: any) => void;
 }
 
-const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
+const FormFieldPreview = ({ field, value, onChange }: FormFieldPreviewProps) => {
   const renderField = () => {
     const fieldId = `preview-${field.id}`;
     
@@ -24,8 +26,9 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
             id={fieldId}
             type={field.type}
             placeholder={field.placeholder}
-            defaultValue={field.defaultValue}
+            value={value !== undefined ? value : field.defaultValue || ''}
             required={field.required}
+            onChange={e => onChange?.(e.target.value)}
           />
         );
         
@@ -34,9 +37,10 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
           <Textarea
             id={fieldId}
             placeholder={field.placeholder}
-            defaultValue={field.defaultValue}
+            value={value !== undefined ? value : field.defaultValue || ''}
             required={field.required}
             rows={4}
+            onChange={e => onChange?.(e.target.value)}
           />
         );
         
@@ -45,14 +49,18 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
           <Input
             id={fieldId}
             type="date"
-            defaultValue={field.defaultValue}
+            value={value !== undefined ? value : field.defaultValue || ''}
             required={field.required}
+            onChange={e => onChange?.(e.target.value)}
           />
         );
         
       case 'select':
         return (
-          <Select defaultValue={field.defaultValue}>
+          <Select 
+            value={value !== undefined ? value : field.defaultValue || ''} 
+            onValueChange={onChange}
+          >
             <SelectTrigger id={fieldId}>
               <SelectValue placeholder={field.placeholder || "Select an option"} />
             </SelectTrigger>
@@ -71,7 +79,22 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
           <div className="space-y-2">
             {field.options?.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
-                <Checkbox id={`${fieldId}-${index}`} />
+                <Checkbox 
+                  id={`${fieldId}-${index}`} 
+                  checked={Array.isArray(value) ? value.includes(option) : false}
+                  onCheckedChange={(checked) => {
+                    if (!onChange) return;
+                    
+                    if (Array.isArray(value)) {
+                      const newValue = checked 
+                        ? [...value, option] 
+                        : value.filter(v => v !== option);
+                      onChange(newValue);
+                    } else {
+                      onChange(checked ? [option] : []);
+                    }
+                  }}
+                />
                 <Label htmlFor={`${fieldId}-${index}`}>{option}</Label>
               </div>
             ))}
@@ -80,7 +103,10 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
         
       case 'radio':
         return (
-          <RadioGroup defaultValue={field.defaultValue}>
+          <RadioGroup 
+            value={value !== undefined ? value : field.defaultValue || ''} 
+            onValueChange={onChange}
+          >
             {field.options?.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <RadioGroupItem 
