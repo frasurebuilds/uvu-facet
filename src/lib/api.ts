@@ -1,7 +1,4 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { Alumni, JobHistory, Organization } from "@/types/models";
-
 // Convert database column names to camelCase for frontend
 const toCamelCase = (obj: any): any => {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
@@ -33,10 +30,16 @@ const toSnakeCase = (obj: any): any => {
 
   const snakeCaseObj: Record<string, any> = {};
   Object.keys(obj).forEach(key => {
+    // Special case for linkedIn -> linked_in
+    if (key === 'linkedIn') {
+      console.log("Converting 'linkedIn' to 'linked_in'");
+    }
+    
     const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
     snakeCaseObj[snakeKey] = toSnakeCase(obj[key]);
   });
   
+  console.log("Converted to snake case:", snakeCaseObj);
   return snakeCaseObj;
 };
 

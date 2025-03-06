@@ -21,7 +21,7 @@ export type Database = {
           id: string
           last_contact_date: string | null
           last_name: string
-          linkedin: string | null
+          linked_in: string | null
           major: string
           notes: string | null
           phone: string | null
@@ -38,7 +38,7 @@ export type Database = {
           id?: string
           last_contact_date?: string | null
           last_name: string
-          linkedin?: string | null
+          linked_in?: string | null
           major: string
           notes?: string | null
           phone?: string | null
@@ -55,7 +55,7 @@ export type Database = {
           id?: string
           last_contact_date?: string | null
           last_name?: string
-          linkedin?: string | null
+          linked_in?: string | null
           major?: string
           notes?: string | null
           phone?: string | null
