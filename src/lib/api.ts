@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+import { Alumni, JobHistory, Organization } from "@/types/models";
 
 // Convert database column names to camelCase for frontend
 const toCamelCase = (obj: any): any => {
