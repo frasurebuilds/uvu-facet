@@ -48,7 +48,8 @@ export const toSnakeCase = (obj: any): any => {
 // Helper function to safely parse form fields from JSON
 export const parseFormFields = (fields: Json): FormField[] => {
   if (Array.isArray(fields)) {
-    return fields as FormField[];
+    // Need to cast to FormField[] since TypeScript doesn't know the structure
+    return fields as unknown as FormField[];
   }
   
   try {

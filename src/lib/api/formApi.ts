@@ -51,13 +51,14 @@ export const fetchFormById = async (id: string): Promise<Form> => {
 };
 
 export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedAt'>): Promise<Form> => {
+  // Convert FormField[] to JSON before saving
   const { data, error } = await supabase
     .from('forms')
     .insert({
       title: form.title,
       description: form.description,
       status: form.status,
-      fields: form.fields,
+      fields: form.fields as unknown as JSON,
       created_by: form.createdBy
     })
     .select()
@@ -88,7 +89,7 @@ export const updateForm = async (form: Partial<Form> & { id: string }): Promise<
   if (updateData.title !== undefined) dbData.title = updateData.title;
   if (updateData.description !== undefined) dbData.description = updateData.description;
   if (updateData.status !== undefined) dbData.status = updateData.status;
-  if (updateData.fields !== undefined) dbData.fields = updateData.fields;
+  if (updateData.fields !== undefined) dbData.fields = updateData.fields as unknown as JSON;
   
   // Always update the updated_at timestamp
   dbData.updated_at = new Date();
