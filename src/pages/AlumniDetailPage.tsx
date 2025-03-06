@@ -82,6 +82,13 @@ const AlumniDetailPage = () => {
     });
   };
 
+  const handleCheckboxChange = (field: string, checked: boolean) => {
+    setFormData({
+      ...formData,
+      [field]: checked,
+    });
+  };
+
   const handleSave = async () => {
     if (!alumni || !formData) return;
     
@@ -281,6 +288,7 @@ const AlumniDetailPage = () => {
             formData={formData}
             editMode={editMode}
             handleInputChange={handleInputChange}
+            handleCheckboxChange={handleCheckboxChange}
           />
 
           <ContactCard alumni={alumni} />

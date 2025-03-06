@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Alumni } from "@/types/models";
-import { Search, UserPlus, Phone, Mail, Linkedin, Copy, CheckCircle, ExternalLink } from "lucide-react";
+import { Search, UserPlus, Phone, Mail, Linkedin, Copy, CheckCircle, ExternalLink, UserX } from "lucide-react";
 import { fetchAlumni } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -73,16 +73,11 @@ const AlumniPage = () => {
     
     navigator.clipboard.writeText(text)
       .then(() => {
-        // Set copied state for this specific value
         setCopiedValues({ ...copiedValues, [text]: true });
-        
-        // Show toast notification
         toast({
           title: "Copied!",
           description: `${label} copied to clipboard`,
         });
-        
-        // Reset icon after 2 seconds
         setTimeout(() => {
           setCopiedValues({ ...copiedValues, [text]: false });
         }, 2000);
@@ -100,13 +95,11 @@ const AlumniPage = () => {
   const handleOpenLinkedIn = (linkedInUrl: string) => {
     if (!linkedInUrl) return;
     
-    // Add http:// prefix if not present
     const fullUrl = linkedInUrl.startsWith('http') ? linkedInUrl : `https://${linkedInUrl}`;
     window.open(fullUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleAddAlumni = () => {
-    // For now, show a toast notification; we'll implement the full feature later
     toast({
       title: "Coming Soon",
       description: "Alumni creation functionality will be available soon",
@@ -134,16 +127,26 @@ const AlumniPage = () => {
               onClick={() => handleAlumniClick(alum.id)}
             >
               <TableCell className="font-medium">
-                {alum.firstName} {alum.lastName}
+                <div className="flex items-center gap-2">
+                  {alum.firstName} {alum.lastName}
+                  {alum.doNotContact && (
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <UserX size={16} className="text-red-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Do Not Contact</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
               </TableCell>
               <TableCell>{alum.graduationYear}</TableCell>
               <TableCell className="hidden md:table-cell">{alum.major}</TableCell>
               <TableCell className="hidden lg:table-cell">
-                {/* This will be populated when we have job history integration */}
                 {"-"}
               </TableCell>
               <TableCell className="hidden lg:table-cell">
-                {/* This will be populated when we have job history integration */}
                 {"-"}
               </TableCell>
               <TableCell className="text-right">
@@ -154,14 +157,15 @@ const AlumniPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-gray-500 hover:text-uvu-green"
-                          onClick={() => handleCopy(alum.phone || "", "Phone number")}
+                          className={`${alum.doNotContact ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-uvu-green'}`}
+                          onClick={() => !alum.doNotContact && handleCopy(alum.phone || "", "Phone number")}
+                          disabled={alum.doNotContact}
                         >
                           {copiedValues[alum.phone || ""] ? <CheckCircle size={16} /> : <Phone size={16} />}
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Copy Phone Number</p>
+                        <p>{alum.doNotContact ? 'Copying restricted' : 'Copy Phone Number'}</p>
                       </TooltipContent>
                     </Tooltip>
                   )}
@@ -171,14 +175,15 @@ const AlumniPage = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-gray-500 hover:text-uvu-green"
-                        onClick={() => handleCopy(alum.email, "Email")}
+                        className={`${alum.doNotContact ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-uvu-green'}`}
+                        onClick={() => !alum.doNotContact && handleCopy(alum.email, "Email")}
+                        disabled={alum.doNotContact}
                       >
                         {copiedValues[alum.email] ? <CheckCircle size={16} /> : <Mail size={16} />}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Copy Email</p>
+                      <p>{alum.doNotContact ? 'Copying restricted' : 'Copy Email'}</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -188,14 +193,15 @@ const AlumniPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-gray-500 hover:text-uvu-green"
-                          onClick={() => handleOpenLinkedIn(alum.linkedIn || "")}
+                          className={`${alum.doNotContact ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-uvu-green'}`}
+                          onClick={() => !alum.doNotContact && handleOpenLinkedIn(alum.linkedIn || "")}
+                          disabled={alum.doNotContact}
                         >
                           <Linkedin size={16} />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Open LinkedIn Profile</p>
+                        <p>{alum.doNotContact ? 'Link restricted' : 'Open LinkedIn Profile'}</p>
                       </TooltipContent>
                     </Tooltip>
                   )}
@@ -306,10 +312,18 @@ const AlumniCard = ({
             <div className="bg-uvu-green h-12 w-12 rounded-full flex items-center justify-center text-white font-bold">
               {initials}
             </div>
-            <div>
-              <h3 className="font-bold">
-                {alumni.firstName} {alumni.lastName}
-              </h3>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold">
+                  {alumni.firstName} {alumni.lastName}
+                </h3>
+                {alumni.doNotContact && (
+                  <Badge variant="destructive" className="flex items-center gap-1">
+                    <UserX className="h-3 w-3" />
+                    Do Not Contact
+                  </Badge>
+                )}
+              </div>
               <p className="text-gray-500 text-sm">Alumni</p>
             </div>
           </div>
@@ -336,14 +350,15 @@ const AlumniCard = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onCopy(alumni.phone || "", "Phone number")}
+                    className={`h-8 w-8 ${alum.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => !alum.doNotContact && onCopy(alumni.phone || "", "Phone number")}
+                    disabled={alum.doNotContact}
                   >
-                    {copiedValues[alumni.phone || ""] ? <CheckCircle size={14} /> : <Phone size={14} />}
+                    {copiedValues[alum.phone || ""] ? <CheckCircle size={14} /> : <Phone size={14} />}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Copy Phone Number</p>
+                  <p>{alum.doNotContact ? 'Copying restricted' : 'Copy Phone Number'}</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -353,14 +368,15 @@ const AlumniCard = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
-                  onClick={() => onCopy(alumni.email, "Email")}
+                  className={`h-8 w-8 ${alum.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => !alum.doNotContact && onCopy(alum.email, "Email")}
+                  disabled={alum.doNotContact}
                 >
-                  {copiedValues[alumni.email] ? <CheckCircle size={14} /> : <Mail size={14} />}
+                  {copiedValues[alum.email] ? <CheckCircle size={14} /> : <Mail size={14} />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Copy Email</p>
+                <p>{alum.doNotContact ? 'Copying restricted' : 'Copy Email'}</p>
               </TooltipContent>
             </Tooltip>
             
@@ -370,14 +386,15 @@ const AlumniCard = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onOpenLinkedIn(alumni.linkedIn || "")}
+                    className={`h-8 w-8 ${alum.doNotContact ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => !alum.doNotContact && onOpenLinkedIn(alum.linkedIn || "")}
+                    disabled={alum.doNotContact}
                   >
                     <Linkedin size={14} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Open LinkedIn Profile</p>
+                  <p>{alum.doNotContact ? 'Link restricted' : 'Open LinkedIn Profile'}</p>
                 </TooltipContent>
               </Tooltip>
             )}

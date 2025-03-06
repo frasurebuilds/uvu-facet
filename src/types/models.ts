@@ -1,4 +1,3 @@
-
 // Type definitions for our data models
 
 export interface Alumni {
@@ -14,6 +13,7 @@ export interface Alumni {
   notes?: string;
   lastContactDate?: string;
   avatar?: string;
+  doNotContact: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -14,6 +14,7 @@ export type Database = {
           avatar: string | null
           created_at: string
           degree: string
+          do_not_contact: boolean
           email: string
           first_name: string
           graduation_year: number
@@ -30,6 +31,7 @@ export type Database = {
           avatar?: string | null
           created_at?: string
           degree: string
+          do_not_contact?: boolean
           email: string
           first_name: string
           graduation_year: number
@@ -46,6 +48,7 @@ export type Database = {
           avatar?: string | null
           created_at?: string
           degree?: string
+          do_not_contact?: boolean
           email?: string
           first_name?: string
           graduation_year?: number
