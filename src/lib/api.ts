@@ -117,9 +117,12 @@ export const fetchJobHistoryByAlumniId = async (alumniId: string): Promise<JobHi
 };
 
 export const createJobHistory = async (jobHistory: Omit<JobHistory, 'id' | 'createdAt' | 'updatedAt'>): Promise<JobHistory> => {
+  // Remove organizationName property before sending to Supabase
+  const { organizationName, ...jobData } = jobHistory as any;
+  
   const { data, error } = await supabase
     .from('job_history')
-    .insert(toSnakeCase(jobHistory))
+    .insert(toSnakeCase(jobData))
     .select()
     .single();
   
@@ -132,7 +135,8 @@ export const createJobHistory = async (jobHistory: Omit<JobHistory, 'id' | 'crea
 };
 
 export const updateJobHistory = async (jobHistory: Partial<JobHistory> & { id: string }): Promise<JobHistory> => {
-  const { id, ...updateData } = jobHistory;
+  const { id, organizationName, ...updateData } = jobHistory as any;
+  
   const { data, error } = await supabase
     .from('job_history')
     .update(toSnakeCase(updateData))

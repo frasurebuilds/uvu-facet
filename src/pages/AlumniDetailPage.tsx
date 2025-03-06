@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -82,7 +81,6 @@ const AlumniDetailPage = () => {
   const [jobDialogOpen, setJobDialogOpen] = useState(false);
   const [currentJob, setCurrentJob] = useState<Partial<JobHistory> | null>(null);
 
-  // Form fields for alumni editing
   const [formData, setFormData] = useState<Partial<Alumni>>({});
 
   useEffect(() => {
@@ -164,15 +162,26 @@ const AlumniDetailPage = () => {
         alumniId: alumni.id,
       };
       
+      if (jobData.isCurrent) {
+        jobData.endDate = undefined;
+      }
+      
+      if (!jobData.isCurrent && !jobData.endDate) {
+        toast({
+          title: "Error",
+          description: "End date is required for previous positions.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       if (currentJob.id) {
-        // Update existing job
         await updateJobHistory(jobData as JobHistory);
         toast({
           title: "Success",
           description: "Job history updated successfully.",
         });
       } else {
-        // Create new job
         await createJobHistory(jobData as Omit<JobHistory, 'id' | 'createdAt' | 'updatedAt'>);
         toast({
           title: "Success",
@@ -180,11 +189,9 @@ const AlumniDetailPage = () => {
         });
       }
       
-      // Refresh job history
       const updatedJobHistory = await fetchJobHistoryByAlumniId(alumni.id);
       setJobHistory(updatedJobHistory);
       
-      // Close dialog and reset form
       setJobDialogOpen(false);
       setCurrentJob(null);
     } catch (error) {
@@ -205,7 +212,6 @@ const AlumniDetailPage = () => {
     try {
       await deleteJobHistory(jobId);
       
-      // Remove job from state
       setJobHistory(jobHistory.filter(job => job.id !== jobId));
       
       toast({
@@ -231,7 +237,7 @@ const AlumniDetailPage = () => {
   };
 
   const openEditJobDialog = (job: JobHistory) => {
-    setCurrentJob(job);
+    setCurrentJob({...job});
     setJobDialogOpen(true);
   };
 
@@ -310,7 +316,6 @@ const AlumniDetailPage = () => {
         </Button>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Personal Information Card */}
           <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -456,7 +461,6 @@ const AlumniDetailPage = () => {
             </CardContent>
           </Card>
 
-          {/* Contact Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -514,7 +518,6 @@ const AlumniDetailPage = () => {
           </Card>
         </div>
 
-        {/* Job History Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -604,7 +607,6 @@ const AlumniDetailPage = () => {
         </Card>
       </div>
 
-      {/* Job Edit Dialog */}
       <Dialog open={jobDialogOpen} onOpenChange={setJobDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -680,7 +682,6 @@ const AlumniDetailPage = () => {
                       setCurrentJob({
                         ...currentJob, 
                         isCurrent,
-                        // Clear end date if it's current position
                         ...(isCurrent ? { endDate: undefined } : {})
                       });
                     }}
