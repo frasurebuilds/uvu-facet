@@ -68,33 +68,39 @@ export type Database = {
           content: Json
           created_at: string
           id: string
+          is_anonymous: boolean | null
           notes: string | null
           status: string
           submitted_by_alumni_id: string | null
           submitted_by_email: string
           submitted_by_name: string
+          submitted_by_uvid: string | null
           type: string
         }
         Insert: {
           content: Json
           created_at?: string
           id?: string
+          is_anonymous?: boolean | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
           submitted_by_email: string
           submitted_by_name: string
+          submitted_by_uvid?: string | null
           type: string
         }
         Update: {
           content?: Json
           created_at?: string
           id?: string
+          is_anonymous?: boolean | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
           submitted_by_email?: string
           submitted_by_name?: string
+          submitted_by_uvid?: string | null
           type?: string
         }
         Relationships: [
@@ -113,6 +119,7 @@ export type Database = {
           created_by: string
           description: string | null
           fields: Json
+          form_type: string
           id: string
           status: string
           title: string
@@ -123,6 +130,7 @@ export type Database = {
           created_by: string
           description?: string | null
           fields?: Json
+          form_type?: string
           id?: string
           status?: string
           title: string
@@ -133,6 +141,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           fields?: Json
+          form_type?: string
           id?: string
           status?: string
           title?: string

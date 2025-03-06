@@ -83,4 +83,6 @@ export interface FormSubmission {
   status: 'pending' | 'reviewed' | 'processed' | 'archived';
   createdAt: string;
   notes?: string;
+  isAnonymous?: boolean;
+  submittedByUvid?: string;
 }
