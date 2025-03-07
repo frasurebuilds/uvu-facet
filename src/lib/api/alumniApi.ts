@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Alumni, FormSubmission } from "@/types/models";
+import { Alumni } from "@/types/models";
 import { toCamelCase, toSnakeCase } from "./apiUtils";
 
 export const fetchAlumni = async (): Promise<Alumni[]> => {
@@ -96,6 +96,7 @@ export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> =>
   return data ? toCamelCase(data) as Alumni : null;
 };
 
+// Fix infinite type instantiation by adding an explicit type parameter for the submission
 export const createAlumniFromFormSubmission = async (submission: {
   mappedFields?: Record<string, any>;
   submittedByUvid?: string;
