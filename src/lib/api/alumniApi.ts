@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Alumni } from "@/types/models";
 import { toCamelCase, toSnakeCase } from "./apiUtils";
@@ -96,16 +95,15 @@ export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> =>
   return data ? toCamelCase(data) as Alumni : null;
 };
 
-// Fix for TS2589: Type instantiation is excessively deep and possibly infinite
-// Define the mappedFields with primitive types directly to avoid circular references
-interface AlumniFormData {
-  mappedFields?: {
-    [key: string]: string | number | boolean | null;
-  };
+export type FormFieldValue = string | number | boolean | null;
+export type FormFieldsMap = { [key: string]: FormFieldValue };
+
+export interface AlumniFormSubmission {
+  mappedFields?: FormFieldsMap;
   submittedByUvid?: string;
 }
 
-export const createAlumniFromFormSubmission = async (submission: AlumniFormData): Promise<Alumni | null> => {
+export const createAlumniFromFormSubmission = async (submission: AlumniFormSubmission): Promise<Alumni | null> => {
   if (!submission.mappedFields || Object.keys(submission.mappedFields).length === 0) {
     return null;
   }
@@ -141,7 +139,7 @@ export const createAlumniFromFormSubmission = async (submission: AlumniFormData)
 
 export const updateAlumniFromFormSubmission = async (
   alumniId: string, 
-  mappedFields: Record<string, string | number | boolean | null>
+  mappedFields: FormFieldsMap
 ): Promise<Alumni | null> => {
   try {
     if (!mappedFields || Object.keys(mappedFields).length === 0) {
