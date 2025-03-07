@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
-import { Alumni } from "@/types/models";
+import { Alumni, FormSubmission } from "@/types/models";
 import { fetchAlumniByUvid } from "./alumniApi";
 
 interface FormSubmissionRequest {
@@ -87,11 +87,11 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
   return data;
 };
 
-export const fetchFormSubmissions = async () => {
+export const fetchFormSubmissions = async (): Promise<FormSubmission[]> => {
   // First attempt to fetch form submissions with a basic query to ensure it works
   const { data, error } = await supabase
     .from('form_submissions')
-    .select('*')
+    .select('*, form_id, mapped_fields')
     .order('created_at', { ascending: false });
   
   if (error) {
@@ -113,7 +113,7 @@ export const fetchFormSubmissions = async () => {
     
     return {
       id: submission.id,
-      type: submission.type,
+      type: submission.type as FormSubmission['type'],
       content: submission.content,
       submittedBy: {
         name: submission.submitted_by_name || 'Anonymous',
@@ -132,7 +132,7 @@ export const fetchFormSubmissions = async () => {
         title: formInfo.title,
         description: formInfo.description
       } : undefined
-    };
+    } as FormSubmission;
   }));
 };
 

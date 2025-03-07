@@ -36,6 +36,10 @@ export const toSnakeCase = (obj: any): any => {
     // Special case for linkedIn -> linked_in
     if (key === 'linkedIn') {
       snakeCaseObj['linked_in'] = toSnakeCase(obj[key]);
+    } else if (key === 'formId') {
+      snakeCaseObj['form_id'] = toSnakeCase(obj[key]); 
+    } else if (key === 'mappedFields') {
+      snakeCaseObj['mapped_fields'] = toSnakeCase(obj[key]);
     } else {
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       snakeCaseObj[snakeKey] = toSnakeCase(obj[key]);

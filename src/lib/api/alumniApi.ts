@@ -96,7 +96,10 @@ export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> =>
   return data ? toCamelCase(data) as Alumni : null;
 };
 
-export const createAlumniFromFormSubmission = async (submission: any): Promise<Alumni | null> => {
+export const createAlumniFromFormSubmission = async (submission: {
+  mappedFields?: Record<string, any>;
+  submittedByUvid?: string;
+}): Promise<Alumni | null> => {
   if (!submission.mappedFields || Object.keys(submission.mappedFields).length === 0) {
     return null;
   }

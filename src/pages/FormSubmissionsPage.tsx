@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
@@ -426,6 +425,8 @@ const FormSubmissionCard = ({
         </div>
       );
     }
+    
+    return null;
   };
 
   return (
