@@ -1,3 +1,4 @@
+
 import { Alumni, Organization, FormSubmission } from "@/types/models";
 
 // Mock Alumni Data
@@ -14,7 +15,6 @@ export const mockAlumni: Alumni[] = [
     linkedIn: "linkedin.com/in/johnsmith",
     notes: "Active alumni, interested in mentoring current students.",
     lastContactDate: "2023-10-15",
-    doNotContact: false,
     createdAt: "2021-01-15T08:00:00Z",
     updatedAt: "2023-10-15T14:30:00Z",
   },
@@ -29,7 +29,6 @@ export const mockAlumni: Alumni[] = [
     major: "Marketing",
     linkedIn: "linkedin.com/in/sarahjohnson",
     lastContactDate: "2023-09-22",
-    doNotContact: true,
     createdAt: "2020-03-10T10:15:00Z",
     updatedAt: "2023-09-22T11:45:00Z",
   },
@@ -43,7 +42,6 @@ export const mockAlumni: Alumni[] = [
     degree: "Master of Business Administration",
     major: "Finance",
     notes: "Interested in speaking at career events.",
-    doNotContact: false,
     createdAt: "2021-07-20T09:30:00Z",
     updatedAt: "2023-08-05T16:20:00Z",
   },
@@ -57,7 +55,6 @@ export const mockAlumni: Alumni[] = [
     major: "Communication",
     linkedIn: "linkedin.com/in/emilydavis",
     lastContactDate: "2023-11-03",
-    doNotContact: false,
     createdAt: "2019-05-12T13:45:00Z",
     updatedAt: "2023-11-03T10:10:00Z",
   },
@@ -71,7 +68,6 @@ export const mockAlumni: Alumni[] = [
     degree: "Bachelor of Science",
     major: "Information Technology",
     lastContactDate: "2023-10-28",
-    doNotContact: false,
     createdAt: "2018-02-25T11:20:00Z",
     updatedAt: "2023-10-28T15:55:00Z",
   },

@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,34 +19,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { mockOrganizations } from "@/data/mockData";
 import { Organization } from "@/types/models";
 import { Search, Building, Globe, MapPin, Users, Phone, Mail, PlusCircle, Copy, CheckCircle, Edit, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { 
   Tooltip, 
   TooltipContent, 
+  TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { fetchOrganizations } from "@/lib/api";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogHeader } from "@/components/ui/dialog";
-import OrganizationFormDialog from "@/components/organizations/OrganizationFormDialog";
 
 const OrganizationsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
 
-  // Fetch organizations
-  const { data: organizations = [], isLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: fetchOrganizations
-  });
-
-  const filteredOrganizations = organizations.filter((org) => {
+  const filteredOrganizations = mockOrganizations.filter((org) => {
     const searchLower = searchTerm.toLowerCase();
     return (
       org.name.toLowerCase().includes(searchLower) ||
@@ -94,15 +85,19 @@ const OrganizationsPage = () => {
   };
 
   const handleAddOrganization = () => {
-    setShowCreateDialog(true);
+    // This will be implemented when we have the form page
+    toast({
+      title: "Coming Soon",
+      description: "Organization creation functionality will be available soon",
+    });
   };
 
   const handleEditOrganization = (id: string) => {
-    navigate(`/organizations/${id}`);
-  };
-
-  const handleOrganizationClick = (id: string) => {
-    navigate(`/organizations/${id}`);
+    // This will be implemented when we have the edit page
+    toast({
+      title: "Coming Soon",
+      description: "Organization editing functionality will be available soon",
+    });
   };
 
   const renderTable = () => (
@@ -119,124 +114,106 @@ const OrganizationsPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center py-4">
-                Loading organizations...
-              </TableCell>
-            </TableRow>
-          ) : filteredOrganizations.length > 0 ? (
-            filteredOrganizations.map((org) => (
-              <TableRow 
-                key={org.id} 
-                className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => handleOrganizationClick(org.id)}
-              >
-                <TableCell className="font-medium">{org.name}</TableCell>
-                <TableCell>{org.industry}</TableCell>
-                <TableCell className="hidden md:table-cell">{org.location || "-"}</TableCell>
-                <TableCell className="hidden lg:table-cell">{org.employeeCount || "-"}</TableCell>
-                <TableCell className="hidden lg:table-cell">{org.contactPerson || "-"}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+          {filteredOrganizations.map((org) => (
+            <TableRow key={org.id} className="hover:bg-gray-50 cursor-pointer">
+              <TableCell className="font-medium">{org.name}</TableCell>
+              <TableCell>{org.industry}</TableCell>
+              <TableCell className="hidden md:table-cell">{org.location || "-"}</TableCell>
+              <TableCell className="hidden lg:table-cell">{org.employeeCount || "-"}</TableCell>
+              <TableCell className="hidden lg:table-cell">{org.contactPerson || "-"}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-gray-500 hover:text-uvu-green"
+                        onClick={() => handleEditOrganization(org.id)}
+                      >
+                        <Edit size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Edit</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {org.website && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="text-gray-500 hover:text-uvu-green"
-                          onClick={() => handleEditOrganization(org.id)}
+                          onClick={() => handleOpenLink(org.website || "")}
                         >
-                          <Edit size={16} />
+                          <ExternalLink size={16} />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Edit</p>
+                        <p>Visit Website</p>
                       </TooltipContent>
                     </Tooltip>
+                  )}
 
-                    {org.website && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-500 hover:text-uvu-green"
-                            onClick={() => handleOpenLink(org.website || "")}
-                          >
-                            <ExternalLink size={16} />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Visit Website</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
+                  {org.website && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-500 hover:text-uvu-green"
+                          onClick={() => handleCopy(org.website || "", "Website")}
+                        >
+                          {copiedValues[org.website || ""] ? <CheckCircle size={16} /> : <Copy size={16} />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy Website URL</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
 
-                    {org.website && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-500 hover:text-uvu-green"
-                            onClick={() => handleCopy(org.website || "", "Website")}
-                          >
-                            {copiedValues[org.website || ""] ? <CheckCircle size={16} /> : <Copy size={16} />}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Copy Website URL</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
+                  {org.contactEmail && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-500 hover:text-uvu-green"
+                          onClick={() => handleCopy(org.contactEmail || "", "Email")}
+                        >
+                          {copiedValues[org.contactEmail || ""] ? <CheckCircle size={16} /> : <Mail size={16} />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy Email</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
 
-                    {org.contactEmail && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-500 hover:text-uvu-green"
-                            onClick={() => handleCopy(org.contactEmail || "", "Email")}
-                          >
-                            {copiedValues[org.contactEmail || ""] ? <CheckCircle size={16} /> : <Mail size={16} />}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Copy Email</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-
-                    {org.contactPhone && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-500 hover:text-uvu-green"
-                            onClick={() => handleCopy(org.contactPhone || "", "Phone number")}
-                          >
-                            {copiedValues[org.contactPhone || ""] ? <CheckCircle size={16} /> : <Phone size={16} />}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Copy Phone Number</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center py-4">
-                No organizations found matching your search criteria.
+                  {org.contactPhone && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-gray-500 hover:text-uvu-green"
+                          onClick={() => handleCopy(org.contactPhone || "", "Phone number")}
+                        >
+                          {copiedValues[org.contactPhone || ""] ? <CheckCircle size={16} /> : <Phone size={16} />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy Phone Number</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
               </TableCell>
             </TableRow>
-          )}
+          ))}
         </TableBody>
       </Table>
     </div>
@@ -244,26 +221,16 @@ const OrganizationsPage = () => {
 
   const renderCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {isLoading ? (
-        <div className="col-span-full text-center py-10">
-          <p className="text-gray-500">Loading organizations...</p>
-        </div>
-      ) : filteredOrganizations.length > 0 ? (
-        filteredOrganizations.map((org) => (
-          <OrganizationCard 
-            key={org.id} 
-            organization={org}
-            onEdit={handleEditOrganization}
-            onCopy={handleCopy}
-            onOpenLink={handleOpenLink}
-            copiedValues={copiedValues}
-          />
-        ))
-      ) : (
-        <div className="col-span-full text-center py-10">
-          <p className="text-gray-500">No organizations found matching your search criteria.</p>
-        </div>
-      )}
+      {filteredOrganizations.map((org) => (
+        <OrganizationCard 
+          key={org.id} 
+          organization={org}
+          onEdit={handleEditOrganization}
+          onCopy={handleCopy}
+          onOpenLink={handleOpenLink}
+          copiedValues={copiedValues}
+        />
+      ))}
     </div>
   );
 
@@ -309,29 +276,13 @@ const OrganizationsPage = () => {
         </div>
       </div>
 
-      {viewMode === "table" ? renderTable() : renderCards()}
-
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Add New Organization</DialogTitle>
-            <DialogDescription>
-              Enter the details for the new organization.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <OrganizationFormDialog
-            onSuccess={() => {
-              setShowCreateDialog(false);
-              toast({
-                title: "Success",
-                description: "Organization created successfully",
-              });
-            }}
-            onCancel={() => setShowCreateDialog(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      {filteredOrganizations.length > 0 ? (
+        viewMode === "table" ? renderTable() : renderCards()
+      ) : (
+        <div className="text-center py-10">
+          <p className="text-gray-500">No organizations found matching your search criteria.</p>
+        </div>
+      )}
     </PageLayout>
   );
 };
@@ -351,15 +302,10 @@ const OrganizationCard = ({
   onOpenLink,
   copiedValues
 }: OrganizationCardProps) => {
-  const navigate = useNavigate();
   const firstLetter = organization.name[0];
 
-  const handleCardClick = () => {
-    navigate(`/organizations/${organization.id}`);
-  };
-
   return (
-    <Card className="uvu-card card-hover-effect overflow-hidden cursor-pointer" onClick={handleCardClick}>
+    <Card className="uvu-card card-hover-effect overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
           <div className="bg-uvu-green h-10 w-10 rounded-full flex items-center justify-center text-white font-bold">
@@ -393,17 +339,14 @@ const OrganizationCard = ({
           )}
         </div>
       </CardContent>
-      <CardFooter className="pt-3 border-t flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+      <CardFooter className="pt-3 border-t flex justify-end gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
               size="icon"
               className="h-8 w-8"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(organization.id);
-              }}
+              onClick={() => onEdit(organization.id)}
             >
               <Edit size={14} />
             </Button>
@@ -421,10 +364,7 @@ const OrganizationCard = ({
                   variant="outline"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenLink(organization.website || "");
-                  }}
+                  onClick={() => onOpenLink(organization.website || "")}
                 >
                   <ExternalLink size={14} />
                 </Button>
@@ -440,10 +380,7 @@ const OrganizationCard = ({
                   variant="outline"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCopy(organization.website || "", "Website");
-                  }}
+                  onClick={() => onCopy(organization.website || "", "Website")}
                 >
                   {copiedValues[organization.website || ""] ? <CheckCircle size={14} /> : <Copy size={14} />}
                 </Button>
@@ -462,10 +399,7 @@ const OrganizationCard = ({
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCopy(organization.contactEmail || "", "Email");
-                }}
+                onClick={() => onCopy(organization.contactEmail || "", "Email")}
               >
                 {copiedValues[organization.contactEmail || ""] ? <CheckCircle size={14} /> : <Mail size={14} />}
               </Button>
@@ -483,10 +417,7 @@ const OrganizationCard = ({
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCopy(organization.contactPhone || "", "Phone number");
-                }}
+                onClick={() => onCopy(organization.contactPhone || "", "Phone number")}
               >
                 {copiedValues[organization.contactPhone || ""] ? <CheckCircle size={14} /> : <Phone size={14} />}
               </Button>

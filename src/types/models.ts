@@ -14,10 +14,8 @@ export interface Alumni {
   notes?: string;
   lastContactDate?: string;
   avatar?: string;
-  doNotContact: boolean;
   createdAt: string;
   updatedAt: string;
-  uvid?: string;
 }
 
 export interface Organization {
@@ -50,32 +48,9 @@ export interface JobHistory {
   updatedAt: string;
 }
 
-export interface Form {
-  id: string;
-  title: string;
-  description?: string;
-  status: 'active' | 'draft' | 'archived';
-  formType: 'standard' | 'anonymous';
-  fields: FormField[];
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-}
-
-export interface FormField {
-  id: string;
-  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'email' | 'number' | 'date';
-  label: string;
-  placeholder?: string;
-  required: boolean;
-  options?: string[]; // For select, checkbox, radio
-  defaultValue?: string;
-  mapToField?: string; // To map to alumni profile field
-}
-
 export interface FormSubmission {
   id: string;
-  type: 'update' | 'new-info' | 'event-rsvp' | 'volunteer' | 'other' | 'form_response';
+  type: 'update' | 'new-info' | 'event-rsvp' | 'volunteer' | 'other';
   submittedBy: {
     name: string;
     email: string;
@@ -85,13 +60,4 @@ export interface FormSubmission {
   status: 'pending' | 'reviewed' | 'processed' | 'archived';
   createdAt: string;
   notes?: string;
-  isAnonymous?: boolean;
-  submittedByUvid?: string;
-  formId?: string; // Link to a specific form
-  mappedFields?: Record<string, any>; // Mapped alumni profile fields and values
-  form?: {
-    id: string;
-    title: string;
-    description?: string;
-  };
 }

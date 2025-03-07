@@ -3,7 +3,6 @@ import React from "react";
 import { Alumni } from "@/types/models";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Card, 
   CardContent, 
@@ -17,15 +16,13 @@ interface PersonalInfoCardProps {
   formData: Partial<Alumni>;
   editMode: boolean;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleCheckboxChange?: (field: string, checked: boolean) => void;
 }
 
 const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
   alumni,
   formData,
   editMode,
-  handleInputChange,
-  handleCheckboxChange
+  handleInputChange
 }) => {
   return (
     <Card className="md:col-span-2">
@@ -94,21 +91,6 @@ const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
                 <p>{alumni.phone || 'No phone number'}</p>
               )}
             </div>
-
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-500">Do Not Contact</label>
-              {editMode ? (
-                <Checkbox 
-                  id="doNotContact"
-                  checked={formData.doNotContact || false}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange && handleCheckboxChange('doNotContact', checked === true)
-                  }
-                />
-              ) : (
-                <p>{alumni.doNotContact ? 'Yes' : 'No'}</p>
-              )}
-            </div>
           </div>
           
           <div className="space-y-4">
@@ -163,7 +145,6 @@ const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
                   value={formData.linkedIn || ''}
                   onChange={handleInputChange}
                   className="mt-1"
-                  placeholder="linkedin.com/in/username"
                 />
               ) : (
                 <p>{alumni.linkedIn || 'No LinkedIn profile'}</p>

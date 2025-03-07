@@ -7,14 +7,13 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { Mail, Phone, Linkedin, Calendar, GraduationCap, Copy, CheckCircle, ExternalLink, UserX } from "lucide-react";
+import { Mail, Phone, Linkedin, Calendar, GraduationCap, Copy, CheckCircle, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Tooltip, 
   TooltipContent, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
 
 interface ContactCardProps {
   alumni: Alumni;
@@ -67,12 +66,6 @@ const ContactCard: React.FC<ContactCardProps> = ({ alumni }) => {
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5 text-uvu-green" />
           Contact
-          {alumni.doNotContact && (
-            <Badge variant="destructive" className="ml-auto flex items-center gap-1">
-              <UserX className="h-3 w-3" />
-              Do Not Contact
-            </Badge>
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -81,16 +74,15 @@ const ContactCard: React.FC<ContactCardProps> = ({ alumni }) => {
             <Mail className="h-5 w-5 text-gray-400" />
             <a 
               href={`mailto:${alumni.email}`} 
-              className={`${alumni.doNotContact ? 'text-gray-500 line-through pointer-events-none' : 'text-uvu-green hover:text-uvu-green-medium'}`}
+              className="text-uvu-green hover:text-uvu-green-medium"
             >
               {alumni.email}
             </a>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button 
-                  className={`${alumni.doNotContact ? 'text-gray-400 opacity-50 cursor-not-allowed' : 'text-gray-400 hover:text-uvu-green'}`}
-                  onClick={() => !alumni.doNotContact && handleCopy(alumni.email, "Email")}
-                  disabled={alumni.doNotContact}
+                  className="text-gray-400 hover:text-uvu-green"
+                  onClick={() => handleCopy(alumni.email, "Email")}
                 >
                   {copiedValues[alumni.email] ? 
                     <CheckCircle className="h-4 w-4" /> : 
@@ -99,7 +91,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ alumni }) => {
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{alumni.doNotContact ? 'Copying restricted' : 'Copy Email'}</p>
+                <p>Copy Email</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -109,16 +101,15 @@ const ContactCard: React.FC<ContactCardProps> = ({ alumni }) => {
               <Phone className="h-5 w-5 text-gray-400" />
               <a 
                 href={`tel:${alumni.phone}`} 
-                className={`${alumni.doNotContact ? 'text-gray-500 line-through pointer-events-none' : 'text-uvu-green hover:text-uvu-green-medium'}`}
+                className="text-uvu-green hover:text-uvu-green-medium"
               >
                 {alumni.phone}
               </a>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button 
-                    className={`${alumni.doNotContact ? 'text-gray-400 opacity-50 cursor-not-allowed' : 'text-gray-400 hover:text-uvu-green'}`}
-                    onClick={() => !alumni.doNotContact && handleCopy(alumni.phone, "Phone number")}
-                    disabled={alumni.doNotContact}
+                    className="text-gray-400 hover:text-uvu-green"
+                    onClick={() => handleCopy(alumni.phone, "Phone number")}
                   >
                     {copiedValues[alumni.phone] ? 
                       <CheckCircle className="h-4 w-4" /> : 
@@ -127,7 +118,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ alumni }) => {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{alumni.doNotContact ? 'Copying restricted' : 'Copy Phone Number'}</p>
+                  <p>Copy Phone Number</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -140,31 +131,28 @@ const ContactCard: React.FC<ContactCardProps> = ({ alumni }) => {
                 href={alumni.linkedIn.startsWith('http') ? alumni.linkedIn : `https://${alumni.linkedIn}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className={`${alumni.doNotContact ? 'text-gray-500 line-through pointer-events-none' : 'text-uvu-green hover:text-uvu-green-medium'}`}
-                onClick={(e) => alumni.doNotContact && e.preventDefault()}
+                className="text-uvu-green hover:text-uvu-green-medium"
               >
                 LinkedIn Profile
               </a>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button 
-                    className={`${alumni.doNotContact ? 'text-gray-400 opacity-50 cursor-not-allowed' : 'text-gray-400 hover:text-uvu-green'}`}
-                    onClick={() => !alumni.doNotContact && handleOpenLinkedIn(alumni.linkedIn)}
-                    disabled={alumni.doNotContact}
+                    className="text-gray-400 hover:text-uvu-green"
+                    onClick={() => handleOpenLinkedIn(alumni.linkedIn)}
                   >
                     <ExternalLink className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{alumni.doNotContact ? 'Link restricted' : 'Open in New Tab'}</p>
+                  <p>Open in New Tab</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button 
-                    className={`${alumni.doNotContact ? 'text-gray-400 opacity-50 cursor-not-allowed' : 'text-gray-400 hover:text-uvu-green'}`}
-                    onClick={() => !alumni.doNotContact && handleCopy(alumni.linkedIn, "LinkedIn URL")}
-                    disabled={alumni.doNotContact}
+                    className="text-gray-400 hover:text-uvu-green"
+                    onClick={() => handleCopy(alumni.linkedIn, "LinkedIn URL")}
                   >
                     {copiedValues[alumni.linkedIn] ? 
                       <CheckCircle className="h-4 w-4" /> : 
@@ -173,7 +161,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ alumni }) => {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{alumni.doNotContact ? 'Copying restricted' : 'Copy LinkedIn URL'}</p>
+                  <p>Copy LinkedIn URL</p>
                 </TooltipContent>
               </Tooltip>
             </div>

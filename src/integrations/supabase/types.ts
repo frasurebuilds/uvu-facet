@@ -14,14 +14,13 @@ export type Database = {
           avatar: string | null
           created_at: string
           degree: string
-          do_not_contact: boolean
           email: string
           first_name: string
           graduation_year: number
           id: string
           last_contact_date: string | null
           last_name: string
-          linked_in: string | null
+          linkedin: string | null
           major: string
           notes: string | null
           phone: string | null
@@ -31,14 +30,13 @@ export type Database = {
           avatar?: string | null
           created_at?: string
           degree: string
-          do_not_contact?: boolean
           email: string
           first_name: string
           graduation_year: number
           id?: string
           last_contact_date?: string | null
           last_name: string
-          linked_in?: string | null
+          linkedin?: string | null
           major: string
           notes?: string | null
           phone?: string | null
@@ -48,14 +46,13 @@ export type Database = {
           avatar?: string | null
           created_at?: string
           degree?: string
-          do_not_contact?: boolean
           email?: string
           first_name?: string
           graduation_year?: number
           id?: string
           last_contact_date?: string | null
           last_name?: string
-          linked_in?: string | null
+          linkedin?: string | null
           major?: string
           notes?: string | null
           phone?: string | null
@@ -67,56 +64,37 @@ export type Database = {
         Row: {
           content: Json
           created_at: string
-          form_id: string | null
           id: string
-          is_anonymous: boolean | null
-          mapped_fields: Json | null
           notes: string | null
           status: string
           submitted_by_alumni_id: string | null
           submitted_by_email: string
           submitted_by_name: string
-          submitted_by_uvid: string | null
           type: string
         }
         Insert: {
           content: Json
           created_at?: string
-          form_id?: string | null
           id?: string
-          is_anonymous?: boolean | null
-          mapped_fields?: Json | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
           submitted_by_email: string
           submitted_by_name: string
-          submitted_by_uvid?: string | null
           type: string
         }
         Update: {
           content?: Json
           created_at?: string
-          form_id?: string | null
           id?: string
-          is_anonymous?: boolean | null
-          mapped_fields?: Json | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
           submitted_by_email?: string
           submitted_by_name?: string
-          submitted_by_uvid?: string | null
           type?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "form_submissions_form_id_fkey"
-            columns: ["form_id"]
-            isOneToOne: false
-            referencedRelation: "forms"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "form_submissions_submitted_by_alumni_id_fkey"
             columns: ["submitted_by_alumni_id"]
@@ -125,42 +103,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      forms: {
-        Row: {
-          created_at: string
-          created_by: string
-          description: string | null
-          fields: Json
-          form_type: string
-          id: string
-          status: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          description?: string | null
-          fields?: Json
-          form_type?: string
-          id?: string
-          status?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          fields?: Json
-          form_type?: string
-          id?: string
-          status?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       job_history: {
         Row: {
@@ -261,27 +203,6 @@ export type Database = {
           notes?: string | null
           updated_at?: string
           website?: string | null
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          updated_at?: string
         }
         Relationships: []
       }

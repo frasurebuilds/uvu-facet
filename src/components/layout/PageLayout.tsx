@@ -25,8 +25,8 @@ const PageLayout = ({
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       
-      <main className="flex-1 overflow-y-auto md:ml-[70px] lg:ml-[250px]">
-        <div className="uvu-container py-6 px-4 md:px-6 mt-14 md:mt-0">
+      <main className="flex-1 overflow-y-auto">
+        <div className="uvu-container py-6">
           {(title || actionButton) && (
             <div className={cn(
               "flex items-center justify-between pb-6 mb-6 border-b",
@@ -34,7 +34,7 @@ const PageLayout = ({
             )}>
               <div>
                 {title && (
-                  <h1 className="text-2xl md:text-3xl font-bold text-uvu-green animate-slide-up">
+                  <h1 className="text-3xl font-bold text-uvu-green animate-slide-up">
                     {title}
                   </h1>
                 )}
@@ -45,7 +45,7 @@ const PageLayout = ({
                 )}
               </div>
               {actionButton && (
-                <div className="animate-fade-in mt-4 sm:mt-0">
+                <div className="animate-fade-in">
                   {actionButton}
                 </div>
               )}
