@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Alumni } from "@/types/models";
 import { toCamelCase, toSnakeCase } from "./apiUtils";
@@ -96,11 +95,10 @@ export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> =>
   return data ? toCamelCase(data) as Alumni : null;
 };
 
-// Define the type with primitive types to avoid circular references
-interface AlumniFormData {
-  mappedFields?: { [key: string]: string | number | boolean | null };
+type AlumniFormData = {
+  mappedFields?: Record<string, string | number | boolean | null>;
   submittedByUvid?: string;
-}
+};
 
 export const createAlumniFromFormSubmission = async (submission: AlumniFormData): Promise<Alumni | null> => {
   if (!submission.mappedFields || Object.keys(submission.mappedFields).length === 0) {
