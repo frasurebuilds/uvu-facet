@@ -1,8 +1,10 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
 import { Alumni, FormSubmission } from "@/types/models";
 import { fetchAlumniByUvid } from "./alumniApi";
+import { toCamelCase } from "./apiUtils";
 
 interface FormSubmissionRequest {
   formId: string;
@@ -87,7 +89,7 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
 };
 
 export const fetchFormSubmissions = async (): Promise<FormSubmission[]> => {
-  // First get the data from form_submissions without trying to use form_id and mapped_fields
+  // Get the data from form_submissions
   const { data, error } = await supabase
     .from('form_submissions')
     .select('*')

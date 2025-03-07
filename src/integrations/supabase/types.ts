@@ -67,8 +67,10 @@ export type Database = {
         Row: {
           content: Json
           created_at: string
+          form_id: string | null
           id: string
           is_anonymous: boolean | null
+          mapped_fields: Json | null
           notes: string | null
           status: string
           submitted_by_alumni_id: string | null
@@ -80,8 +82,10 @@ export type Database = {
         Insert: {
           content: Json
           created_at?: string
+          form_id?: string | null
           id?: string
           is_anonymous?: boolean | null
+          mapped_fields?: Json | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
@@ -93,8 +97,10 @@ export type Database = {
         Update: {
           content?: Json
           created_at?: string
+          form_id?: string | null
           id?: string
           is_anonymous?: boolean | null
+          mapped_fields?: Json | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
@@ -104,6 +110,13 @@ export type Database = {
           type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "form_submissions_submitted_by_alumni_id_fkey"
             columns: ["submitted_by_alumni_id"]

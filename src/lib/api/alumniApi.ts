@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Alumni } from "@/types/models";
+import { Alumni, FormSubmission } from "@/types/models";
 import { toCamelCase, toSnakeCase } from "./apiUtils";
 
 export const fetchAlumni = async (): Promise<Alumni[]> => {

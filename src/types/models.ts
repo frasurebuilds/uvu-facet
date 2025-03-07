@@ -1,3 +1,4 @@
+
 // Type definitions for our data models
 
 export interface Alumni {
@@ -86,8 +87,8 @@ export interface FormSubmission {
   notes?: string;
   isAnonymous?: boolean;
   submittedByUvid?: string;
-  formId?: string; // To link submission to specific form
-  mappedFields?: Record<string, any>; // Mapped alumni profile fields and their values
+  formId?: string; // Link to a specific form
+  mappedFields?: Record<string, any>; // Mapped alumni profile fields and values
   form?: {
     id: string;
     title: string;
