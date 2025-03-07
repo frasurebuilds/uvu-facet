@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Alumni } from "@/types/models";
 import { toCamelCase, toSnakeCase } from "./apiUtils";
@@ -96,11 +95,8 @@ export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> =>
   return data ? toCamelCase(data) as Alumni : null;
 };
 
-// Using a type alias for mappedFields to avoid circular references
-type AlumniMappedFields = Record<string, string | number | boolean | null>;
-
 interface AlumniFormData {
-  mappedFields?: AlumniMappedFields;
+  mappedFields?: Record<string, string | number | boolean | null>;
   submittedByUvid?: string;
 }
 
