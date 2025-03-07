@@ -96,7 +96,7 @@ export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> =>
   return data ? toCamelCase(data) as Alumni : null;
 };
 
-// Define a simple interface with primitive types to avoid circular references
+// Define a proper interface with primitive types to avoid circular references
 interface AlumniFormSubmissionData {
   mappedFields?: Record<string, string | number | boolean | null>;
   submittedByUvid?: string;

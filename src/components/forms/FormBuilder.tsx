@@ -1,29 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { FormField, Form } from "@/types/models";
+import { Form, FormField } from "@/types/models";
 import { useAuth } from "@/contexts/AuthContext";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { createForm, updateForm } from "@/lib/api/formApi";
-import FormFieldEditor from "./FormFieldEditor";
-import FormFieldPreview from "./FormFieldPreview";
-import { 
-  AlertTriangle, 
-  Trash, 
-  Plus, 
-  MoveUp, 
-  MoveDown, 
-  Copy, 
-  Eye, 
-  Save,
-  ArrowLeft
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import FormSettingsPanel from "./FormSettingsPanel";
+import FormFieldsPanel from "./FormFieldsPanel";
+import FormPreview from "./FormPreview";
+import FormBuilderHeader from "./FormBuilderHeader";
 
 interface FormBuilderProps {
   initialForm?: Form;
@@ -128,6 +114,10 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
     setActiveFieldIndex(newIndex);
   };
 
+  const togglePreviewMode = () => {
+    setPreviewMode(!previewMode);
+  };
+
   const handleSave = async () => {
     if (!formData.title.trim()) {
       toast({
@@ -187,247 +177,41 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/forms')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft size={16} />
-          Back to Forms
-        </Button>
-        
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setPreviewMode(!previewMode)}
-            className="flex items-center gap-2"
-          >
-            <Eye size={16} />
-            {previewMode ? "Edit Mode" : "Preview"}
-          </Button>
-          
-          <Button
-            onClick={handleSave}
-            disabled={isSubmitting}
-            className="bg-uvu-green hover:bg-uvu-green-medium flex items-center gap-2"
-          >
-            <Save size={16} />
-            Save Form
-          </Button>
-        </div>
-      </div>
+      <FormBuilderHeader 
+        previewMode={previewMode} 
+        isSubmitting={isSubmitting}
+        togglePreviewMode={togglePreviewMode}
+        handleSave={handleSave}
+      />
 
       {!previewMode ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Form Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="form-title">Form Title *</Label>
-                  <Input
-                    id="form-title"
-                    value={formData.title}
-                    onChange={handleTitleChange}
-                    placeholder="Enter form title"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="form-description">Description</Label>
-                  <Textarea
-                    id="form-description"
-                    value={formData.description || ''}
-                    onChange={handleDescriptionChange}
-                    placeholder="Enter form description"
-                    rows={3}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="form-status">Status</Label>
-                  <Select 
-                    value={formData.status}
-                    onValueChange={(value: any) => handleStatusChange(value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="form-type">Form Type</Label>
-                  <Select 
-                    value={formData.formType}
-                    onValueChange={(value: any) => handleFormTypeChange(value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select form type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="standard">Standard (Requires UVID)</SelectItem>
-                      <SelectItem value="anonymous">Anonymous</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.formType === 'standard' 
-                      ? "Standard forms require the submitter's UVID" 
-                      : "Anonymous forms don't collect any identifying information"}
-                  </p>
-                </div>
-                
-                <Button 
-                  onClick={addField}
-                  className="w-full mt-4 bg-uvu-green hover:bg-uvu-green-medium"
-                >
-                  <Plus size={16} className="mr-2" />
-                  Add Field
-                </Button>
-              </CardContent>
-            </Card>
-            
-            {formData.fields.length === 0 && (
-              <Card className="bg-amber-50 border-amber-200">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 text-amber-700">
-                    <AlertTriangle size={18} />
-                    <p>You need to add at least one field to your form.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+          <div className="md:col-span-1">
+            <FormSettingsPanel 
+              formData={formData}
+              handleTitleChange={handleTitleChange}
+              handleDescriptionChange={handleDescriptionChange}
+              handleStatusChange={handleStatusChange}
+              handleFormTypeChange={handleFormTypeChange}
+              addField={addField}
+            />
           </div>
           
-          <div className="md:col-span-2 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Form Builder</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {formData.fields.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed rounded-md">
-                    <p className="text-gray-500">No fields added yet</p>
-                    <Button 
-                      variant="link" 
-                      onClick={addField}
-                      className="mt-2"
-                    >
-                      Click here to add your first field
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {formData.fields.map((field, index) => (
-                      <div 
-                        key={field.id} 
-                        className={`p-4 border rounded-md transition-all ${activeFieldIndex === index ? 'border-uvu-green shadow-md' : 'border-gray-200'}`}
-                      >
-                        <div className="flex justify-between items-center mb-2">
-                          <div 
-                            className="font-medium cursor-pointer flex-grow"
-                            onClick={() => setActiveFieldIndex(index === activeFieldIndex ? null : index)}
-                          >
-                            {field.label} {field.required && <span className="text-red-500">*</span>}
-                          </div>
-                          <div className="flex gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => moveField(index, 'up')}
-                              disabled={index === 0}
-                              className="h-8 w-8 p-0"
-                            >
-                              <MoveUp size={16} />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => moveField(index, 'down')}
-                              disabled={index === formData.fields.length - 1}
-                              className="h-8 w-8 p-0"
-                            >
-                              <MoveDown size={16} />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => duplicateField(index)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Copy size={16} />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeField(index)}
-                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                            >
-                              <Trash size={16} />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {activeFieldIndex === index && (
-                          <FormFieldEditor 
-                            field={field} 
-                            onChange={(updatedField) => updateField(index, updatedField)} 
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <div className="md:col-span-2">
+            <FormFieldsPanel 
+              fields={formData.fields}
+              activeFieldIndex={activeFieldIndex}
+              setActiveFieldIndex={setActiveFieldIndex}
+              updateField={updateField}
+              removeField={removeField}
+              duplicateField={duplicateField}
+              moveField={moveField}
+              addField={addField}
+            />
           </div>
         </div>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Form Preview: {formData.title}</CardTitle>
-            {formData.description && <p className="text-gray-500 mt-1">{formData.description}</p>}
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {formData.formType === 'standard' && (
-                <div className="space-y-4 border-b pb-6">
-                  <h3 className="font-medium text-lg">Your Information</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="uvid">
-                      UVID <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="uvid"
-                      placeholder="Enter your UVID"
-                      disabled={previewMode}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {formData.fields.map((field) => (
-                <FormFieldPreview key={field.id} field={field} />
-              ))}
-              
-              {formData.fields.length > 0 && (
-                <div className="pt-4">
-                  <Button className="bg-uvu-green hover:bg-uvu-green-medium">
-                    Submit Form
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <FormPreview formData={formData} />
       )}
     </div>
   );
