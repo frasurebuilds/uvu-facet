@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
 import { FormSubmission } from "@/types/models";
-import { fetchAlumniByUvid, FormFieldsMap } from "./alumniApi";
+import { fetchAlumniByUvid, FormFieldValue } from "./alumniApi";
 import { toCamelCase } from "./apiUtils";
 
 interface FormSubmissionRequest {
@@ -41,12 +41,16 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
       
       // Find mapped fields
       if (form && form.fields) {
-        const mappedFields: Record<string, string | number | boolean | null> = {};
+        const mappedFields: Record<string, FormFieldValue> = {};
         
         // Extract mapped field values from submission content
         form.fields.forEach(field => {
           if (field.mapToField && submission.content[field.id] !== undefined) {
-            mappedFields[field.mapToField] = submission.content[field.id];
+            const value = submission.content[field.id];
+            mappedFields[field.mapToField] = typeof value === 'string' || typeof value === 'number' || 
+                                             typeof value === 'boolean' || value === null
+                                           ? value
+                                           : String(value);
           }
         });
         

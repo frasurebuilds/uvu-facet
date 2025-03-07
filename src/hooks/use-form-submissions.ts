@@ -10,7 +10,8 @@ import {
 } from "@/lib/api/formSubmissionApi";
 import { 
   updateAlumniFromFormSubmission, 
-  createAlumniFromFormSubmission 
+  createAlumniFromFormSubmission,
+  FormFieldValue
 } from "@/lib/api/alumniApi";
 
 export const useFormSubmissions = () => {
@@ -98,7 +99,7 @@ export const useFormSubmissions = () => {
       if (submission.mappedFields && Object.keys(submission.mappedFields).length > 0) {
         if (submission.submittedBy.alumniId) {
           // Convert mappedFields to the right type
-          const typedMappedFields: Record<string, string | number | boolean | null> = {};
+          const typedMappedFields: Record<string, FormFieldValue> = {};
           Object.entries(submission.mappedFields).forEach(([key, value]) => {
             if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
               typedMappedFields[key] = value;
@@ -119,7 +120,12 @@ export const useFormSubmissions = () => {
         else if (submission.submittedByUvid) {
           // Pass submission with correctly typed properties
           await createAlumniFromFormSubmission({
-            mappedFields: submission.mappedFields as Record<string, string | number | boolean | null>,
+            mappedFields: Object.entries(submission.mappedFields).reduce((acc, [key, value]) => {
+              acc[key] = typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null
+                ? value
+                : String(value);
+              return acc;
+            }, {} as Record<string, FormFieldValue>),
             submittedByUvid: submission.submittedByUvid
           });
           toast({
