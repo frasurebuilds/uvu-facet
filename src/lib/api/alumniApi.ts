@@ -96,7 +96,9 @@ export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> =>
 };
 
 type AlumniFormData = {
-  mappedFields?: Record<string, string | number | boolean | null>;
+  mappedFields?: {
+    [key: string]: string | number | boolean | null;
+  };
   submittedByUvid?: string;
 };
 
