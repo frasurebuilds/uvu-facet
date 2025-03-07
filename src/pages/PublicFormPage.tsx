@@ -11,11 +11,13 @@ import { submitFormResponse } from "@/lib/api/formSubmissionApi";
 import FormFieldPreview from "@/components/forms/FormFieldPreview";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Form, FormField } from "@/types/models";
+import { Form } from "@/types/models";
+import { useToast } from "@/hooks/use-toast";
 
 const PublicFormPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [uvid, setUvid] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,15 +96,30 @@ const PublicFormPage = () => {
         submissionData.isAnonymous = true;
       } else {
         submissionData.submittedByUvid = uvid;
+        // Add some basic info to help identify the submission
+        submissionData.submittedByName = "Form User";
+        submissionData.submittedByEmail = uvid + "@example.com";
       }
 
       console.log("Submitting form with data:", submissionData);
       await submitFormResponse(submissionData);
       console.log("Form submitted successfully");
+      
+      toast({
+        title: "Form submitted",
+        description: "Your response has been successfully submitted.",
+      });
+      
       navigate(`/form-submitted/${id}`);
     } catch (error) {
       console.error('Error submitting form:', error);
       setValidationError("There was an error submitting the form. Please try again.");
+      
+      toast({
+        title: "Error",
+        description: "There was an error submitting the form. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
@@ -20,79 +19,88 @@ interface FormSubmissionRequest {
 }
 
 export const submitFormResponse = async (submission: FormSubmissionRequest) => {
-  // Base submission data
-  const submissionData: any = {
-    type: 'form_response',
-    content: submission.content as unknown as Json,
-    form_id: submission.formId,
-  };
+  try {
+    // Base submission data
+    const submissionData: any = {
+      type: 'form_response',
+      content: submission.content as unknown as Json,
+      form_id: submission.formId,
+    };
 
-  // Handle different submission types
-  if (submission.isAnonymous) {
-    // Anonymous submission - don't add any personal info
-    submissionData.is_anonymous = true;
-  } else if (submission.submittedByUvid) {
-    // Standard submission with UVID - look up or create alumni profile connection
-    submissionData.submitted_by_uvid = submission.submittedByUvid;
-    
-    try {
-      // Get the form to check for mapped fields
-      const form = await fetchFormById(submission.formId);
+    // Handle different submission types
+    if (submission.isAnonymous) {
+      // Anonymous submission - don't add any personal info
+      submissionData.is_anonymous = true;
+      submissionData.submitted_by_name = 'Anonymous';
+      submissionData.submitted_by_email = '';
+    } else if (submission.submittedByUvid) {
+      // Standard submission with UVID - look up or create alumni profile connection
+      submissionData.submitted_by_uvid = submission.submittedByUvid;
+      submissionData.submitted_by_name = submission.submittedByName || 'User';
+      submissionData.submitted_by_email = submission.submittedByEmail || '';
       
-      // Find mapped fields
-      if (form && form.fields) {
-        const mappedFields: Record<string, FormFieldValue> = {};
+      try {
+        // Get the form to check for mapped fields
+        const form = await fetchFormById(submission.formId);
         
-        // Extract mapped field values from submission content
-        form.fields.forEach(field => {
-          if (field.mapToField && submission.content[field.id] !== undefined) {
-            const value = submission.content[field.id];
-            mappedFields[field.mapToField] = typeof value === 'string' || typeof value === 'number' || 
-                                             typeof value === 'boolean' || value === null
-                                           ? value
-                                           : String(value);
+        // Find mapped fields
+        if (form && form.fields) {
+          const mappedFields: Record<string, FormFieldValue> = {};
+          
+          // Extract mapped field values from submission content
+          form.fields.forEach(field => {
+            if (field.mapToField && submission.content[field.id] !== undefined) {
+              const value = submission.content[field.id];
+              mappedFields[field.mapToField] = typeof value === 'string' || typeof value === 'number' || 
+                                              typeof value === 'boolean' || value === null
+                                              ? value
+                                              : String(value);
+            }
+          });
+          
+          // If we have mapped fields, store them in the submission
+          if (Object.keys(mappedFields).length > 0) {
+            submissionData.mapped_fields = mappedFields as unknown as Json;
           }
-        });
-        
-        // If we have mapped fields, store them in the submission
-        if (Object.keys(mappedFields).length > 0) {
-          submissionData.mapped_fields = mappedFields as unknown as Json;
+          
+          // Try to find alumni by UVID
+          const alumni = await fetchAlumniByUvid(submission.submittedByUvid);
+          
+          // If alumni found, add the alumni ID to the submission
+          if (alumni) {
+            submissionData.submitted_by_alumni_id = alumni.id;
+          }
         }
-        
-        // Try to find alumni by UVID
-        const alumni = await fetchAlumniByUvid(submission.submittedByUvid);
-        
-        // If alumni found, add the alumni ID to the submission
-        if (alumni) {
-          submissionData.submitted_by_alumni_id = alumni.id;
-        }
+      } catch (error) {
+        console.error('Error processing form mapping:', error);
+        // Continue with submission even if mapping fails
       }
-    } catch (error) {
-      console.error('Error processing form mapping:', error);
-      // Continue with submission even if mapping fails
+    } else {
+      // Legacy submission with name and email
+      submissionData.submitted_by_name = submission.submittedByName || 'Anonymous';
+      submissionData.submitted_by_email = submission.submittedByEmail || '';
+      if (submission.submittedByAlumniId) {
+        submissionData.submitted_by_alumni_id = submission.submittedByAlumniId;
+      }
     }
-  } else {
-    // Legacy submission with name and email
-    submissionData.submitted_by_name = submission.submittedByName || 'Anonymous';
-    submissionData.submitted_by_email = submission.submittedByEmail || '';
-    if (submission.submittedByAlumniId) {
-      submissionData.submitted_by_alumni_id = submission.submittedByAlumniId;
+
+    console.log("Submitting form data:", submissionData);
+
+    const { data, error } = await supabase
+      .from('form_submissions')
+      .insert(submissionData)
+      .select();
+
+    if (error) {
+      console.error('Error submitting form response:', error);
+      throw error;
     }
-  }
-
-  console.log("Submitting form data:", submissionData);
-
-  const { data, error } = await supabase
-    .from('form_submissions')
-    .insert(submissionData)
-    .select();
-
-  if (error) {
-    console.error('Error submitting form response:', error);
+    
+    return data;
+  } catch (error) {
+    console.error('Error in submitFormResponse:', error);
     throw error;
   }
-  
-  return data;
 };
 
 export const fetchFormSubmissions = async (): Promise<FormSubmission[]> => {
