@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Alumni } from "@/types/models";
 import { toCamelCase, toSnakeCase } from "./apiUtils";
@@ -95,6 +96,7 @@ export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> =>
   return data ? toCamelCase(data) as Alumni : null;
 };
 
+// Define a simple interface with primitive types to avoid circular references
 interface AlumniFormSubmissionData {
   mappedFields?: Record<string, string | number | boolean | null>;
   submittedByUvid?: string;
@@ -113,6 +115,8 @@ export const createAlumniFromFormSubmission = async (submission: AlumniFormSubmi
       updatedAt: new Date().toISOString(),
       doNotContact: false
     };
+
+    console.log("Creating alumni with data:", alumniData);
 
     const { data, error } = await supabase
       .from('alumni')
@@ -134,7 +138,7 @@ export const createAlumniFromFormSubmission = async (submission: AlumniFormSubmi
 
 export const updateAlumniFromFormSubmission = async (
   alumniId: string, 
-  mappedFields: Record<string, any>
+  mappedFields: Record<string, string | number | boolean | null>
 ): Promise<Alumni | null> => {
   try {
     if (!mappedFields || Object.keys(mappedFields).length === 0) {
@@ -145,6 +149,8 @@ export const updateAlumniFromFormSubmission = async (
       ...mappedFields,
       updatedAt: new Date().toISOString()
     };
+
+    console.log("Updating alumni with data:", updateData);
 
     const { data, error } = await supabase
       .from('alumni')

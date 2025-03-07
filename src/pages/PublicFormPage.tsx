@@ -41,6 +41,7 @@ const PublicFormPage = () => {
       ...prev,
       [fieldId]: value
     }));
+    console.log("Field updated:", fieldId, value);
   };
 
   const handleUvidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +77,12 @@ const PublicFormPage = () => {
 
     try {
       setIsSubmitting(true);
+      console.log("Starting form submission with data:", { 
+        formId: id, 
+        formType: form.formType,
+        uvid: uvid,
+        formData 
+      });
 
       // Prepare submission data based on form type
       const submissionData: any = {
@@ -89,7 +96,9 @@ const PublicFormPage = () => {
         submissionData.submittedByUvid = uvid;
       }
 
+      console.log("Submitting form with data:", submissionData);
       await submitFormResponse(submissionData);
+      console.log("Form submitted successfully");
       navigate(`/form-submitted/${id}`);
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -112,6 +121,7 @@ const PublicFormPage = () => {
   }
 
   if (error || !form) {
+    console.error("Form loading error:", error);
     return (
       <div className="max-w-3xl mx-auto px-4 py-12">
         <Card>

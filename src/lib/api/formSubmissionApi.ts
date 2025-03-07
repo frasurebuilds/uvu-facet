@@ -41,7 +41,7 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
       
       // Find mapped fields
       if (form && form.fields) {
-        const mappedFields: Record<string, any> = {};
+        const mappedFields: Record<string, string | number | boolean | null> = {};
         
         // Extract mapped field values from submission content
         form.fields.forEach(field => {
@@ -69,16 +69,19 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
     }
   } else {
     // Legacy submission with name and email
-    submissionData.submitted_by_name = submission.submittedByName;
-    submissionData.submitted_by_email = submission.submittedByEmail;
+    submissionData.submitted_by_name = submission.submittedByName || 'Anonymous';
+    submissionData.submitted_by_email = submission.submittedByEmail || '';
     if (submission.submittedByAlumniId) {
       submissionData.submitted_by_alumni_id = submission.submittedByAlumniId;
     }
   }
 
+  console.log("Submitting form data:", submissionData);
+
   const { data, error } = await supabase
     .from('form_submissions')
-    .insert(submissionData);
+    .insert(submissionData)
+    .select();
 
   if (error) {
     console.error('Error submitting form response:', error);

@@ -97,9 +97,19 @@ export const useFormSubmissions = () => {
     try {
       if (submission.mappedFields && Object.keys(submission.mappedFields).length > 0) {
         if (submission.submittedBy.alumniId) {
+          // Convert mappedFields to the right type
+          const typedMappedFields: Record<string, string | number | boolean | null> = {};
+          Object.entries(submission.mappedFields).forEach(([key, value]) => {
+            if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
+              typedMappedFields[key] = value;
+            } else {
+              typedMappedFields[key] = String(value);
+            }
+          });
+          
           await updateAlumniFromFormSubmission(
             submission.submittedBy.alumniId, 
-            submission.mappedFields
+            typedMappedFields
           );
           toast({
             title: "Alumni profile updated",
@@ -107,9 +117,9 @@ export const useFormSubmissions = () => {
           });
         } 
         else if (submission.submittedByUvid) {
-          // Pass submission with correctly typed properties to avoid type errors
+          // Pass submission with correctly typed properties
           await createAlumniFromFormSubmission({
-            mappedFields: submission.mappedFields,
+            mappedFields: submission.mappedFields as Record<string, string | number | boolean | null>,
             submittedByUvid: submission.submittedByUvid
           });
           toast({
