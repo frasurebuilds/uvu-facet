@@ -1,6 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
+import { fetchFormById } from "./formApi";
+import { Alumni } from "@/types/models";
+import { fetchAlumniByUvid } from "./alumniApi";
 
 interface FormSubmissionRequest {
   formId: string;
@@ -20,6 +23,7 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
   const submissionData: any = {
     type: 'form_response',
     content: submission.content as unknown as Json,
+    form_id: submission.formId,
   };
 
   // Handle different submission types
@@ -27,8 +31,41 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
     // Anonymous submission - don't add any personal info
     submissionData.is_anonymous = true;
   } else if (submission.submittedByUvid) {
-    // Standard submission with UVID
+    // Standard submission with UVID - look up or create alumni profile connection
     submissionData.submitted_by_uvid = submission.submittedByUvid;
+    
+    try {
+      // Get the form to check for mapped fields
+      const form = await fetchFormById(submission.formId);
+      
+      // Find mapped fields
+      if (form && form.fields) {
+        const mappedFields: Record<string, any> = {};
+        
+        // Extract mapped field values from submission content
+        form.fields.forEach(field => {
+          if (field.mapToField && submission.content[field.id] !== undefined) {
+            mappedFields[field.mapToField] = submission.content[field.id];
+          }
+        });
+        
+        // If we have mapped fields, store them in the submission
+        if (Object.keys(mappedFields).length > 0) {
+          submissionData.mapped_fields = mappedFields as unknown as Json;
+        }
+        
+        // Try to find alumni by UVID
+        const alumni = await fetchAlumniByUvid(submission.submittedByUvid);
+        
+        // If alumni found, add the alumni ID to the submission
+        if (alumni) {
+          submissionData.submitted_by_alumni_id = alumni.id;
+        }
+      }
+    } catch (error) {
+      console.error('Error processing form mapping:', error);
+      // Continue with submission even if mapping fails
+    }
   } else {
     // Legacy submission with name and email
     submissionData.submitted_by_name = submission.submittedByName;
@@ -53,7 +90,7 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
 export const fetchFormSubmissions = async () => {
   const { data, error } = await supabase
     .from('form_submissions')
-    .select('*')
+    .select('*, forms(*)')
     .order('created_at', { ascending: false });
   
   if (error) {
@@ -65,13 +102,50 @@ export const fetchFormSubmissions = async () => {
     id: submission.id,
     type: submission.type,
     content: submission.content,
-    submittedByName: submission.submitted_by_name,
-    submittedByEmail: submission.submitted_by_email,
+    submittedBy: {
+      name: submission.submitted_by_name || 'Anonymous',
+      email: submission.submitted_by_email || '',
+      alumniId: submission.submitted_by_alumni_id,
+    },
     submittedByUvid: submission.submitted_by_uvid,
-    submittedByAlumniId: submission.submitted_by_alumni_id,
     isAnonymous: submission.is_anonymous,
     createdAt: submission.created_at,
     status: submission.status,
-    notes: submission.notes
+    notes: submission.notes,
+    formId: submission.form_id,
+    mappedFields: submission.mapped_fields || {},
+    form: submission.forms ? {
+      id: submission.forms.id,
+      title: submission.forms.title,
+      description: submission.forms.description,
+    } : undefined
   }));
+};
+
+export const updateFormSubmissionStatus = async (id: string, status: string) => {
+  const { error } = await supabase
+    .from('form_submissions')
+    .update({ status })
+    .eq('id', id);
+  
+  if (error) {
+    console.error('Error updating form submission status:', error);
+    throw error;
+  }
+  
+  return true;
+};
+
+export const addFormSubmissionNote = async (id: string, notes: string) => {
+  const { error } = await supabase
+    .from('form_submissions')
+    .update({ notes })
+    .eq('id', id);
+  
+  if (error) {
+    console.error('Error adding form submission note:', error);
+    throw error;
+  }
+  
+  return true;
 };

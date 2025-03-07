@@ -69,6 +69,7 @@ export interface FormField {
   required: boolean;
   options?: string[]; // For select, checkbox, radio
   defaultValue?: string;
+  mapToField?: string; // To map to alumni profile field
 }
 
 export interface FormSubmission {
@@ -85,4 +86,6 @@ export interface FormSubmission {
   notes?: string;
   isAnonymous?: boolean;
   submittedByUvid?: string;
+  formId?: string; // To link submission to specific form
+  mappedFields?: Record<string, any>; // Mapped alumni profile fields and their values
 }

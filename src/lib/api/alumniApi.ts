@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Alumni } from "@/types/models";
 import { toCamelCase, toSnakeCase } from "./apiUtils";
@@ -50,7 +49,6 @@ export const updateAlumni = async (alumni: Partial<Alumni> & { id: string }): Pr
 };
 
 export const fetchAlumniByOrganizationId = async (organizationId: string, isCurrent: boolean = true): Promise<Alumni[]> => {
-  // First get the job history entries for this organization
   const { data: jobData, error: jobError } = await supabase
     .from('job_history')
     .select('alumni_id')
@@ -62,15 +60,12 @@ export const fetchAlumniByOrganizationId = async (organizationId: string, isCurr
     throw jobError;
   }
   
-  // No alumni found for this organization
   if (!jobData || jobData.length === 0) {
     return [];
   }
   
-  // Extract the alumni IDs
   const alumniIds = jobData.map(job => job.alumni_id);
   
-  // Fetch the alumni details
   const { data: alumniData, error: alumniError } = await supabase
     .from('alumni')
     .select('*')
@@ -83,4 +78,84 @@ export const fetchAlumniByOrganizationId = async (organizationId: string, isCurr
   }
   
   return toCamelCase(alumniData) as Alumni[];
+};
+
+export const fetchAlumniByUvid = async (uvid: string): Promise<Alumni | null> => {
+  const { data, error } = await supabase
+    .from('alumni')
+    .select('*')
+    .eq('uvid', uvid)
+    .maybeSingle();
+  
+  if (error) {
+    console.error(`Error fetching alumni with UVID ${uvid}:`, error);
+    throw error;
+  }
+  
+  return data ? toCamelCase(data) as Alumni : null;
+};
+
+export const createAlumniFromFormSubmission = async (submission: any): Promise<Alumni | null> => {
+  if (!submission.mappedFields || Object.keys(submission.mappedFields).length === 0) {
+    return null;
+  }
+
+  try {
+    const alumniData = {
+      ...submission.mappedFields,
+      uvid: submission.submittedByUvid,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      doNotContact: false
+    };
+
+    const { data, error } = await supabase
+      .from('alumni')
+      .insert(toSnakeCase(alumniData))
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating alumni from form submission:', error);
+      return null;
+    }
+    
+    return toCamelCase(data) as Alumni;
+  } catch (error) {
+    console.error('Error in createAlumniFromFormSubmission:', error);
+    return null;
+  }
+};
+
+export const updateAlumniFromFormSubmission = async (
+  alumniId: string, 
+  mappedFields: Record<string, any>
+): Promise<Alumni | null> => {
+  try {
+    if (!mappedFields || Object.keys(mappedFields).length === 0) {
+      return null;
+    }
+
+    const updateData = {
+      ...mappedFields,
+      updatedAt: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase
+      .from('alumni')
+      .update(toSnakeCase(updateData))
+      .eq('id', alumniId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating alumni from form submission:', error);
+      return null;
+    }
+    
+    return toCamelCase(data) as Alumni;
+  } catch (error) {
+    console.error('Error in updateAlumniFromFormSubmission:', error);
+    return null;
+  }
 };
