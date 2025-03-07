@@ -1,4 +1,3 @@
-
 // Type definitions for our data models
 
 export interface Alumni {
@@ -17,6 +16,7 @@ export interface Alumni {
   doNotContact: boolean;
   createdAt: string;
   updatedAt: string;
+  uvid?: string;
 }
 
 export interface Organization {

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
@@ -88,10 +87,10 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
 };
 
 export const fetchFormSubmissions = async (): Promise<FormSubmission[]> => {
-  // First attempt to fetch form submissions with a basic query to ensure it works
+  // First get the data from form_submissions without trying to use form_id and mapped_fields
   const { data, error } = await supabase
     .from('form_submissions')
-    .select('*, form_id, mapped_fields')
+    .select('*')
     .order('created_at', { ascending: false });
   
   if (error) {

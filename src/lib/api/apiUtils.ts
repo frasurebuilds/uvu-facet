@@ -14,8 +14,15 @@ export const toCamelCase = (obj: any): any => {
 
   const camelCaseObj: Record<string, any> = {};
   Object.keys(obj).forEach(key => {
-    const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-    camelCaseObj[camelKey] = toCamelCase(obj[key]);
+    // Special case for form_id, mapped_fields
+    if (key === 'form_id') {
+      camelCaseObj['formId'] = toCamelCase(obj[key]);
+    } else if (key === 'mapped_fields') {
+      camelCaseObj['mappedFields'] = toCamelCase(obj[key]);
+    } else {
+      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      camelCaseObj[camelKey] = toCamelCase(obj[key]);
+    }
   });
   
   return camelCaseObj;
