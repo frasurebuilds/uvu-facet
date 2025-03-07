@@ -107,7 +107,11 @@ export const useFormSubmissions = () => {
           });
         } 
         else if (submission.submittedByUvid) {
-          await createAlumniFromFormSubmission(submission);
+          // Pass submission with correctly typed properties to avoid type errors
+          await createAlumniFromFormSubmission({
+            mappedFields: submission.mappedFields,
+            submittedByUvid: submission.submittedByUvid
+          });
           toast({
             title: "New alumni profile created",
             description: "A new alumni profile has been created from the submitted information"

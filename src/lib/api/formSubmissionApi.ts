@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
-import { Alumni, FormSubmission } from "@/types/models";
+import { FormSubmission } from "@/types/models";
 import { fetchAlumniByUvid } from "./alumniApi";
 import { toCamelCase } from "./apiUtils";
 
@@ -112,7 +112,8 @@ export const fetchFormSubmissions = async (): Promise<FormSubmission[]> => {
       }
     }
     
-    return {
+    // Convert snake_case to camelCase, but handle mappedFields separately to avoid type issues
+    const submissionData = {
       id: submission.id,
       type: submission.type as FormSubmission['type'],
       content: submission.content,
@@ -133,7 +134,9 @@ export const fetchFormSubmissions = async (): Promise<FormSubmission[]> => {
         title: formInfo.title,
         description: formInfo.description
       } : undefined
-    } as FormSubmission;
+    };
+    
+    return submissionData as FormSubmission;
   }));
 };
 
