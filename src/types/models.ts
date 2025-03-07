@@ -74,7 +74,7 @@ export interface FormField {
 
 export interface FormSubmission {
   id: string;
-  type: 'update' | 'new-info' | 'event-rsvp' | 'volunteer' | 'other';
+  type: 'update' | 'new-info' | 'event-rsvp' | 'volunteer' | 'other' | 'form_response';
   submittedBy: {
     name: string;
     email: string;
@@ -88,4 +88,9 @@ export interface FormSubmission {
   submittedByUvid?: string;
   formId?: string; // To link submission to specific form
   mappedFields?: Record<string, any>; // Mapped alumni profile fields and their values
+  form?: {
+    id: string;
+    title: string;
+    description?: string;
+  };
 }

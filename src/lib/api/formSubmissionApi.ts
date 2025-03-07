@@ -88,9 +88,10 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
 };
 
 export const fetchFormSubmissions = async () => {
+  // First attempt to fetch form submissions with a basic query to ensure it works
   const { data, error } = await supabase
     .from('form_submissions')
-    .select('*, forms(*)')
+    .select('*')
     .order('created_at', { ascending: false });
   
   if (error) {
@@ -98,27 +99,40 @@ export const fetchFormSubmissions = async () => {
     throw error;
   }
   
-  return data.map(submission => ({
-    id: submission.id,
-    type: submission.type,
-    content: submission.content,
-    submittedBy: {
-      name: submission.submitted_by_name || 'Anonymous',
-      email: submission.submitted_by_email || '',
-      alumniId: submission.submitted_by_alumni_id,
-    },
-    submittedByUvid: submission.submitted_by_uvid,
-    isAnonymous: submission.is_anonymous,
-    createdAt: submission.created_at,
-    status: submission.status,
-    notes: submission.notes,
-    formId: submission.form_id,
-    mappedFields: submission.mapped_fields || {},
-    form: submission.forms ? {
-      id: submission.forms.id,
-      title: submission.forms.title,
-      description: submission.forms.description,
-    } : undefined
+  // Map the Supabase response to our frontend data model
+  return Promise.all(data.map(async (submission) => {
+    let formInfo = null;
+    
+    if (submission.form_id) {
+      try {
+        formInfo = await fetchFormById(submission.form_id);
+      } catch (err) {
+        console.error(`Error fetching form with ID ${submission.form_id}:`, err);
+      }
+    }
+    
+    return {
+      id: submission.id,
+      type: submission.type,
+      content: submission.content,
+      submittedBy: {
+        name: submission.submitted_by_name || 'Anonymous',
+        email: submission.submitted_by_email || '',
+        alumniId: submission.submitted_by_alumni_id,
+      },
+      submittedByUvid: submission.submitted_by_uvid,
+      isAnonymous: submission.is_anonymous,
+      createdAt: submission.created_at,
+      status: submission.status,
+      notes: submission.notes,
+      formId: submission.form_id,
+      mappedFields: submission.mapped_fields || {},
+      form: formInfo ? {
+        id: formInfo.id,
+        title: formInfo.title,
+        description: formInfo.description
+      } : undefined
+    };
   }));
 };
 
