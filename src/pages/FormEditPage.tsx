@@ -18,7 +18,7 @@ const FormEditPage = () => {
   // Fetch form data
   const { data: form, isLoading, error } = useQuery({
     queryKey: ['form', id],
-    queryFn: () => fetchFormById(id as string),
+    queryFn: () => fetchFormById(id as string, false), // Admin access, so isPublicAccess = false
     enabled: !!id && !!user
   });
 

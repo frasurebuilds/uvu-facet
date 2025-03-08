@@ -47,7 +47,8 @@ const PublicFormPage = () => {
       console.log("Executing query function for form ID:", id);
       if (!id) throw new Error("No form ID provided");
       try {
-        const result = await fetchFormById(id);
+        // Pass true for isPublicAccess to indicate this is public access
+        const result = await fetchFormById(id, true);
         console.log("Form fetched successfully:", result);
         return result;
       } catch (err) {

@@ -32,8 +32,8 @@ export const fetchForms = async (): Promise<Form[]> => {
   }));
 };
 
-export const fetchFormById = async (id: string): Promise<Form> => {
-  console.log('Fetching form with ID:', id);
+export const fetchFormById = async (id: string, isPublicAccess: boolean = false): Promise<Form> => {
+  console.log('Fetching form with ID:', id, 'isPublicAccess:', isPublicAccess);
   
   if (!id) {
     console.error('Invalid form ID provided:', id);
@@ -51,12 +51,21 @@ export const fetchFormById = async (id: string): Promise<Form> => {
     let error = null;
     
     while (attempts < maxAttempts && !data) {
-      const result = await supabase
+      // Create the base query
+      let query = supabase
         .from('forms')
         .select('*')
-        .eq('id', id)
-        .eq('status', 'active')  // Ensure we only get active forms for public access
-        .maybeSingle();
+        .eq('id', id);
+      
+      // Only filter by 'active' status for public access
+      if (isPublicAccess) {
+        query = query.eq('status', 'active');
+        console.log('Adding status=active filter for public access');
+      } else {
+        console.log('No status filter applied for admin access');
+      }
+      
+      const result = await query.maybeSingle();
       
       data = result.data;
       error = result.error;
@@ -77,8 +86,8 @@ export const fetchFormById = async (id: string): Promise<Form> => {
     }
     
     if (!data) {
-      console.error(`Form with id ${id} not found in database or not active`);
-      throw new Error(`Form not found in database or not active`);
+      console.error(`Form with id ${id} not found in database${isPublicAccess ? ' or not active' : ''}`);
+      throw new Error(`Form not found in database${isPublicAccess ? ' or not active' : ''}`);
     }
     
     // Transform the database record into our Form type

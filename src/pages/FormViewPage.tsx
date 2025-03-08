@@ -43,7 +43,8 @@ const FormViewPage = () => {
       console.log("Executing admin query function for form ID:", id);
       if (!id) throw new Error("No form ID provided");
       try {
-        const result = await fetchFormById(id);
+        // Pass false for isPublicAccess parameter since this is admin access
+        const result = await fetchFormById(id, false);
         console.log("Form fetched successfully (admin view):", result);
         return result;
       } catch (err) {

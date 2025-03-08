@@ -10,12 +10,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
   
-  // Allow public access to form routes without any authentication checks
+  // Make sure we're correctly identifying public form routes
   const isPublicFormRoute = location.pathname.startsWith('/public-form/') || 
                            location.pathname.startsWith('/form-submitted/');
                            
+  console.log("ProtectedRoute checking path:", location.pathname, "isPublicFormRoute:", isPublicFormRoute);
+                           
   if (isPublicFormRoute) {
     // Completely bypass authentication for public form routes
+    console.log("Bypassing authentication for public form route");
     return <>{children}</>;
   }
 
@@ -31,9 +34,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    console.log("User not authenticated, redirecting to auth page");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  console.log("User authenticated, rendering protected content");
   return <>{children}</>;
 };
 
