@@ -12,7 +12,7 @@ const FormSubmittedPage = () => {
   // Fetch form data to determine if it was anonymous
   const { data: form } = useQuery({
     queryKey: ['submitted-form', id],
-    queryFn: () => fetchFormById(id as string),
+    queryFn: () => fetchFormById(id as string, true), // Use public access mode
     enabled: !!id
   });
 
