@@ -67,7 +67,22 @@ const FormSubmissionsPage = () => {
     }
   };
 
-  const filteredSubmissions = submissions.filter((submission) => {
+  const formattedSubmissions: FormSubmission[] = submissions.map(submission => ({
+    id: submission.id,
+    type: submission.type,
+    content: submission.content as Record<string, any>,
+    submittedByName: submission.submitted_by_name,
+    submittedByEmail: submission.submitted_by_email,
+    submittedByUvid: submission.submitted_by_uvid,
+    submittedByAlumniId: submission.submitted_by_alumni_id,
+    isAnonymous: submission.is_anonymous,
+    createdAt: submission.created_at,
+    status: submission.status,
+    notes: submission.notes,
+    mappedFields: submission.mapped_fields as Record<string, any>
+  }));
+
+  const filteredSubmissions = formattedSubmissions.filter((submission) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
       submission.submittedByName.toLowerCase().includes(searchLower) ||

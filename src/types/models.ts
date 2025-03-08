@@ -80,7 +80,7 @@ export interface FormSubmission {
   submittedByUvid?: string;
   submittedByAlumniId?: string;
   isAnonymous?: boolean;
-  content: Record<string, any>;
+  content: Record<string, any>; // Using Record instead of Json type
   mappedFields?: Record<string, any>; // Maps form field IDs to alumni field names
   status: 'pending' | 'reviewed' | 'processed' | 'archived';
   createdAt: string;

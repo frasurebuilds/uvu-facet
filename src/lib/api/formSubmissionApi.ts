@@ -73,16 +73,29 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
       } else {
         console.log(`No alumni profile found for UVID ${submission.submittedByUvid}, creating new profile`);
         // Create a new alumni profile with minimal information
+        // Default values to use if mapped fields don't provide them
+        const defaultValues = {
+          first_name: 'Unknown',
+          last_name: 'Unknown',
+          graduation_year: new Date().getFullYear(),
+          degree: 'Unknown',
+          major: 'Unknown'
+        };
+        
+        // Extract values from mapped fields or use defaults
+        const mappedFieldsObj = mappedFields as Record<string, any>;
+        const alumniData = {
+          email: alumniEmail,
+          first_name: mappedFieldsObj.firstName || defaultValues.first_name,
+          last_name: mappedFieldsObj.lastName || defaultValues.last_name,
+          graduation_year: mappedFieldsObj.graduationYear || defaultValues.graduation_year,
+          degree: mappedFieldsObj.degree || defaultValues.degree,
+          major: mappedFieldsObj.major || defaultValues.major
+        };
+        
         const { data: newAlumni, error: createError } = await supabase
           .from('alumni')
-          .insert({
-            email: alumniEmail,
-            first_name: mappedFields.firstName || 'Unknown',
-            last_name: mappedFields.lastName || 'Unknown',
-            graduation_year: mappedFields.graduationYear || new Date().getFullYear(),
-            degree: mappedFields.degree || 'Unknown',
-            major: mappedFields.major || 'Unknown'
-          })
+          .insert(alumniData)
           .select()
           .single();
           
