@@ -26,15 +26,20 @@ const FormViewPage = () => {
     queryFn: () => fetchFormById(id as string),
     enabled: !!id,
     retry: 1,
-    onError: (err) => {
-      console.error("Error loading form:", err);
-      toast({
-        title: "Error loading form",
-        description: "The form could not be loaded",
-        variant: "destructive"
-      });
+    meta: {
+      onError: (err: Error) => {
+        console.error("Error loading form:", err);
+        toast({
+          title: "Error loading form",
+          description: "The form could not be loaded",
+          variant: "destructive"
+        });
+      }
     }
   });
+
+  // Log query results for debugging
+  console.log("Form query result:", { form, isLoading, error, isError });
 
   const getStatusBadge = (status: string) => {
     switch (status) {

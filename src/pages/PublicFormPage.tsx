@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -34,10 +35,15 @@ const PublicFormPage = () => {
     queryFn: () => fetchFormById(id as string),
     enabled: !!id,
     retry: 1,
-    onError: (err) => {
-      console.error("Error loading public form:", err);
+    meta: {
+      onError: (err: Error) => {
+        console.error("Error loading public form:", err);
+      }
     }
   });
+
+  // Log query results for debugging
+  console.log("Public form query result:", { form, isLoading, error, isError, id });
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormValues(prev => ({
