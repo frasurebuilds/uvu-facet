@@ -105,7 +105,8 @@ export const createAlumniFromFormSubmission = async (submission: {
   }
 
   try {
-    const alumniData = {
+    // Fix: Simplify the type complexity by explicitly typing the alumni data object
+    const alumniData: Record<string, any> = {
       ...submission.mappedFields,
       uvid: submission.submittedByUvid,
       createdAt: new Date().toISOString(),
@@ -140,7 +141,8 @@ export const updateAlumniFromFormSubmission = async (
       return null;
     }
 
-    const updateData = {
+    // Fix: Simplify the type complexity by explicitly typing the update data object
+    const updateData: Record<string, any> = {
       ...mappedFields,
       updatedAt: new Date().toISOString()
     };
