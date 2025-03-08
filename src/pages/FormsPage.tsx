@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +13,8 @@ import {
   CheckCircle2,
   ArchiveIcon,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Copy
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -50,7 +50,6 @@ const FormsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Fetch forms
   const { 
     data: forms = [], 
     isLoading, 
@@ -97,7 +96,6 @@ const FormsPage = () => {
       setIsDeleting(true);
       await deleteForm(formToDelete.id);
       
-      // Invalidate the forms query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['forms'] });
       
       toast({
@@ -125,7 +123,6 @@ const FormsPage = () => {
         status: newStatus
       });
       
-      // Invalidate the forms query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['forms'] });
       
       toast({
@@ -307,7 +304,6 @@ const FormsPage = () => {
         )}
       </Tabs>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -338,7 +334,6 @@ const FormsPage = () => {
   );
 };
 
-// Form card component
 interface FormCardProps {
   form: Form;
   onEdit: () => void;
@@ -355,11 +350,21 @@ const FormCard = ({
   onStatusChange 
 }: FormCardProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const fieldCount = form.fields.length;
   
   const handleOpenPublicForm = () => {
-    // Open in a new tab
     window.open(`/public-form/${form.id}`, '_blank');
+  };
+  
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/public-form/${form.id}`;
+    navigator.clipboard.writeText(link);
+    toast({
+      title: "Link copied!",
+      description: "Form link has been copied to clipboard",
+    });
   };
   
   return (
@@ -396,15 +401,25 @@ const FormCard = ({
             View
           </Button>
           {form.status === 'active' && (
-            <Button 
-              variant="default" 
-              size="sm" 
-              className="bg-uvu-green hover:bg-uvu-green-medium"
-              onClick={handleOpenPublicForm}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Open
-            </Button>
+            <>
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="bg-uvu-green hover:bg-uvu-green-medium"
+                onClick={handleOpenPublicForm}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCopyLink}
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Link
+              </Button>
+            </>
           )}
         </div>
         
@@ -456,7 +471,6 @@ const FormCard = ({
   );
 };
 
-// Helper for formatting date
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('en-US', {
@@ -466,7 +480,6 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
-// Function to get status badge with icon
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'active':
