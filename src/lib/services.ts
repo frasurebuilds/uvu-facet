@@ -15,3 +15,52 @@ export const createInitialUser = async () => {
     throw error;
   }
 };
+
+export const updateUserThemePreference = async (theme: 'light' | 'dark') => {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    
+    if (!userData.user) {
+      throw new Error("No authenticated user found");
+    }
+    
+    const { error } = await supabase.from("user_preferences").upsert({
+      user_id: userData.user.id,
+      theme: theme
+    }, { onConflict: 'user_id' });
+    
+    if (error) {
+      throw error;
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating theme preference:", error);
+    throw error;
+  }
+};
+
+export const getUserThemePreference = async (): Promise<'light' | 'dark' | null> => {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    
+    if (!userData.user) {
+      return null;
+    }
+    
+    const { data, error } = await supabase.from("user_preferences")
+      .select("theme")
+      .eq("user_id", userData.user.id)
+      .single();
+    
+    if (error) {
+      console.error("Error fetching theme preference:", error);
+      return null;
+    }
+    
+    return data?.theme || null;
+  } catch (error) {
+    console.error("Error getting theme preference:", error);
+    return null;
+  }
+};

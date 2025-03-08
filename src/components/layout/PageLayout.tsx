@@ -22,24 +22,24 @@ const PageLayout = ({
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar />
       
       <main className="flex-1 overflow-y-auto md:ml-[70px] lg:ml-[250px]">
         <div className="uvu-container py-6 px-4 md:px-6 mt-14 md:mt-0">
           {(title || actionButton) && (
             <div className={cn(
-              "flex items-center justify-between pb-6 mb-6 border-b",
+              "flex items-center justify-between pb-6 mb-6 border-b dark:border-gray-800",
               subtitle ? "flex-col sm:flex-row items-start sm:items-center gap-2" : ""
             )}>
               <div>
                 {title && (
-                  <h1 className="text-2xl md:text-3xl font-bold text-uvu-green animate-slide-up">
+                  <h1 className="text-2xl md:text-3xl font-bold text-uvu-green dark:text-uvu-green-light animate-slide-up">
                     {title}
                   </h1>
                 )}
                 {subtitle && (
-                  <p className="text-gray-500 mt-1 animate-slide-up">
+                  <p className="text-gray-500 dark:text-gray-400 mt-1 animate-slide-up">
                     {subtitle}
                   </p>
                 )}
