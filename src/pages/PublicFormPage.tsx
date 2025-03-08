@@ -125,8 +125,12 @@ const PublicFormPage = () => {
 
     try {
       setIsSubmitting(true);
+      console.log("Form submission started for form ID:", form?.id);
+      console.log("Form values:", formValues);
+      console.log("Form type:", form?.formType);
 
       if (form?.formType === 'standard') {
+        console.log("Submitting standard form with UVID:", uvid);
         await submitFormResponse({
           formId: form?.id as string,
           content: formValues,
@@ -134,6 +138,7 @@ const PublicFormPage = () => {
         });
       } else {
         // Anonymous submission
+        console.log("Submitting anonymous form");
         await submitFormResponse({
           formId: form?.id as string,
           content: formValues,
@@ -141,6 +146,7 @@ const PublicFormPage = () => {
         });
       }
 
+      console.log("Form submission successful");
       toast({
         title: "Form submitted successfully",
         description: "Thank you for your submission!"
@@ -155,9 +161,13 @@ const PublicFormPage = () => {
 
     } catch (error) {
       console.error("Error submitting form:", error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Unknown error occurred";
+      
       toast({
         title: "Submission failed",
-        description: "There was a problem submitting your form. Please try again.",
+        description: `There was a problem submitting your form: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {

@@ -20,34 +20,47 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
   const submissionData: any = {
     type: 'form_response',
     content: submission.content as unknown as Json,
+    form_id: submission.formId,
   };
 
   // Handle different submission types
   if (submission.isAnonymous) {
-    // Anonymous submission - don't add any personal info
+    // Anonymous submission - set placeholder values for required fields
     submissionData.is_anonymous = true;
+    submissionData.submitted_by_name = 'Anonymous User';
+    submissionData.submitted_by_email = 'anonymous@example.com';
   } else if (submission.submittedByUvid) {
     // Standard submission with UVID
     submissionData.submitted_by_uvid = submission.submittedByUvid;
+    submissionData.submitted_by_name = `UVID: ${submission.submittedByUvid}`;
+    submissionData.submitted_by_email = `${submission.submittedByUvid}@uvu.edu`;
   } else {
     // Legacy submission with name and email
-    submissionData.submitted_by_name = submission.submittedByName;
-    submissionData.submitted_by_email = submission.submittedByEmail;
+    submissionData.submitted_by_name = submission.submittedByName || 'Unknown User';
+    submissionData.submitted_by_email = submission.submittedByEmail || 'unknown@example.com';
     if (submission.submittedByAlumniId) {
       submissionData.submitted_by_alumni_id = submission.submittedByAlumniId;
     }
   }
 
-  const { data, error } = await supabase
-    .from('form_submissions')
-    .insert(submissionData);
+  console.log('Submitting form response with data:', submissionData);
 
-  if (error) {
-    console.error('Error submitting form response:', error);
+  try {
+    const { data, error } = await supabase
+      .from('form_submissions')
+      .insert(submissionData);
+
+    if (error) {
+      console.error('Error submitting form response:', error);
+      throw error;
+    }
+    
+    console.log('Form submission successful:', data);
+    return data;
+  } catch (error) {
+    console.error('Exception during form submission:', error);
     throw error;
   }
-  
-  return data;
 };
 
 export const fetchFormSubmissions = async () => {
