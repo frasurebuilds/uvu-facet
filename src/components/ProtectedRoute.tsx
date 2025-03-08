@@ -9,6 +9,14 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
+  
+  // Allow public access to form routes
+  const isPublicFormRoute = location.pathname.startsWith('/public-form/') || 
+                           location.pathname.startsWith('/form-submitted/');
+                           
+  if (isPublicFormRoute) {
+    return <>{children}</>;
+  }
 
   if (isLoading) {
     return (
