@@ -81,7 +81,7 @@ export interface FormSubmission {
   submittedByAlumniId?: string;
   isAnonymous?: boolean;
   content: Record<string, any>;
-  mappedFields?: Record<string, string>; // Maps form field IDs to alumni field names
+  mappedFields?: Record<string, any>; // Maps form field IDs to alumni field names
   status: 'pending' | 'reviewed' | 'processed' | 'archived';
   createdAt: string;
   notes?: string;

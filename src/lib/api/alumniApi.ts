@@ -32,6 +32,21 @@ export const fetchAlumniById = async (id: string): Promise<Alumni> => {
   return toCamelCase(data) as Alumni;
 };
 
+export const fetchAlumniByEmail = async (email: string): Promise<Alumni | null> => {
+  const { data, error } = await supabase
+    .from('alumni')
+    .select('*')
+    .eq('email', email)
+    .maybeSingle();
+  
+  if (error) {
+    console.error(`Error fetching alumni with email ${email}:`, error);
+    throw error;
+  }
+  
+  return data ? (toCamelCase(data) as Alumni) : null;
+};
+
 export const updateAlumni = async (alumni: Partial<Alumni> & { id: string }): Promise<Alumni> => {
   const { id, ...updateData } = alumni;
   const { data, error } = await supabase

@@ -1,6 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
+import { fetchAlumniByEmail } from "./alumniApi";
 
 interface FormSubmissionRequest {
   formId: string;
@@ -54,6 +56,47 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
     submissionData.submitted_by_uvid = submission.submittedByUvid;
     submissionData.submitted_by_name = `UVID: ${submission.submittedByUvid}`;
     submissionData.submitted_by_email = `${submission.submittedByUvid}@uvu.edu`;
+    
+    // Check if an alumni profile already exists with this UVID email
+    try {
+      const alumniEmail = `${submission.submittedByUvid}@uvu.edu`;
+      const existingAlumni = await fetchAlumniByEmail(alumniEmail);
+      
+      if (existingAlumni) {
+        console.log(`Found existing alumni profile for UVID ${submission.submittedByUvid}`);
+        submissionData.submitted_by_alumni_id = existingAlumni.id;
+        
+        // Update alumni profile with mapped fields if there are any
+        if (Object.keys(mappedFields).length > 0) {
+          await updateAlumniProfile(existingAlumni.id, mappedFields);
+        }
+      } else {
+        console.log(`No alumni profile found for UVID ${submission.submittedByUvid}, creating new profile`);
+        // Create a new alumni profile with minimal information
+        const { data: newAlumni, error: createError } = await supabase
+          .from('alumni')
+          .insert({
+            email: alumniEmail,
+            first_name: mappedFields.firstName || 'Unknown',
+            last_name: mappedFields.lastName || 'Unknown',
+            graduation_year: mappedFields.graduationYear || new Date().getFullYear(),
+            degree: mappedFields.degree || 'Unknown',
+            major: mappedFields.major || 'Unknown'
+          })
+          .select()
+          .single();
+          
+        if (createError) {
+          console.error('Error creating alumni profile:', createError);
+        } else if (newAlumni) {
+          console.log('Created new alumni profile:', newAlumni);
+          submissionData.submitted_by_alumni_id = newAlumni.id;
+        }
+      }
+    } catch (error) {
+      console.warn("Error checking for existing alumni or creating new profile:", error);
+      // Continue with submission even if alumni profile handling fails
+    }
   } else {
     // Legacy submission with name and email
     submissionData.submitted_by_name = submission.submittedByName || 'Unknown User';
@@ -80,6 +123,33 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
   } catch (error) {
     console.error('Exception during form submission:', error);
     throw error;
+  }
+};
+
+// Helper function to update an alumni profile with mapped fields
+const updateAlumniProfile = async (alumniId: string, mappedFields: Record<string, any>) => {
+  if (!alumniId || Object.keys(mappedFields).length === 0) return;
+  
+  // Convert camelCase field names to snake_case for the database
+  const updateData = Object.entries(mappedFields).reduce((data, [key, value]) => {
+    const snakeCaseKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    data[snakeCaseKey] = value;
+    return data;
+  }, {} as Record<string, any>);
+  
+  try {
+    const { error } = await supabase
+      .from('alumni')
+      .update(updateData)
+      .eq('id', alumniId);
+      
+    if (error) {
+      console.error('Error updating alumni profile with mapped fields:', error);
+    } else {
+      console.log('Updated alumni profile with mapped fields:', updateData);
+    }
+  } catch (error) {
+    console.error('Exception during alumni profile update:', error);
   }
 };
 
