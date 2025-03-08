@@ -26,10 +26,12 @@ export const updateUserThemePreference = async (theme: 'light' | 'dark') => {
     
     const { error } = await supabase.from("user_preferences").upsert({
       user_id: userData.user.id,
-      theme: theme
+      theme: theme,
+      updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
     
     if (error) {
+      console.error("Error updating theme preference:", error);
       throw error;
     }
     
@@ -58,7 +60,7 @@ export const getUserThemePreference = async (): Promise<'light' | 'dark' | null>
       return null;
     }
     
-    return data?.theme || null;
+    return data?.theme as 'light' | 'dark' | null;
   } catch (error) {
     console.error("Error getting theme preference:", error);
     return null;
