@@ -14,15 +14,8 @@ export const toCamelCase = (obj: any): any => {
 
   const camelCaseObj: Record<string, any> = {};
   Object.keys(obj).forEach(key => {
-    // Special case for form_id, mapped_fields
-    if (key === 'form_id') {
-      camelCaseObj['formId'] = toCamelCase(obj[key]);
-    } else if (key === 'mapped_fields') {
-      camelCaseObj['mappedFields'] = toCamelCase(obj[key]);
-    } else {
-      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      camelCaseObj[camelKey] = toCamelCase(obj[key]);
-    }
+    const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    camelCaseObj[camelKey] = toCamelCase(obj[key]);
   });
   
   return camelCaseObj;
@@ -43,10 +36,6 @@ export const toSnakeCase = (obj: any): any => {
     // Special case for linkedIn -> linked_in
     if (key === 'linkedIn') {
       snakeCaseObj['linked_in'] = toSnakeCase(obj[key]);
-    } else if (key === 'formId') {
-      snakeCaseObj['form_id'] = toSnakeCase(obj[key]); 
-    } else if (key === 'mappedFields') {
-      snakeCaseObj['mapped_fields'] = toSnakeCase(obj[key]);
     } else {
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       snakeCaseObj[snakeKey] = toSnakeCase(obj[key]);

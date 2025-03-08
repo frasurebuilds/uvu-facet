@@ -93,32 +93,6 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor={`field-map-${field.id}`}>Map to Alumni Profile Field</Label>
-        <Select 
-          value={field.mapToField || ''}
-          onValueChange={(value) => updateField({ mapToField: value === 'none' ? undefined : value })}
-        >
-          <SelectTrigger id={`field-map-${field.id}`}>
-            <SelectValue placeholder="Select profile field to map to (optional)" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">No mapping</SelectItem>
-            <SelectItem value="firstName">First Name</SelectItem>
-            <SelectItem value="lastName">Last Name</SelectItem>
-            <SelectItem value="email">Email</SelectItem>
-            <SelectItem value="phone">Phone</SelectItem>
-            <SelectItem value="graduationYear">Graduation Year</SelectItem>
-            <SelectItem value="degree">Degree</SelectItem>
-            <SelectItem value="major">Major</SelectItem>
-            <SelectItem value="linkedIn">LinkedIn</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-gray-500">
-          Mapping a field allows FACET to update alumni profiles based on form submissions
-        </p>
-      </div>
-
       <div className="flex items-center space-x-2">
         <Switch
           id={`field-required-${field.id}`}

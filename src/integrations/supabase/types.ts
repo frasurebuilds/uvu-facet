@@ -67,56 +67,37 @@ export type Database = {
         Row: {
           content: Json
           created_at: string
-          form_id: string | null
           id: string
-          is_anonymous: boolean | null
-          mapped_fields: Json | null
           notes: string | null
           status: string
           submitted_by_alumni_id: string | null
           submitted_by_email: string
           submitted_by_name: string
-          submitted_by_uvid: string | null
           type: string
         }
         Insert: {
           content: Json
           created_at?: string
-          form_id?: string | null
           id?: string
-          is_anonymous?: boolean | null
-          mapped_fields?: Json | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
           submitted_by_email: string
           submitted_by_name: string
-          submitted_by_uvid?: string | null
           type: string
         }
         Update: {
           content?: Json
           created_at?: string
-          form_id?: string | null
           id?: string
-          is_anonymous?: boolean | null
-          mapped_fields?: Json | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
           submitted_by_email?: string
           submitted_by_name?: string
-          submitted_by_uvid?: string | null
           type?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "form_submissions_form_id_fkey"
-            columns: ["form_id"]
-            isOneToOne: false
-            referencedRelation: "forms"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "form_submissions_submitted_by_alumni_id_fkey"
             columns: ["submitted_by_alumni_id"]
@@ -132,7 +113,6 @@ export type Database = {
           created_by: string
           description: string | null
           fields: Json
-          form_type: string
           id: string
           status: string
           title: string
@@ -143,7 +123,6 @@ export type Database = {
           created_by: string
           description?: string | null
           fields?: Json
-          form_type?: string
           id?: string
           status?: string
           title: string
@@ -154,7 +133,6 @@ export type Database = {
           created_by?: string
           description?: string | null
           fields?: Json
-          form_type?: string
           id?: string
           status?: string
           title?: string
@@ -282,30 +260,6 @@ export type Database = {
           email?: string
           id?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      user_preferences: {
-        Row: {
-          created_at: string
-          id: string
-          theme: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          theme?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          theme?: string
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
