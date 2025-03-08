@@ -28,7 +28,7 @@ const PublicFormPage = () => {
   const { data: formsList } = useQuery({
     queryKey: ['forms-list-check'],
     queryFn: fetchForms,
-    retry: 1,
+    retry: 2, // Increase retries to handle potential network issues
     staleTime: 60000, // 1 minute
   });
   
@@ -57,7 +57,7 @@ const PublicFormPage = () => {
       }
     },
     enabled: !!id,
-    retry: 1,
+    retry: 2, // Increase retries
     meta: {
       onError: (err: Error) => {
         console.error("Error loading public form:", err);
@@ -205,32 +205,52 @@ const PublicFormPage = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <form onSubmit={handleSubmit}>
-        <Card>
-          <PublicFormHeader title={form.title} description={form.description} />
-          
-          <CardContent className="space-y-6">
-            {/* Submitter Information - Only for standard forms */}
-            {form.formType === 'standard' && (
-              <UvidField uvid={uvid} setUvid={setUvid} />
-            )}
+      {isLoading ? (
+        <FormLoadingState message={`Loading form with ID: ${id}`} />
+      ) : isError || !form || form.status !== 'active' ? (
+        <div>
+          <FormNotAvailableCard 
+            isError={isError} 
+            errorMessage={errorMessage || undefined} 
+            showReturnButton={false}
+          />
+          <div className="text-center mt-4">
+            <button 
+              onClick={retryFetchForm}
+              className="text-blue-500 hover:text-blue-700 text-sm underline"
+            >
+              Retry loading the form
+            </button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <Card>
+            <PublicFormHeader title={form.title} description={form.description} />
+            
+            <CardContent className="space-y-6">
+              {/* Submitter Information - Only for standard forms */}
+              {form.formType === 'standard' && (
+                <UvidField uvid={uvid} setUvid={setUvid} />
+              )}
 
-            {/* Form Fields */}
-            <PublicFormFields 
-              fields={form.fields} 
-              formValues={formValues} 
-              onInputChange={handleInputChange} 
-            />
-          </CardContent>
-          
-          <CardFooter>
-            <FormSubmitButton 
-              isSubmitting={isSubmitting}
-              disabled={form.fields.length === 0} 
-            />
-          </CardFooter>
-        </Card>
-      </form>
+              {/* Form Fields */}
+              <PublicFormFields 
+                fields={form.fields} 
+                formValues={formValues} 
+                onInputChange={handleInputChange} 
+              />
+            </CardContent>
+            
+            <CardFooter>
+              <FormSubmitButton 
+                isSubmitting={isSubmitting}
+                disabled={form.fields.length === 0} 
+              />
+            </CardFooter>
+          </Card>
+        </form>
+      )}
     </div>
   );
 };

@@ -44,24 +44,41 @@ export const fetchFormById = async (id: string): Promise<Form> => {
     // First, let's log that we're querying the database
     console.log(`Executing Supabase query for form ID: ${id}`);
     
-    // Fetch the form data from Supabase
-    const { data, error } = await supabase
-      .from('forms')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+    // Fetch the form data from Supabase with retry logic
+    let attempts = 0;
+    const maxAttempts = 3;
+    let data = null;
+    let error = null;
+    
+    while (attempts < maxAttempts && !data) {
+      const result = await supabase
+        .from('forms')
+        .select('*')
+        .eq('id', id)
+        .eq('status', 'active')  // Ensure we only get active forms for public access
+        .maybeSingle();
+      
+      data = result.data;
+      error = result.error;
+      
+      if (data) break;
+      if (error && error.code !== 'PGRST116') break; // Only retry for certain errors
+      
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, 500 * attempts)); // Exponential backoff
+    }
+    
+    // Log the result
+    console.log('Database query result:', data);
     
     if (error) {
       console.error(`Error fetching form with id ${id} from database:`, error);
       throw new Error(`Database error: ${error.message}`);
     }
     
-    // Log the result
-    console.log('Database query result:', data);
-    
     if (!data) {
-      console.error(`Form with id ${id} not found in database`);
-      throw new Error(`Form not found in database`);
+      console.error(`Form with id ${id} not found in database or not active`);
+      throw new Error(`Form not found in database or not active`);
     }
     
     // Transform the database record into our Form type
