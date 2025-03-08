@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
@@ -29,13 +28,11 @@ const FormSubmissionsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   
-  // Fetch submissions from the database
   const { data: submissions = [], isLoading, refetch } = useQuery({
     queryKey: ['form-submissions'],
     queryFn: fetchFormSubmissions
   });
 
-  // Handle processing a submission
   const handleProcessSubmission = async (submissionId: string) => {
     try {
       await processFormSubmission(submissionId);
@@ -53,7 +50,6 @@ const FormSubmissionsPage = () => {
     }
   };
   
-  // Handle marking a submission as reviewed
   const handleMarkAsReviewed = async (submissionId: string) => {
     try {
       await updateSubmissionStatus(submissionId, 'reviewed');

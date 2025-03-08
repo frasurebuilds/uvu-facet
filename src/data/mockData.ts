@@ -157,11 +157,9 @@ export const mockFormSubmissions: FormSubmission[] = [
   {
     id: "f1",
     type: "update",
-    submittedBy: {
-      name: "John Smith",
-      email: "john.smith@example.com",
-      alumniId: "a1",
-    },
+    submittedByName: "John Smith",
+    submittedByEmail: "john.smith@example.com",
+    submittedByAlumniId: "a1",
     content: {
       newJobTitle: "Senior Software Engineer",
       newCompany: "Tech Innovations",
@@ -173,11 +171,9 @@ export const mockFormSubmissions: FormSubmission[] = [
   {
     id: "f2",
     type: "event-rsvp",
-    submittedBy: {
-      name: "Sarah Johnson",
-      email: "sarah.j@example.com",
-      alumniId: "a2",
-    },
+    submittedByName: "Sarah Johnson",
+    submittedByEmail: "sarah.j@example.com",
+    submittedByAlumniId: "a2",
     content: {
       eventName: "Annual Alumni Networking Night",
       attending: true,
@@ -191,11 +187,9 @@ export const mockFormSubmissions: FormSubmission[] = [
   {
     id: "f3",
     type: "volunteer",
-    submittedBy: {
-      name: "Michael Williams",
-      email: "m.williams@example.com",
-      alumniId: "a3",
-    },
+    submittedByName: "Michael Williams",
+    submittedByEmail: "m.williams@example.com",
+    submittedByAlumniId: "a3",
     content: {
       interest: "Career Mentoring",
       availability: "Evenings and weekends",
@@ -208,10 +202,8 @@ export const mockFormSubmissions: FormSubmission[] = [
   {
     id: "f4",
     type: "new-info",
-    submittedBy: {
-      name: "Leslie Turner",
-      email: "leslie.turner@example.com",
-    },
+    submittedByName: "Leslie Turner",
+    submittedByEmail: "leslie.turner@example.com",
     content: {
       graduationYear: 2015,
       degree: "Bachelor of Science",
@@ -225,11 +217,9 @@ export const mockFormSubmissions: FormSubmission[] = [
   {
     id: "f5",
     type: "other",
-    submittedBy: {
-      name: "David Brown",
-      email: "david.b@example.com",
-      alumniId: "a5",
-    },
+    submittedByName: "David Brown",
+    submittedByEmail: "david.b@example.com",
+    submittedByAlumniId: "a5",
     content: {
       subject: "Donation Inquiry",
       message: "I'm interested in setting up a scholarship fund. Can someone from the development office contact me?",

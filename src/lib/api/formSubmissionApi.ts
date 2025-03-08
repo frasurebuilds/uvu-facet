@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
@@ -127,14 +126,20 @@ export const processFormSubmission = async (submissionId: string) => {
   
   // If there's an alumni ID and mapped fields, update the alumni record
   if (submission.submitted_by_alumni_id && submission.mapped_fields) {
-    const { error: updateError } = await supabase
-      .from('alumni')
-      .update(submission.mapped_fields)
-      .eq('id', submission.submitted_by_alumni_id);
-      
-    if (updateError) {
-      console.error('Error updating alumni with mapped fields:', updateError);
-      throw updateError;
+    // Convert the mapped fields to a format suitable for the alumni table
+    const mappedFieldsObject = submission.mapped_fields as Record<string, any>;
+    
+    // Only proceed if we have valid mapped fields
+    if (Object.keys(mappedFieldsObject).length > 0) {
+      const { error: updateError } = await supabase
+        .from('alumni')
+        .update(mappedFieldsObject)
+        .eq('id', submission.submitted_by_alumni_id);
+        
+      if (updateError) {
+        console.error('Error updating alumni with mapped fields:', updateError);
+        throw updateError;
+      }
     }
   }
   

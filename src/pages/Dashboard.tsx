@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import PageLayout from "@/components/layout/PageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -160,7 +159,7 @@ const Dashboard = () => {
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{submission.submittedBy.name}</span>
+                        <span className="font-medium">{submission.submittedByName}</span>
                         <span className="bg-uvu-green text-white text-xs px-2 py-0.5 rounded-full">
                           {submission.type.replace("-", " ")}
                         </span>
