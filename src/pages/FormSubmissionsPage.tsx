@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
@@ -67,20 +68,31 @@ const FormSubmissionsPage = () => {
     }
   };
 
-  const formattedSubmissions: FormSubmission[] = submissions.map(submission => ({
-    id: submission.id,
-    type: submission.type,
-    content: submission.content as Record<string, any>,
-    submittedByName: submission.submitted_by_name,
-    submittedByEmail: submission.submitted_by_email,
-    submittedByUvid: submission.submitted_by_uvid,
-    submittedByAlumniId: submission.submitted_by_alumni_id,
-    isAnonymous: submission.is_anonymous,
-    createdAt: submission.created_at,
-    status: submission.status,
-    notes: submission.notes,
-    mappedFields: submission.mapped_fields as Record<string, any>
-  }));
+  // Properly format and type the submissions data to match the FormSubmission interface
+  const formattedSubmissions: FormSubmission[] = submissions.map(submission => {
+    // Ensure status is one of the allowed values
+    const status = (submission.status === 'pending' || 
+                    submission.status === 'reviewed' || 
+                    submission.status === 'processed' || 
+                    submission.status === 'archived') 
+                    ? submission.status 
+                    : 'pending'; // Default to 'pending' if invalid status
+                    
+    return {
+      id: submission.id,
+      type: submission.type,
+      content: submission.content as Record<string, any>,
+      submittedByName: submission.submittedByName,
+      submittedByEmail: submission.submittedByEmail,
+      submittedByUvid: submission.submittedByUvid,
+      submittedByAlumniId: submission.submittedByAlumniId,
+      isAnonymous: submission.isAnonymous,
+      createdAt: submission.createdAt,
+      status: status,
+      notes: submission.notes,
+      mappedFields: submission.mappedFields as Record<string, any>
+    };
+  });
 
   const filteredSubmissions = formattedSubmissions.filter((submission) => {
     const searchLower = searchTerm.toLowerCase();
