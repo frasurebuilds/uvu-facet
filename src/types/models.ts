@@ -69,17 +69,19 @@ export interface FormField {
   required: boolean;
   options?: string[]; // For select, checkbox, radio
   defaultValue?: string;
+  mappedField?: string; // Reference to an alumni profile field
 }
 
 export interface FormSubmission {
   id: string;
-  type: 'update' | 'new-info' | 'event-rsvp' | 'volunteer' | 'other';
-  submittedBy: {
-    name: string;
-    email: string;
-    alumniId?: string;
-  };
+  type: string;
+  submittedByName: string;
+  submittedByEmail: string;
+  submittedByUvid?: string;
+  submittedByAlumniId?: string;
+  isAnonymous?: boolean;
   content: Record<string, any>;
+  mappedFields?: Record<string, string>; // Maps form field IDs to alumni field names
   status: 'pending' | 'reviewed' | 'processed' | 'archived';
   createdAt: string;
   notes?: string;

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Link } from "lucide-react";
 
 interface FormFieldPreviewProps {
   field: FormField;
@@ -100,10 +101,19 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={`preview-${field.id}`}>
-        {field.label}
-        {field.required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
+      <div className="flex items-center justify-between">
+        <Label htmlFor={`preview-${field.id}`}>
+          {field.label}
+          {field.required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        
+        {field.mappedField && (
+          <div className="text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400">
+            <Link size={12} />
+            <span>Mapped to Alumni {field.mappedField}</span>
+          </div>
+        )}
+      </div>
       {renderField()}
     </div>
   );

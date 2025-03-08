@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
+import { fetchFormById } from "./formApi";
 
 interface FormSubmissionRequest {
   formId: string;
@@ -16,11 +17,31 @@ interface FormSubmissionRequest {
 }
 
 export const submitFormResponse = async (submission: FormSubmissionRequest) => {
+  // First get the form to check for field mappings
+  let mappedFields = {};
+  try {
+    const form = await fetchFormById(submission.formId);
+    
+    // Create a map of field IDs to alumni profile fields
+    if (form && form.fields) {
+      mappedFields = form.fields.reduce((map, field) => {
+        if (field.mappedField && submission.content[field.id]) {
+          map[field.mappedField] = submission.content[field.id];
+        }
+        return map;
+      }, {} as Record<string, any>);
+    }
+  } catch (error) {
+    console.warn("Could not fetch form details for mapping fields:", error);
+    // Continue with submission even if mapping fails
+  }
+
   // Base submission data
   const submissionData: any = {
     type: 'form_response',
     content: submission.content as unknown as Json,
     form_id: submission.formId,
+    mapped_fields: mappedFields as unknown as Json
   };
 
   // Handle different submission types
@@ -85,6 +106,72 @@ export const fetchFormSubmissions = async () => {
     isAnonymous: submission.is_anonymous,
     createdAt: submission.created_at,
     status: submission.status,
-    notes: submission.notes
+    notes: submission.notes,
+    mappedFields: submission.mapped_fields
   }));
+};
+
+// Function to process a submission - would update alumni data based on mappedFields
+export const processFormSubmission = async (submissionId: string) => {
+  // First fetch the submission
+  const { data: submission, error: fetchError } = await supabase
+    .from('form_submissions')
+    .select('*')
+    .eq('id', submissionId)
+    .single();
+    
+  if (fetchError) {
+    console.error('Error fetching submission for processing:', fetchError);
+    throw fetchError;
+  }
+  
+  // If there's an alumni ID and mapped fields, update the alumni record
+  if (submission.submitted_by_alumni_id && submission.mapped_fields) {
+    const { error: updateError } = await supabase
+      .from('alumni')
+      .update(submission.mapped_fields)
+      .eq('id', submission.submitted_by_alumni_id);
+      
+    if (updateError) {
+      console.error('Error updating alumni with mapped fields:', updateError);
+      throw updateError;
+    }
+  }
+  
+  // Update the submission status
+  const { error: statusError } = await supabase
+    .from('form_submissions')
+    .update({ status: 'processed' })
+    .eq('id', submissionId);
+    
+  if (statusError) {
+    console.error('Error updating submission status:', statusError);
+    throw statusError;
+  }
+  
+  return true;
+};
+
+// Function to update a submission's status
+export const updateSubmissionStatus = async (
+  submissionId: string, 
+  status: 'pending' | 'reviewed' | 'processed' | 'archived',
+  notes?: string
+) => {
+  const updates: any = { status };
+  if (notes !== undefined) {
+    updates.notes = notes;
+  }
+  
+  const { error } = await supabase
+    .from('form_submissions')
+    .update(updates)
+    .eq('id', submissionId);
+    
+  if (error) {
+    console.error('Error updating submission status:', error);
+    throw error;
+  }
+  
+  return true;
 };

@@ -6,7 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Link } from "lucide-react";
+
+// Alumni profile fields that can be mapped
+const ALUMNI_PROFILE_FIELDS = [
+  { id: "firstName", label: "First Name" },
+  { id: "lastName", label: "Last Name" },
+  { id: "email", label: "Email" },
+  { id: "phone", label: "Phone" },
+  { id: "graduationYear", label: "Graduation Year" },
+  { id: "degree", label: "Degree" },
+  { id: "major", label: "Major" },
+  { id: "linkedIn", label: "LinkedIn Profile" }
+];
 
 interface FormFieldEditorProps {
   field: FormField;
@@ -91,6 +103,32 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
             placeholder="Enter default value"
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={`field-mapping-${field.id}`} className="flex items-center gap-2">
+          <Link size={16} className="text-gray-500" />
+          Map to Alumni Profile Field
+        </Label>
+        <Select 
+          value={field.mappedField || ''}
+          onValueChange={(value) => updateField({ mappedField: value || undefined })}
+        >
+          <SelectTrigger id={`field-mapping-${field.id}`}>
+            <SelectValue placeholder="Select a profile field to map" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Not mapped</SelectItem>
+            {ALUMNI_PROFILE_FIELDS.map((profileField) => (
+              <SelectItem key={profileField.id} value={profileField.id}>
+                {profileField.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Mapping a field allows form submissions to update alumni profiles
+        </p>
       </div>
 
       <div className="flex items-center space-x-2">
