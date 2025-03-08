@@ -5,7 +5,7 @@ import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, CheckCircle2, Clock, ArchiveIcon } from "lucide-react";
+import { ArrowLeft, Edit, CheckCircle2, Clock, ArchiveIcon, Loader2 } from "lucide-react";
 import { fetchFormById } from "@/lib/api/formApi";
 import { useToast } from "@/hooks/use-toast";
 import FormFieldPreview from "@/components/forms/FormFieldPreview";
@@ -15,25 +15,26 @@ const FormViewPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Fetch form data
+  // Fetch form data with improved error handling
   const { 
     data: form, 
     isLoading, 
-    error 
+    error,
+    isError
   } = useQuery({
     queryKey: ['form', id],
     queryFn: () => fetchFormById(id as string),
-    enabled: !!id
+    enabled: !!id,
+    retry: 1,
+    onError: (err) => {
+      console.error("Error loading form:", err);
+      toast({
+        title: "Error loading form",
+        description: "The form could not be loaded",
+        variant: "destructive"
+      });
+    }
   });
-
-  if (error) {
-    toast({
-      title: "Error loading form",
-      description: "The form could not be loaded",
-      variant: "destructive"
-    });
-    navigate("/forms");
-  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -92,8 +93,18 @@ const FormViewPage = () => {
 
       {isLoading ? (
         <div className="flex justify-center items-center py-8">
-          <p>Loading form...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-uvu-green" />
         </div>
+      ) : isError ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <h2 className="text-xl font-semibold mb-2">Form Not Found</h2>
+              <p className="text-gray-500 mb-4">The form you're looking for doesn't exist or is no longer active.</p>
+              <Button variant="outline" onClick={() => navigate('/forms')}>Return to Forms</Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : form ? (
         <Card>
           <CardHeader className="pb-4">

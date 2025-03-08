@@ -29,15 +29,27 @@ export const fetchForms = async (): Promise<Form[]> => {
 };
 
 export const fetchFormById = async (id: string): Promise<Form> => {
+  console.log('Fetching form with ID:', id);
+  
+  if (!id) {
+    console.error('Invalid form ID provided:', id);
+    throw new Error('Invalid form ID');
+  }
+
   const { data, error } = await supabase
     .from('forms')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle(); // Using maybeSingle instead of single to handle cases where the form might not exist
   
   if (error) {
     console.error(`Error fetching form with id ${id}:`, error);
     throw error;
+  }
+  
+  if (!data) {
+    console.error(`Form with id ${id} not found`);
+    throw new Error(`Form not found`);
   }
   
   return {

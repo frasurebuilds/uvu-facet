@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { fetchFormById } from "@/lib/api/formApi";
 import { submitFormResponse } from "@/lib/api/formSubmissionApi";
-import { Form, FormField } from "@/types/models";
+import { FormField } from "@/types/models";
 import { Loader2 } from "lucide-react";
 
 const PublicFormPage = () => {
@@ -23,31 +23,21 @@ const PublicFormPage = () => {
   const [uvid, setUvid] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Fetch form data
+  // Fetch form data with improved error handling
   const { 
     data: form, 
     isLoading, 
-    error 
+    error,
+    isError 
   } = useQuery({
     queryKey: ['public-form', id],
     queryFn: () => fetchFormById(id as string),
-    enabled: !!id
+    enabled: !!id,
+    retry: 1,
+    onError: (err) => {
+      console.error("Error loading public form:", err);
+    }
   });
-
-  if (error) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <h2 className="text-xl font-semibold mb-2">Form Not Found</h2>
-              <p className="text-gray-500 mb-4">The form you're looking for doesn't exist or is no longer active.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormValues(prev => ({
@@ -239,14 +229,18 @@ const PublicFormPage = () => {
     <div className="max-w-3xl mx-auto px-4 py-8">
       {isLoading ? (
         <div className="flex justify-center items-center py-16">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-uvu-green" />
         </div>
-      ) : form?.status !== 'active' ? (
+      ) : isError || !form || form.status !== 'active' ? (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8">
               <h2 className="text-xl font-semibold mb-2">Form Not Available</h2>
-              <p className="text-gray-500">This form is currently not active.</p>
+              <p className="text-gray-500">
+                {isError 
+                  ? "The form you're looking for doesn't exist."
+                  : "This form is currently not active."}
+              </p>
             </div>
           </CardContent>
         </Card>
