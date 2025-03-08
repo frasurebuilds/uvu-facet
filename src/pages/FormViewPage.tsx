@@ -5,7 +5,7 @@ import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, CheckCircle2, Clock, ArchiveIcon, Loader2 } from "lucide-react";
+import { ArrowLeft, Edit, CheckCircle2, Clock, ArchiveIcon, Loader2, AlertTriangle } from "lucide-react";
 import { fetchFormById } from "@/lib/api/formApi";
 import { useToast } from "@/hooks/use-toast";
 import FormFieldPreview from "@/components/forms/FormFieldPreview";
@@ -15,6 +15,8 @@ const FormViewPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  console.log("FormViewPage rendered with form ID:", id);
+  
   // Fetch form data with improved error handling
   const { 
     data: form, 
@@ -23,7 +25,18 @@ const FormViewPage = () => {
     isError
   } = useQuery({
     queryKey: ['form', id],
-    queryFn: () => fetchFormById(id as string),
+    queryFn: async () => {
+      console.log("Executing query function for form ID:", id);
+      if (!id) throw new Error("No form ID provided");
+      try {
+        const result = await fetchFormById(id);
+        console.log("Form fetched successfully:", result);
+        return result;
+      } catch (err) {
+        console.error("Error in fetchFormById:", err);
+        throw err;
+      }
+    },
     enabled: !!id,
     retry: 1,
     meta: {
@@ -104,8 +117,14 @@ const FormViewPage = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-8">
+              <div className="flex justify-center mb-4">
+                <AlertTriangle className="h-12 w-12 text-amber-500" />
+              </div>
               <h2 className="text-xl font-semibold mb-2">Form Not Found</h2>
               <p className="text-gray-500 mb-4">The form you're looking for doesn't exist or is no longer active.</p>
+              <p className="text-sm text-red-500 mb-4">
+                Error details: {error instanceof Error ? error.message : 'Unknown error'}
+              </p>
               <Button variant="outline" onClick={() => navigate('/forms')}>Return to Forms</Button>
             </div>
           </CardContent>

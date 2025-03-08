@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Form, FormField } from "@/types/models";
 import { parseFormFields } from "./apiUtils";
@@ -36,33 +35,40 @@ export const fetchFormById = async (id: string): Promise<Form> => {
     throw new Error('Invalid form ID');
   }
 
-  const { data, error } = await supabase
-    .from('forms')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle(); // Using maybeSingle instead of single to handle cases where the form might not exist
-  
-  if (error) {
-    console.error(`Error fetching form with id ${id}:`, error);
+  try {
+    const { data, error } = await supabase
+      .from('forms')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle(); // Using maybeSingle for better handling
+    
+    if (error) {
+      console.error(`Error fetching form with id ${id}:`, error);
+      throw error;
+    }
+    
+    if (!data) {
+      console.error(`Form with id ${id} not found`);
+      throw new Error(`Form not found`);
+    }
+    
+    console.log('Form data retrieved:', data);
+    
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      status: data.status as "active" | "draft" | "archived",
+      formType: data.form_type as "standard" | "anonymous" || "standard",
+      fields: parseFormFields(data.fields),
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+      createdBy: data.created_by
+    };
+  } catch (error) {
+    console.error(`Failed to fetch form with id ${id}:`, error);
     throw error;
   }
-  
-  if (!data) {
-    console.error(`Form with id ${id} not found`);
-    throw new Error(`Form not found`);
-  }
-  
-  return {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    status: data.status as "active" | "draft" | "archived",
-    formType: data.form_type as "standard" | "anonymous" || "standard", // Default to standard for older forms
-    fields: parseFormFields(data.fields),
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-    createdBy: data.created_by
-  };
 };
 
 export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedAt'>): Promise<Form> => {

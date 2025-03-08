@@ -20,6 +20,9 @@ const PublicFormPage = () => {
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [uvid, setUvid] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  console.log("PublicFormPage rendered with form ID:", id);
   
   // Fetch form data with improved error handling
   const { 
@@ -29,12 +32,25 @@ const PublicFormPage = () => {
     isError 
   } = useQuery({
     queryKey: ['public-form', id],
-    queryFn: () => fetchFormById(id as string),
+    queryFn: async () => {
+      console.log("Executing query function for form ID:", id);
+      if (!id) throw new Error("No form ID provided");
+      try {
+        const result = await fetchFormById(id);
+        console.log("Form fetched successfully:", result);
+        return result;
+      } catch (err) {
+        console.error("Error in fetchFormById:", err);
+        setErrorMessage(err instanceof Error ? err.message : "Unknown error");
+        throw err;
+      }
+    },
     enabled: !!id,
     retry: 1,
     meta: {
       onError: (err: Error) => {
         console.error("Error loading public form:", err);
+        setErrorMessage(err.message);
       }
     }
   });
@@ -129,7 +145,10 @@ const PublicFormPage = () => {
   if (isError || !form || form.status !== 'active') {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <FormNotAvailableCard isError={isError} />
+        <FormNotAvailableCard 
+          isError={isError} 
+          errorMessage={errorMessage || undefined} 
+        />
       </div>
     );
   }
