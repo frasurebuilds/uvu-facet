@@ -1,9 +1,12 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Form, FormField } from "@/types/models";
 import { parseFormFields } from "./apiUtils";
 import { Json } from "@/integrations/supabase/types";
 
 export const fetchForms = async (): Promise<Form[]> => {
+  console.log('Fetching all forms');
+  
   const { data, error } = await supabase
     .from('forms')
     .select('*')
@@ -13,6 +16,8 @@ export const fetchForms = async (): Promise<Form[]> => {
     console.error('Error fetching forms:', error);
     throw error;
   }
+  
+  console.log(`Retrieved ${data?.length || 0} forms from database`);
   
   return data.map(form => ({
     id: form.id,
@@ -36,23 +41,31 @@ export const fetchFormById = async (id: string): Promise<Form> => {
   }
 
   try {
+    // First, let's log that we're querying the database
+    console.log(`Executing Supabase query for form ID: ${id}`);
+    
+    // Fetch the form data from Supabase
     const { data, error } = await supabase
       .from('forms')
       .select('*')
       .eq('id', id)
-      .maybeSingle(); // Using maybeSingle for better handling
+      .maybeSingle();
     
     if (error) {
-      console.error(`Error fetching form with id ${id}:`, error);
-      throw error;
+      console.error(`Error fetching form with id ${id} from database:`, error);
+      throw new Error(`Database error: ${error.message}`);
     }
+    
+    // Log the result
+    console.log('Database query result:', data);
     
     if (!data) {
-      console.error(`Form with id ${id} not found`);
-      throw new Error(`Form not found`);
+      console.error(`Form with id ${id} not found in database`);
+      throw new Error(`Form not found in database`);
     }
     
-    console.log('Form data retrieved:', data);
+    // Transform the database record into our Form type
+    console.log('Form data retrieved, converting to application model');
     
     return {
       id: data.id,

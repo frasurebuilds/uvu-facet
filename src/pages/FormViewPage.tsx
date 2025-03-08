@@ -1,39 +1,54 @@
 
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, CheckCircle2, Clock, ArchiveIcon, Loader2, AlertTriangle } from "lucide-react";
-import { fetchFormById } from "@/lib/api/formApi";
+import { ArrowLeft, Edit, CheckCircle2, Clock, ArchiveIcon, Loader2 } from "lucide-react";
+import { fetchFormById, fetchForms } from "@/lib/api/formApi";
 import { useToast } from "@/hooks/use-toast";
 import FormFieldPreview from "@/components/forms/FormFieldPreview";
+import FormNotAvailableCard from "@/components/forms/FormNotAvailableCard";
 
 const FormViewPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   console.log("FormViewPage rendered with form ID:", id);
+  
+  // Check if forms exist at all
+  const { data: formsList } = useQuery({
+    queryKey: ['forms-list-check-admin'],
+    queryFn: fetchForms,
+    retry: 1,
+    staleTime: 60000, // 1 minute
+  });
+  
+  console.log("Available forms in database (admin view):", formsList);
   
   // Fetch form data with improved error handling
   const { 
     data: form, 
     isLoading, 
     error,
-    isError
+    isError,
+    refetch
   } = useQuery({
     queryKey: ['form', id],
     queryFn: async () => {
-      console.log("Executing query function for form ID:", id);
+      console.log("Executing admin query function for form ID:", id);
       if (!id) throw new Error("No form ID provided");
       try {
         const result = await fetchFormById(id);
-        console.log("Form fetched successfully:", result);
+        console.log("Form fetched successfully (admin view):", result);
         return result;
       } catch (err) {
-        console.error("Error in fetchFormById:", err);
+        console.error("Error in fetchFormById (admin view):", err);
+        setErrorMessage(err instanceof Error ? err.message : "Unknown error");
         throw err;
       }
     },
@@ -41,7 +56,8 @@ const FormViewPage = () => {
     retry: 1,
     meta: {
       onError: (err: Error) => {
-        console.error("Error loading form:", err);
+        console.error("Error loading form (admin view):", err);
+        setErrorMessage(err.message);
         toast({
           title: "Error loading form",
           description: "The form could not be loaded",
@@ -52,7 +68,14 @@ const FormViewPage = () => {
   });
 
   // Log query results for debugging
-  console.log("Form query result:", { form, isLoading, error, isError });
+  console.log("Form query result (admin view):", { form, isLoading, error, isError });
+
+  // Manual retry function
+  const retryFetchForm = () => {
+    console.log("Manually retrying form fetch (admin view)");
+    setErrorMessage(null);
+    refetch();
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -114,21 +137,20 @@ const FormViewPage = () => {
           <Loader2 className="h-8 w-8 animate-spin text-uvu-green" />
         </div>
       ) : isError ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <div className="flex justify-center mb-4">
-                <AlertTriangle className="h-12 w-12 text-amber-500" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">Form Not Found</h2>
-              <p className="text-gray-500 mb-4">The form you're looking for doesn't exist or is no longer active.</p>
-              <p className="text-sm text-red-500 mb-4">
-                Error details: {error instanceof Error ? error.message : 'Unknown error'}
-              </p>
-              <Button variant="outline" onClick={() => navigate('/forms')}>Return to Forms</Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div>
+          <FormNotAvailableCard 
+            isError={true} 
+            errorMessage={errorMessage || (error instanceof Error ? error.message : 'Unknown error')} 
+          />
+          <div className="text-center mt-4">
+            <button 
+              onClick={retryFetchForm}
+              className="text-blue-500 hover:text-blue-700 text-sm underline"
+            >
+              Retry loading the form
+            </button>
+          </div>
+        </div>
       ) : form ? (
         <Card>
           <CardHeader className="pb-4">

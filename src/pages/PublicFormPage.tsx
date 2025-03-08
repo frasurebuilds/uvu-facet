@@ -1,10 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { fetchFormById } from "@/lib/api/formApi";
+import { fetchFormById, fetchForms } from "@/lib/api/formApi";
 import { submitFormResponse } from "@/lib/api/formSubmissionApi";
 import FormLoadingState from "@/components/forms/FormLoadingState";
 import FormNotAvailableCard from "@/components/forms/FormNotAvailableCard";
@@ -24,12 +24,23 @@ const PublicFormPage = () => {
   
   console.log("PublicFormPage rendered with form ID:", id);
   
+  // Check if forms exist at all by getting list of forms
+  const { data: formsList } = useQuery({
+    queryKey: ['forms-list-check'],
+    queryFn: fetchForms,
+    retry: 1,
+    staleTime: 60000, // 1 minute
+  });
+  
+  console.log("Available forms in database:", formsList);
+  
   // Fetch form data with improved error handling
   const { 
     data: form, 
     isLoading, 
     error,
-    isError 
+    isError,
+    refetch
   } = useQuery({
     queryKey: ['public-form', id],
     queryFn: async () => {
@@ -57,6 +68,26 @@ const PublicFormPage = () => {
 
   // Log query results for debugging
   console.log("Public form query result:", { form, isLoading, error, isError, id });
+
+  // Effect to check if the form ID is valid
+  useEffect(() => {
+    if (id && formsList && formsList.length > 0) {
+      const formExists = formsList.some(f => f.id === id);
+      if (!formExists) {
+        console.log(`Form with ID ${id} not found in available forms list:`, formsList.map(f => f.id));
+        setErrorMessage("Form not found in the database");
+      } else {
+        console.log(`Form with ID ${id} found in available forms list`);
+      }
+    }
+  }, [id, formsList]);
+
+  // Manual retry function
+  const retryFetchForm = () => {
+    console.log("Manually retrying form fetch");
+    setErrorMessage(null);
+    refetch();
+  };
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormValues(prev => ({
@@ -137,7 +168,7 @@ const PublicFormPage = () => {
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <FormLoadingState />
+        <FormLoadingState message={`Loading form with ID: ${id}`} />
       </div>
     );
   }
@@ -148,7 +179,16 @@ const PublicFormPage = () => {
         <FormNotAvailableCard 
           isError={isError} 
           errorMessage={errorMessage || undefined} 
+          showReturnButton={false}
         />
+        <div className="text-center mt-4">
+          <button 
+            onClick={retryFetchForm}
+            className="text-blue-500 hover:text-blue-700 text-sm underline"
+          >
+            Retry loading the form
+          </button>
+        </div>
       </div>
     );
   }
