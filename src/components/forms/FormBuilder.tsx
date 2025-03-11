@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FormField, Form } from "@/types/models";
@@ -28,13 +29,15 @@ import { useNavigate } from "react-router-dom";
 interface FormBuilderProps {
   initialForm?: Form;
   onSave?: (form: Form) => void;
+  isSubmitting?: boolean;
 }
 
-const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
+const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  // Using useState with a type ensures we have the right structure
   const [formData, setFormData] = useState<Omit<Form, 'id' | 'createdAt' | 'updatedAt'>>({
     title: initialForm?.title || '',
     description: initialForm?.description || '',
@@ -46,7 +49,7 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
 
   const [activeFieldIndex, setActiveFieldIndex] = useState<number | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localIsSubmitting, setLocalIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -76,56 +79,87 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
   };
 
   const addField = () => {
-    const newField: FormField = {
-      id: uuidv4(),
-      type: 'text',
-      label: 'New Field',
-      placeholder: '',
-      required: false
-    };
-    
-    setFormData(prev => ({
-      ...prev,
-      fields: [...prev.fields, newField]
-    }));
-    
-    setActiveFieldIndex(formData.fields.length);
+    console.log("Adding new field");
+    try {
+      const newField: FormField = {
+        id: uuidv4(),
+        type: 'text',
+        label: 'New Field',
+        placeholder: '',
+        required: false
+      };
+      
+      const updatedFields = [...formData.fields, newField];
+      
+      setFormData(prev => ({
+        ...prev,
+        fields: updatedFields
+      }));
+      
+      // Set the new field as active
+      setActiveFieldIndex(updatedFields.length - 1);
+      
+      console.log("New field added successfully", updatedFields);
+    } catch (error) {
+      console.error("Error adding field:", error);
+      toast({
+        title: "Error adding field",
+        description: "There was a problem adding a new field",
+        variant: "destructive"
+      });
+    }
   };
 
   const updateField = (index: number, field: FormField) => {
-    const newFields = [...formData.fields];
-    newFields[index] = field;
-    setFormData(prev => ({ ...prev, fields: newFields }));
+    try {
+      const newFields = [...formData.fields];
+      newFields[index] = field;
+      setFormData(prev => ({ ...prev, fields: newFields }));
+    } catch (error) {
+      console.error("Error updating field:", error);
+    }
   };
 
   const removeField = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      fields: prev.fields.filter((_, i) => i !== index)
-    }));
-    setActiveFieldIndex(null);
+    try {
+      setFormData(prev => ({
+        ...prev,
+        fields: prev.fields.filter((_, i) => i !== index)
+      }));
+      setActiveFieldIndex(null);
+    } catch (error) {
+      console.error("Error removing field:", error);
+    }
   };
 
   const duplicateField = (index: number) => {
-    const fieldToDuplicate = { ...formData.fields[index], id: uuidv4() };
-    const newFields = [...formData.fields];
-    newFields.splice(index + 1, 0, fieldToDuplicate);
-    setFormData(prev => ({ ...prev, fields: newFields }));
+    try {
+      const fieldToDuplicate = { ...formData.fields[index], id: uuidv4() };
+      const newFields = [...formData.fields];
+      newFields.splice(index + 1, 0, fieldToDuplicate);
+      setFormData(prev => ({ ...prev, fields: newFields }));
+    } catch (error) {
+      console.error("Error duplicating field:", error);
+    }
   };
 
   const moveField = (index: number, direction: 'up' | 'down') => {
-    if ((direction === 'up' && index === 0) || 
-        (direction === 'down' && index === formData.fields.length - 1)) {
-      return;
-    }
+    try {
+      if ((direction === 'up' && index === 0) || 
+          (direction === 'down' && index === formData.fields.length - 1)) {
+        return;
+      }
 
-    const newFields = [...formData.fields];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    [newFields[index], newFields[newIndex]] = [newFields[newIndex], newFields[index]];
-    
-    setFormData(prev => ({ ...prev, fields: newFields }));
-    setActiveFieldIndex(newIndex);
+      const newFields = [...formData.fields];
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      
+      [newFields[index], newFields[newIndex]] = [newFields[newIndex], newFields[index]];
+      
+      setFormData(prev => ({ ...prev, fields: newFields }));
+      setActiveFieldIndex(newIndex);
+    } catch (error) {
+      console.error("Error moving field:", error);
+    }
   };
 
   const handleSave = async () => {
@@ -148,28 +182,35 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
     }
 
     try {
-      setIsSubmitting(true);
+      setLocalIsSubmitting(true);
       let savedForm;
 
       if (initialForm?.id) {
-        savedForm = await updateForm({
-          id: initialForm.id,
-          ...formData
-        });
-        toast({
-          title: "Form updated",
-          description: "Your form has been successfully updated",
-        });
+        // Use the onSave prop if provided (for FormEditPage)
+        if (onSave) {
+          await onSave({
+            id: initialForm.id,
+            ...formData,
+            createdAt: initialForm.createdAt,
+            updatedAt: initialForm.updatedAt
+          });
+        } else {
+          // Fallback to direct API call
+          savedForm = await updateForm({
+            id: initialForm.id,
+            ...formData
+          });
+          toast({
+            title: "Form updated",
+            description: "Your form has been successfully updated",
+          });
+        }
       } else {
         savedForm = await createForm(formData);
         toast({
           title: "Form created",
           description: "Your new form has been successfully created",
         });
-      }
-
-      if (onSave) {
-        onSave(savedForm);
       }
       
       navigate('/forms');
@@ -181,9 +222,12 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
         variant: "destructive"
       });
     } finally {
-      setIsSubmitting(false);
+      setLocalIsSubmitting(false);
     }
   };
+
+  // Use either the passed in isSubmitting prop or local state
+  const isSaving = isSubmitting || localIsSubmitting;
 
   return (
     <div className="space-y-6">
@@ -209,11 +253,11 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
           
           <Button
             onClick={handleSave}
-            disabled={isSubmitting}
+            disabled={isSaving}
             className="bg-uvu-green hover:bg-uvu-green-medium flex items-center gap-2"
           >
             <Save size={16} />
-            Save Form
+            {isSaving ? "Saving..." : "Save Form"}
           </Button>
         </div>
       </div>
@@ -288,6 +332,7 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
                 <Button 
                   onClick={addField}
                   className="w-full mt-4 bg-uvu-green hover:bg-uvu-green-medium"
+                  type="button"
                 >
                   <Plus size={16} className="mr-2" />
                   Add Field
@@ -320,6 +365,7 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
                       variant="link" 
                       onClick={addField}
                       className="mt-2"
+                      type="button"
                     >
                       Click here to add your first field
                     </Button>
@@ -345,6 +391,7 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
                               onClick={() => moveField(index, 'up')}
                               disabled={index === 0}
                               className="h-8 w-8 p-0"
+                              type="button"
                             >
                               <MoveUp size={16} />
                             </Button>
@@ -354,6 +401,7 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
                               onClick={() => moveField(index, 'down')}
                               disabled={index === formData.fields.length - 1}
                               className="h-8 w-8 p-0"
+                              type="button"
                             >
                               <MoveDown size={16} />
                             </Button>
@@ -362,6 +410,7 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
                               size="sm"
                               onClick={() => duplicateField(index)}
                               className="h-8 w-8 p-0"
+                              type="button"
                             >
                               <Copy size={16} />
                             </Button>
@@ -370,6 +419,7 @@ const FormBuilder = ({ initialForm, onSave }: FormBuilderProps) => {
                               size="sm"
                               onClick={() => removeField(index)}
                               className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                              type="button"
                             >
                               <Trash size={16} />
                             </Button>

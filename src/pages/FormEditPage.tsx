@@ -1,25 +1,48 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
 import FormBuilder from "@/components/forms/FormBuilder";
-import { fetchFormById } from "@/lib/api/formApi";
+import { fetchFormById, updateForm } from "@/lib/api/formApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Form } from "@/types/models";
+import { cn } from "@/lib/utils";
 
 const FormEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
   
   // Fetch form data
   const { data: form, isLoading, error } = useQuery({
     queryKey: ['form', id],
     queryFn: () => fetchFormById(id as string, false), // Admin access, so isPublicAccess = false
-    enabled: !!id && !!user
+    enabled: !!id && !!user,
+    retry: 1
+  });
+
+  // Update form mutation
+  const updateFormMutation = useMutation({
+    mutationFn: updateForm,
+    onSuccess: () => {
+      toast({
+        title: "Form updated",
+        description: "Your form has been successfully updated"
+      });
+      navigate("/forms");
+    },
+    onError: (error) => {
+      console.error('Error updating form:', error);
+      toast({
+        title: "Error saving form",
+        description: "There was an error saving your form. Please try again.",
+        variant: "destructive"
+      });
+    }
   });
 
   useEffect(() => {
@@ -30,6 +53,7 @@ const FormEditPage = () => {
 
   useEffect(() => {
     if (error) {
+      console.error('Error in FormEditPage:', error);
       toast({
         title: "Error loading form",
         description: "The form could not be loaded",
@@ -39,12 +63,15 @@ const FormEditPage = () => {
     }
   }, [error, toast, navigate]);
 
-  const handleFormSave = (updatedForm: Form) => {
-    toast({
-      title: "Form updated",
-      description: "Your form has been successfully updated"
-    });
-    navigate("/forms");
+  const handleFormSave = async (updatedForm: Form) => {
+    setIsSaving(true);
+    try {
+      await updateFormMutation.mutateAsync(updatedForm);
+    } catch (error) {
+      console.error('Form save error:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -57,7 +84,11 @@ const FormEditPage = () => {
           <p>Loading form details...</p>
         </div>
       ) : form ? (
-        <FormBuilder initialForm={form} onSave={handleFormSave} />
+        <FormBuilder 
+          initialForm={form} 
+          onSave={handleFormSave} 
+          isSubmitting={isSaving}
+        />
       ) : null}
     </PageLayout>
   );

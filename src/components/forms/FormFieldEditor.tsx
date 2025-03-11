@@ -118,7 +118,7 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
             <SelectValue placeholder="Select a profile field to map" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Not mapped</SelectItem>
+            <SelectItem value="none">Not mapped</SelectItem>
             {ALUMNI_PROFILE_FIELDS.map((profileField) => (
               <SelectItem key={profileField.id} value={profileField.id}>
                 {profileField.label}
