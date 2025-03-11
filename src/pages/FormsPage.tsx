@@ -368,7 +368,7 @@ const FormCard = ({
   };
   
   return (
-    <Card className="uvu-card card-hover-effect">
+    <Card className="uvu-card card-hover-effect flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="truncate">{form.title}</CardTitle>
@@ -390,8 +390,8 @@ const FormCard = ({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <div className="flex space-x-2">
+      <CardFooter className="flex flex-col gap-2 mt-auto">
+        <div className="flex flex-wrap gap-2 w-full">
           <Button variant="outline" size="sm" onClick={onEdit}>
             <Edit className="h-4 w-4 mr-2" />
             Edit
@@ -423,7 +423,7 @@ const FormCard = ({
           )}
         </div>
         
-        <div className="flex">
+        <div className="flex justify-end w-full gap-1">
           {form.status !== 'active' && (
             <Button 
               variant="ghost" 
@@ -509,3 +509,4 @@ const getStatusBadge = (status: string) => {
 };
 
 export default FormsPage;
+
