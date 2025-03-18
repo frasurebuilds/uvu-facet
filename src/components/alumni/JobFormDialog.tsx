@@ -181,7 +181,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                     <Calendar
                       mode="single"
                       selected={job?.startDate ? new Date(job.startDate) : undefined}
-                      onSelect={(date) => setDateValue('startDate', date)}
+                      onDayClick={(day) => setDateValue('startDate', day)}
                       initialFocus
                       defaultMonth={job?.startDate ? new Date(job.startDate) : new Date()}
                       monthPickerMode={true}
@@ -242,7 +242,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       <Calendar
                         mode="single"
                         selected={job?.endDate ? new Date(job.endDate) : undefined}
-                        onSelect={(date) => setDateValue('endDate', date)}
+                        onDayClick={(day) => setDateValue('endDate', day)}
                         initialFocus
                         defaultMonth={job?.endDate ? new Date(job.endDate) : new Date()}
                         monthPickerMode={true}

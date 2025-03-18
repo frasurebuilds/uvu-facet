@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -24,8 +25,8 @@ function Calendar({
   const handleMonthSelect = (newMonth: number) => {
     const newDate = new Date(year, newMonth, 1);
     setMonth(newDate);
-    if (props.onSelect && props.mode === "single") {
-      props.onSelect(newDate);
+    if (props.mode === "single" && props.onDayClick) {
+      props.onDayClick(newDate, { selected: true } as any, {} as any);
     }
   };
 
@@ -55,7 +56,7 @@ function Calendar({
         ))}
       </div>
     );
-  }, [month, year, monthPickerMode, props.onSelect]);
+  }, [month, year, monthPickerMode, props.onDayClick, props.mode]);
 
   // Handle year navigation
   const handlePreviousYear = () => {
