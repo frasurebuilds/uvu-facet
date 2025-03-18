@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from "react";
 import { JobHistory, Organization } from "@/types/models";
 import { Button } from "@/components/ui/button";
@@ -176,7 +177,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                     <Calendar
                       mode="single"
                       selected={job?.startDate ? new Date(job.startDate) : undefined}
-                      onSelect={(day) => setDateValue('startDate', day)}
+                      onSelect={(date) => setDateValue('startDate', date)}
                       initialFocus
                       defaultMonth={job?.startDate ? new Date(job.startDate) : new Date()}
                       showMonthYearPicker
@@ -238,7 +239,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       <Calendar
                         mode="single"
                         selected={job?.endDate ? new Date(job.endDate) : undefined}
-                        onSelect={(day) => setDateValue('endDate', day)}
+                        onSelect={(date) => setDateValue('endDate', date)}
                         initialFocus
                         defaultMonth={job?.endDate ? new Date(job.endDate) : new Date()}
                         showMonthYearPicker

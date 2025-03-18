@@ -8,6 +8,8 @@ import { buttonVariants } from "@/components/ui/button";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   showMonthYearPicker?: boolean;
+  selected?: Date;
+  onSelect?: (date: Date | undefined) => void;
 };
 
 function Calendar({
@@ -15,6 +17,8 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   showMonthYearPicker = false,
+  selected,
+  onSelect,
   ...props
 }: CalendarProps) {
   const [displayedYear, setDisplayedYear] = React.useState(
@@ -29,8 +33,8 @@ function Calendar({
 
   const handleMonthSelect = (month: number) => {
     const newDate = new Date(displayedYear, month, 1);
-    if (props.onSelect) {
-      props.onSelect(newDate);
+    if (onSelect) {
+      onSelect(newDate);
     }
   };
 
@@ -77,10 +81,9 @@ function Calendar({
               className={cn(
                 buttonVariants({ variant: "outline" }),
                 "py-2 px-1 h-auto justify-center text-sm hover:bg-primary hover:text-primary-foreground",
-                props.selected && 
-                  props.selected instanceof Date && 
-                  props.selected.getMonth() === index && 
-                  props.selected.getFullYear() === displayedYear &&
+                selected && 
+                  selected.getMonth() === index && 
+                  selected.getFullYear() === displayedYear &&
                   "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
               )}
             >
@@ -139,6 +142,8 @@ function Calendar({
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
+      selected={selected}
+      onSelect={onSelect}
       fromYear={1980}
       toYear={new Date().getFullYear() + 10}
       {...props}
