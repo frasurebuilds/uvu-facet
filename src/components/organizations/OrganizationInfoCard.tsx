@@ -130,9 +130,11 @@ const OrganizationInfoCard = ({
                 <Users className="mr-2 h-4 w-4 text-gray-500" />
                 <Input
                   id="alumniCount"
-                  value={alumniCount || "0"}
+                  value={alumniCount.toString()}
                   className="bg-gray-50"
+                  disabled
                   readOnly
+                  aria-readonly="true"
                 />
               </div>
             </div>
