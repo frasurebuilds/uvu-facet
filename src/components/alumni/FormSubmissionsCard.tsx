@@ -34,8 +34,14 @@ const FormSubmissionsCard = ({ alumniId, alumniEmail, uvid }: FormSubmissionsCar
           return false;
         });
         
-        // The API function fetchFormSubmissions already converts the JSON to the proper FormSubmission type
-        setSubmissions(filteredSubmissions);
+        // Convert the JSON data to the proper FormSubmission type with Record<string, any>
+        const typedSubmissions: FormSubmission[] = filteredSubmissions.map(sub => ({
+          ...sub,
+          content: typeof sub.content === 'string' ? JSON.parse(sub.content) : sub.content,
+          mappedFields: typeof sub.mappedFields === 'string' ? JSON.parse(sub.mappedFields || '{}') : (sub.mappedFields || {})
+        }));
+        
+        setSubmissions(typedSubmissions);
       } catch (error) {
         console.error("Failed to load form submissions:", error);
       } finally {

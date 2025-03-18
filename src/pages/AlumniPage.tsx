@@ -1,15 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
+import { UserPlus, FileText } from "lucide-react";
 import { Alumni } from "@/types/models";
 import { fetchAlumni } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AlumniControls from "@/components/alumni/AlumniControls";
 import AlumniDisplay from "@/components/alumni/AlumniDisplay";
+import AlumniImportExportDialog from "@/components/alumni/AlumniImportExportDialog";
 
 const AlumniPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,6 +17,7 @@ const AlumniPage = () => {
   const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
+  const [showImportExport, setShowImportExport] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -93,18 +94,32 @@ const AlumniPage = () => {
     });
   };
 
+  const handleImportExport = () => {
+    setShowImportExport(true);
+  };
+
   return (
     <PageLayout
       title="Alumni Directory"
       subtitle="Manage and view UVU alumni records"
       actionButton={
-        <Button 
-          className="bg-uvu-green hover:bg-uvu-green-medium"
-          onClick={handleAddAlumni}
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add Alumni
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={handleImportExport}
+            className="border-uvu-green text-uvu-green hover:bg-uvu-green hover:text-white"
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Import/Export
+          </Button>
+          <Button 
+            className="bg-uvu-green hover:bg-uvu-green-medium"
+            onClick={handleAddAlumni}
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Alumni
+          </Button>
+        </div>
       }
     >
       <AlumniControls
@@ -126,6 +141,12 @@ const AlumniPage = () => {
           onOpenLinkedIn={handleOpenLinkedIn}
         />
       </TooltipProvider>
+
+      <AlumniImportExportDialog 
+        open={showImportExport}
+        onOpenChange={setShowImportExport}
+        alumni={filteredAlumni}
+      />
     </PageLayout>
   );
 };
