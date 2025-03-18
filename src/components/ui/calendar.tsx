@@ -102,6 +102,14 @@ function Calendar({
     }
   };
 
+  // Create a merged props object with our controlled mode and onSelect
+  const dayPickerProps = {
+    ...props,
+    mode: "single" as const, // Force single mode
+    selected,
+    onSelect: handleSelectDay,
+  };
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -149,12 +157,9 @@ function Calendar({
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
-      mode="single"
-      selected={selected}
-      onSelect={handleSelectDay}
       fromYear={1980}
       toYear={new Date().getFullYear() + 10}
-      {...props}
+      {...dayPickerProps}
     />
   );
 }
