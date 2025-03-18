@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from "react";
 import { JobHistory, Organization } from "@/types/models";
 import { Button } from "@/components/ui/button";
@@ -171,14 +172,15 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       {job?.startDate ? formatMonthYear(job.startDate) : "Select start date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 z-[9999]" align="start">
                     <Calendar
                       mode="single"
                       selected={job?.startDate ? new Date(job.startDate) : undefined}
-                      onDayClick={(day) => setDateValue('startDate', day)}
+                      onSelect={(day) => setDateValue('startDate', day)}
                       initialFocus
                       defaultMonth={job?.startDate ? new Date(job.startDate) : new Date()}
                       monthPickerMode={true}
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
@@ -232,14 +234,15 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                         {job?.endDate ? formatMonthYear(job.endDate) : "Select end date"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 z-[9999]" align="start">
                       <Calendar
                         mode="single"
                         selected={job?.endDate ? new Date(job.endDate) : undefined}
-                        onDayClick={(day) => setDateValue('endDate', day)}
+                        onSelect={(day) => setDateValue('endDate', day)}
                         initialFocus
                         defaultMonth={job?.endDate ? new Date(job.endDate) : new Date()}
                         monthPickerMode={true}
+                        className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>

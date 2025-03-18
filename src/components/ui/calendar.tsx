@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -25,8 +24,8 @@ function Calendar({
   const handleMonthSelect = (newMonth: number) => {
     const newDate = new Date(year, newMonth, 1);
     setMonth(newDate);
-    if (props.mode === "single" && props.onDayClick) {
-      props.onDayClick(newDate, { selected: true } as any, {} as any);
+    if (props.mode === "single" && props.onSelect) {
+      props.onSelect(newDate);
     }
   };
 
@@ -50,13 +49,14 @@ function Calendar({
               "justify-center",
               month.getMonth() === index && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
             )}
+            type="button"
           >
             {monthName.substring(0, 3)}
           </button>
         ))}
       </div>
     );
-  }, [month, year, monthPickerMode, props.onDayClick, props.mode]);
+  }, [month, year, monthPickerMode]);
 
   // Handle year navigation
   const handlePreviousYear = () => {
@@ -78,6 +78,7 @@ function Calendar({
         <button
           onClick={handlePreviousYear}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          type="button"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -85,6 +86,7 @@ function Calendar({
         <button
           onClick={handleNextYear}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          type="button"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -95,7 +97,7 @@ function Calendar({
   // If in month picker mode, render our custom month/year picker
   if (monthPickerMode) {
     return (
-      <div className={cn("p-3", className)}>
+      <div className={cn("p-3 pointer-events-auto", className)}>
         {yearPicker}
         {monthButtons}
       </div>
@@ -106,7 +108,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
