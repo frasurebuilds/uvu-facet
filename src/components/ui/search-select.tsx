@@ -126,13 +126,19 @@ export function SearchSelect({
       </DialogTrigger>
       <DialogPortal>
         <DialogContent
-          className="p-0 max-w-[400px] top-1/4 translate-y-0"
+          className="p-0 max-w-[400px] top-1/4 translate-y-0 border bg-background shadow-md rounded-md overflow-hidden"
+          style={{
+            position: "fixed",
+            width: "calc(100% - 3rem)",
+            maxHeight: "300px",
+            zIndex: 9999,
+          }}
           onInteractOutside={(e) => {
             e.preventDefault(); // Prevent closing on interaction outside
           }}
         >
           <Command shouldFilter={false} className="w-full">
-            <div className="flex items-center border-b px-3">
+            <div className="flex items-center border-b px-3 bg-background">
               <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
               <CommandInput
                 placeholder={placeholder}
@@ -143,7 +149,7 @@ export function SearchSelect({
               />
             </div>
             <CommandList className="max-h-[200px] overflow-y-auto">
-              <CommandEmpty>
+              <CommandEmpty className="py-3 px-4 text-sm text-center">
                 {emptyMessage}
                 {showCreateOption && (
                   <Button
@@ -163,7 +169,7 @@ export function SearchSelect({
                     key={option.value}
                     value={option.label}
                     onSelect={() => handleSelect(option.value)}
-                    className="cursor-pointer"
+                    className="cursor-pointer px-4 py-2 hover:bg-accent hover:text-accent-foreground"
                   >
                     <Check
                       className={cn(
@@ -177,11 +183,11 @@ export function SearchSelect({
               </CommandGroup>
               {showCreateOption && (
                 <>
-                  <CommandSeparator />
+                  <CommandSeparator className="mx-2" />
                   <CommandGroup>
                     <CommandItem
                       onSelect={handleCreateOption}
-                      className="cursor-pointer text-uvu-green hover:text-uvu-green-medium"
+                      className="cursor-pointer text-uvu-green hover:text-uvu-green-medium px-4 py-2 hover:bg-accent hover:text-accent-foreground"
                     >
                       <PlusCircle className="mr-2 h-4 w-4" />
                       {createOptionLabel} "{searchQuery}"
