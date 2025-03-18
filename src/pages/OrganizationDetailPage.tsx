@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
@@ -97,17 +96,6 @@ const OrganizationDetailPage = () => {
     navigate(`/alumni/${alumniId}`);
   };
 
-  // Create the organization title component
-  const organizationTitle = organization?.name || "Organization Details";
-
-  const onCopy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedValues({ ...copiedValues, [text]: true });
-    setTimeout(() => {
-      setCopiedValues({ ...copiedValues, [text]: false });
-    }, 2000);
-  };
-
   // Create a title element for PageLayout that includes the logo and name
   const TitleWithLogo = () => (
     <div className="flex items-center gap-2">
@@ -119,6 +107,14 @@ const OrganizationDetailPage = () => {
       <span>{organization?.name || "Organization Details"}</span>
     </div>
   );
+
+  const onCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedValues({ ...copiedValues, [text]: true });
+    setTimeout(() => {
+      setCopiedValues({ ...copiedValues, [text]: false });
+    }, 2000);
+  };
 
   return (
     <PageLayout
@@ -140,14 +136,6 @@ const OrganizationDetailPage = () => {
               onClick={() => setIsCurrentEmployees(true)}
             >
               Show Current Employees
-            </Button>
-          )}
-          {organization && (
-            <Button 
-              className="bg-uvu-green hover:bg-uvu-green-medium"
-              onClick={() => handleSave(organization)}
-            >
-              <Save className="mr-2 h-4 w-4" /> Save
             </Button>
           )}
         </div>

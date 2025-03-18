@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Organization } from "@/types/models";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -186,7 +185,7 @@ const OrganizationInfoCard = ({
             />
           </div>
           
-          <div className="hidden lg:hidden">
+          <div className="flex justify-end">
             <Button 
               type="submit" 
               className="bg-uvu-green hover:bg-uvu-green-medium"
