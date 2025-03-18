@@ -184,10 +184,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       onSelect={(date) => setDateValue('startDate', date)}
                       initialFocus
                       defaultMonth={job?.startDate ? new Date(job.startDate) : new Date()}
-                      captionLayout="dropdown-buttons"
-                      fromYear={1970}
-                      toYear={2030}
-                      // The month view is the default, so we don't need any special property for month picker
+                      monthPickerMode={true}
                     />
                   </PopoverContent>
                 </Popover>
@@ -248,10 +245,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                         onSelect={(date) => setDateValue('endDate', date)}
                         initialFocus
                         defaultMonth={job?.endDate ? new Date(job.endDate) : new Date()}
-                        captionLayout="dropdown-buttons"
-                        fromYear={1970}
-                        toYear={2030}
-                        // The month view is the default, so we don't need any special property for month picker
+                        monthPickerMode={true}
                       />
                     </PopoverContent>
                   </Popover>

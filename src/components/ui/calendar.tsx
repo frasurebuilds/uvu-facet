@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -6,14 +5,103 @@ import { DayPicker } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  /** Custom prop to show month picker only */
+  monthPickerMode?: boolean;
+};
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  monthPickerMode = false,
   ...props
 }: CalendarProps) {
+  const [month, setMonth] = React.useState<Date>(props.defaultMonth || new Date());
+  const [year, setYear] = React.useState<number>(month.getFullYear());
+
+  // Handle month selection in month picker mode
+  const handleMonthSelect = (newMonth: number) => {
+    const newDate = new Date(year, newMonth, 1);
+    setMonth(newDate);
+    if (props.onSelect && props.mode === "single") {
+      props.onSelect(newDate);
+    }
+  };
+
+  // Create month buttons for the month picker
+  const monthButtons = React.useMemo(() => {
+    if (!monthPickerMode) return null;
+
+    const months = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    
+    return (
+      <div className="grid grid-cols-3 gap-2 p-2">
+        {months.map((monthName, index) => (
+          <button
+            key={monthName}
+            onClick={() => handleMonthSelect(index)}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "justify-center",
+              month.getMonth() === index && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+            )}
+          >
+            {monthName.substring(0, 3)}
+          </button>
+        ))}
+      </div>
+    );
+  }, [month, year, monthPickerMode, props.onSelect]);
+
+  // Handle year navigation
+  const handlePreviousYear = () => {
+    setYear(year - 1);
+    setMonth(new Date(year - 1, month.getMonth(), 1));
+  };
+
+  const handleNextYear = () => {
+    setYear(year + 1);
+    setMonth(new Date(year + 1, month.getMonth(), 1));
+  };
+
+  // Year picker component
+  const yearPicker = React.useMemo(() => {
+    if (!monthPickerMode) return null;
+
+    return (
+      <div className="flex items-center justify-center p-2">
+        <button
+          onClick={handlePreviousYear}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <div className="mx-2 text-sm font-medium">{year}</div>
+        <button
+          onClick={handleNextYear}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }, [year, monthPickerMode]);
+
+  // If in month picker mode, render our custom month/year picker
+  if (monthPickerMode) {
+    return (
+      <div className={cn("p-3", className)}>
+        {yearPicker}
+        {monthButtons}
+      </div>
+    );
+  }
+
+  // Otherwise render the standard DayPicker
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
