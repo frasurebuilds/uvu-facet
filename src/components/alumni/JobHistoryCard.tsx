@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Briefcase, Plus, Edit, Trash2 } from "lucide-react";
+import { format } from "date-fns";
 
 interface JobHistoryCardProps {
   jobHistory: JobHistory[];
@@ -32,6 +33,15 @@ const JobHistoryCard: React.FC<JobHistoryCardProps> = ({
   onEditJob,
   onDeleteJob
 }) => {
+  // Format date to show only month and year
+  const formatMonthYear = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "MMMM yyyy");
+    } catch (error) {
+      return "Invalid date";
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -71,8 +81,8 @@ const JobHistoryCard: React.FC<JobHistoryCardProps> = ({
                     <TableCell className="font-medium">{job.jobTitle}</TableCell>
                     <TableCell>{job.organizationName || 'N/A'}</TableCell>
                     <TableCell>
-                      {new Date(job.startDate).toLocaleDateString()} - 
-                      {job.endDate ? new Date(job.endDate).toLocaleDateString() : 'Present'}
+                      {formatMonthYear(job.startDate)} - 
+                      {job.endDate ? formatMonthYear(job.endDate) : 'Present'}
                     </TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${

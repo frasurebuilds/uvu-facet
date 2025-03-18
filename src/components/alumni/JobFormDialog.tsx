@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { JobHistory, Organization } from "@/types/models";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { SearchSelect, SearchSelectOption } from "@/components/ui/search-select";
+import { createOrganization } from "@/lib/api/organizationApi";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface JobFormDialogProps {
   open: boolean;
@@ -39,11 +50,67 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
   onSubmit,
   setCurrentJob
 }) => {
+  const { toast } = useToast();
+  const [creatingOrganization, setCreatingOrganization] = useState(false);
+  
   // Transform organizations array into SearchSelectOption format
   const organizationOptions: SearchSelectOption[] = organizations.map((org) => ({
     value: org.id,
     label: org.name
   }));
+
+  const handleCreateOrganization = useCallback(async (name: string) => {
+    try {
+      setCreatingOrganization(true);
+      const newOrganization = await createOrganization({
+        name,
+        industry: "Unknown", // Required field
+      });
+      
+      // Update the job with the new organization
+      setCurrentJob(prev => ({
+        ...prev,
+        organizationId: newOrganization.id
+      }));
+      
+      toast({
+        title: "Organization Created",
+        description: `Created organization "${name}" successfully`,
+      });
+    } catch (error) {
+      console.error("Failed to create organization:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create organization. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingOrganization(false);
+    }
+  }, [setCurrentJob, toast]);
+
+  // Helper function to format a date string to a month/year format
+  const formatMonthYear = (dateString?: string) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      return format(date, "MMMM yyyy");
+    } catch (error) {
+      return "";
+    }
+  };
+
+  // Helper function to set date values from calendar
+  const setDateValue = (field: 'startDate' | 'endDate', date: Date | undefined) => {
+    if (!date) return;
+    
+    // Set the day to the 1st of the month to standardize
+    const standardizedDate = new Date(date.getFullYear(), date.getMonth(), 1);
+    setCurrentJob({
+      ...job,
+      [field]: standardizedDate.toISOString()
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -82,7 +149,11 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                   value={job?.organizationId || ''}
                   onValueChange={(value) => setCurrentJob({...job, organizationId: value})}
                   placeholder="Search for an organization"
-                  emptyMessage="No organizations found"
+                  emptyMessage="No organizations found."
+                  allowCreate={true}
+                  onCreateOption={handleCreateOrganization}
+                  createOptionLabel="Create organization"
+                  disabled={creatingOrganization}
                 />
               </div>
             </div>
@@ -91,14 +162,36 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
               <label htmlFor="startDate" className="text-right text-sm font-medium">
                 Start Date
               </label>
-              <Input
-                id="startDate"
-                className="col-span-3"
-                type="date"
-                value={job?.startDate ? new Date(job.startDate).toISOString().split('T')[0] : ''}
-                onChange={(e) => setCurrentJob({...job, startDate: e.target.value})}
-                required
-              />
+              <div className="col-span-3">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="startDate"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !job?.startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {job?.startDate ? formatMonthYear(job.startDate) : "Select start date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={job?.startDate ? new Date(job.startDate) : undefined}
+                      onSelect={(date) => setDateValue('startDate', date)}
+                      initialFocus
+                      defaultMonth={job?.startDate ? new Date(job.startDate) : new Date()}
+                      captionLayout="dropdown-buttons"
+                      fromYear={1970}
+                      toYear={2030}
+                      showMonthYearPicker
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
@@ -133,14 +226,36 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                 <label htmlFor="endDate" className="text-right text-sm font-medium">
                   End Date
                 </label>
-                <Input
-                  id="endDate"
-                  className="col-span-3"
-                  type="date"
-                  value={job?.endDate ? new Date(job.endDate).toISOString().split('T')[0] : ''}
-                  onChange={(e) => setCurrentJob({...job, endDate: e.target.value})}
-                  required={!job?.isCurrent}
-                />
+                <div className="col-span-3">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="endDate"
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !job?.endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {job?.endDate ? formatMonthYear(job.endDate) : "Select end date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={job?.endDate ? new Date(job.endDate) : undefined}
+                        onSelect={(date) => setDateValue('endDate', date)}
+                        initialFocus
+                        defaultMonth={job?.endDate ? new Date(job.endDate) : new Date()}
+                        captionLayout="dropdown-buttons"
+                        fromYear={1970}
+                        toYear={2030}
+                        showMonthYearPicker
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             )}
             

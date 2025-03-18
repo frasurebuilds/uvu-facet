@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { Check, ChevronsUpDown, Search, X } from "lucide-react";
+import { Check, ChevronsUpDown, PlusCircle, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,13 +10,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Input } from "./input";
 
 export interface SearchSelectOption {
   value: string;
@@ -31,6 +31,9 @@ interface SearchSelectProps {
   emptyMessage?: string;
   className?: string;
   disabled?: boolean;
+  allowCreate?: boolean;
+  onCreateOption?: (value: string) => void;
+  createOptionLabel?: string;
 }
 
 export function SearchSelect({
@@ -41,6 +44,9 @@ export function SearchSelect({
   emptyMessage = "No results found.",
   className,
   disabled = false,
+  allowCreate = false,
+  onCreateOption,
+  createOptionLabel = "Create",
 }: SearchSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -50,6 +56,15 @@ export function SearchSelect({
     [options, value]
   );
 
+  const showCreateOption = React.useMemo(() => {
+    if (!allowCreate || !searchQuery || !onCreateOption) return false;
+    
+    // Don't show create option if the search query exactly matches an existing option
+    return !options.some(
+      option => option.label.toLowerCase() === searchQuery.toLowerCase()
+    );
+  }, [allowCreate, searchQuery, options, onCreateOption]);
+
   const handleSelect = React.useCallback(
     (selectedValue: string) => {
       onValueChange(selectedValue);
@@ -58,6 +73,13 @@ export function SearchSelect({
     },
     [onValueChange]
   );
+
+  const handleCreateOption = React.useCallback(() => {
+    if (onCreateOption && searchQuery) {
+      onCreateOption(searchQuery);
+      setSearchQuery("");
+    }
+  }, [onCreateOption, searchQuery]);
 
   const clearSelection = React.useCallback(
     (e: React.MouseEvent) => {
@@ -105,7 +127,19 @@ export function SearchSelect({
             />
           </div>
           <CommandList>
-            <CommandEmpty>{emptyMessage}</CommandEmpty>
+            <CommandEmpty>
+              {emptyMessage}
+              {showCreateOption && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start mt-2 text-uvu-green hover:text-uvu-green-medium hover:bg-uvu-green/10"
+                  onClick={handleCreateOption}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {createOptionLabel} "{searchQuery}"
+                </Button>
+              )}
+            </CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
@@ -124,6 +158,20 @@ export function SearchSelect({
                 </CommandItem>
               ))}
             </CommandGroup>
+            {showCreateOption && (
+              <>
+                <CommandSeparator />
+                <CommandGroup>
+                  <CommandItem
+                    onSelect={handleCreateOption}
+                    className="cursor-pointer text-uvu-green hover:text-uvu-green-medium"
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    {createOptionLabel} "{searchQuery}"
+                  </CommandItem>
+                </CommandGroup>
+              </>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
