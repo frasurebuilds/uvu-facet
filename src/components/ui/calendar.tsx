@@ -17,6 +17,81 @@ function Calendar({
   showMonthYearPicker = false,
   ...props
 }: CalendarProps) {
+  const [displayedYear, setDisplayedYear] = React.useState(
+    props.defaultMonth?.getFullYear() || new Date().getFullYear()
+  );
+
+  const months = [
+    "January", "February", "March", "April", 
+    "May", "June", "July", "August", 
+    "September", "October", "November", "December"
+  ];
+
+  const handleMonthSelect = (month: number) => {
+    const newDate = new Date(displayedYear, month, 1);
+    if (props.onSelect) {
+      props.onSelect(newDate);
+    }
+  };
+
+  const handleYearChange = (increment: number) => {
+    setDisplayedYear(prevYear => prevYear + increment);
+  };
+
+  if (showMonthYearPicker) {
+    return (
+      <div className={cn("p-3", className)}>
+        <div className="flex justify-center items-center mb-4 relative">
+          <button
+            type="button"
+            onClick={() => handleYearChange(-1)}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-7 w-7 bg-transparent p-0 absolute left-1"
+            )}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          
+          <div className="text-base font-semibold">
+            {displayedYear}
+          </div>
+          
+          <button
+            type="button"
+            onClick={() => handleYearChange(1)}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-7 w-7 bg-transparent p-0 absolute right-1"
+            )}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-2">
+          {months.map((month, index) => (
+            <button
+              key={month}
+              onClick={() => handleMonthSelect(index)}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "py-2 px-1 h-auto justify-center text-sm hover:bg-primary hover:text-primary-foreground",
+                props.selected && 
+                  props.selected instanceof Date && 
+                  props.selected.getMonth() === index && 
+                  props.selected.getFullYear() === displayedYear &&
+                  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+              )}
+            >
+              {month}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -25,10 +100,7 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: cn(
-          "text-sm font-medium",
-          showMonthYearPicker && "text-base font-semibold"
-        ),
+        caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -37,16 +109,15 @@ function Calendar({
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
-        head_row: cn("flex", showMonthYearPicker && "hidden"),
+        head_row: "flex",
         head_cell:
           "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
-        row: cn("flex w-full mt-2", showMonthYearPicker && "hidden"),
+        row: "flex w-full mt-2",
         cell: cn(
           "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
           props.mode === "range"
             ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md"
-            : "",
-          showMonthYearPicker && "hidden"
+            : ""
         ),
         day: cn(
           buttonVariants({ variant: "ghost" }),
@@ -68,7 +139,6 @@ function Calendar({
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
-      captionLayout={showMonthYearPicker ? "dropdown" : "buttons"}
       fromYear={1980}
       toYear={new Date().getFullYear() + 10}
       {...props}
