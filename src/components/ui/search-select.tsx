@@ -77,7 +77,7 @@ export function SearchSelect({
   const handleCreateOption = React.useCallback(() => {
     if (onCreateOption && searchQuery) {
       onCreateOption(searchQuery);
-      setSearchQuery("");
+      setOpen(false);
     }
   }, [onCreateOption, searchQuery]);
 
@@ -90,7 +90,7 @@ export function SearchSelect({
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={disabled ? undefined : setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -134,6 +134,7 @@ export function SearchSelect({
                   variant="ghost"
                   className="w-full justify-start mt-2 text-uvu-green hover:text-uvu-green-medium hover:bg-uvu-green/10"
                   onClick={handleCreateOption}
+                  type="button"
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   {createOptionLabel} "{searchQuery}"
