@@ -32,14 +32,14 @@ const PageLayout = ({
               "flex items-center justify-between pb-6 mb-6 border-b dark:border-gray-800",
               subtitle ? "flex-col sm:flex-row items-start sm:items-center gap-2" : ""
             )}>
-              <div>
+              <div className="animate-fade-in">
                 {title && (
-                  <h1 className="text-2xl md:text-3xl font-bold text-uvu-green dark:text-uvu-green-light animate-slide-up">
+                  <h1 className="text-2xl md:text-3xl font-bold text-uvu-green dark:text-uvu-green-light">
                     {title}
                   </h1>
                 )}
                 {subtitle && (
-                  <p className="text-gray-500 dark:text-gray-400 mt-1 animate-slide-up">
+                  <p className="text-gray-500 dark:text-gray-400 mt-1">
                     {subtitle}
                   </p>
                 )}
