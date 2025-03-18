@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SearchSelect, SearchSelectOption } from "@/components/ui/search-select";
 
 interface JobFormDialogProps {
   open: boolean;
@@ -38,6 +39,12 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
   onSubmit,
   setCurrentJob
 }) => {
+  // Transform organizations array into SearchSelectOption format
+  const organizationOptions: SearchSelectOption[] = organizations.map((org) => ({
+    value: org.id,
+    label: org.name
+  }));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -70,21 +77,13 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                 Organization
               </label>
               <div className="col-span-3">
-                <Select
+                <SearchSelect
+                  options={organizationOptions}
                   value={job?.organizationId || ''}
                   onValueChange={(value) => setCurrentJob({...job, organizationId: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {organizations.map((org) => (
-                      <SelectItem key={org.id} value={org.id}>
-                        {org.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Search for an organization"
+                  emptyMessage="No organizations found"
+                />
               </div>
             </div>
             
