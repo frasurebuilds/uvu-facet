@@ -74,7 +74,6 @@ export function SearchSelect({
     [onValueChange]
   );
 
-  // This function is used directly with a button click
   const handleCreateOption = React.useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -86,7 +85,7 @@ export function SearchSelect({
     }
   }, [onCreateOption, searchQuery]);
   
-  // This is a wrapper function for CommandItem that expects a string parameter
+  // This function is used for CommandItem onSelect
   const handleCreateOptionCommand = React.useCallback(
     (_value: string) => {
       if (onCreateOption && searchQuery) {
@@ -133,9 +132,13 @@ export function SearchSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-full p-0" 
+        className="w-full p-0 z-[9999]" 
         align="start"
         sideOffset={8}
+        onOpenAutoFocus={(e) => {
+          // Prevent auto focus which can sometimes interfere with interaction
+          e.preventDefault();
+        }}
       >
         <Command 
           className="w-full"
