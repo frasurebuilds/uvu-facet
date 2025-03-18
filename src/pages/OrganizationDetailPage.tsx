@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +14,7 @@ import OrganizationInfoCard from "@/components/organizations/OrganizationInfoCar
 import AlumniDisplay from "@/components/alumni/AlumniDisplay";
 import { Alumni } from "@/types/models";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import OrganizationLogo from "@/components/organizations/OrganizationLogo";
 
 const OrganizationDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,16 +79,11 @@ const OrganizationDetailPage = () => {
     
     navigator.clipboard.writeText(text)
       .then(() => {
-        // Set copied state for this specific value
         setCopiedValues({ ...copiedValues, [text]: true });
-        
-        // Show toast notification
         toast({
           title: "Copied!",
           description: `${label} copied to clipboard`,
         });
-        
-        // Reset icon after 2 seconds
         setTimeout(() => {
           setCopiedValues({ ...copiedValues, [text]: false });
         }, 2000);
@@ -131,9 +126,20 @@ const OrganizationDetailPage = () => {
     }
   };
 
+  const OrganizationTitle = () => (
+    <div className="flex items-center gap-2">
+      <OrganizationLogo 
+        name={organization?.name || ''} 
+        website={organization?.website} 
+        size="md"
+      />
+      <span>{organization?.name || "Organization Details"}</span>
+    </div>
+  );
+
   return (
     <PageLayout
-      title={organization?.name || "Organization Details"}
+      title={organization ? <OrganizationTitle /> : "Organization Details"}
       subtitle={organization?.industry}
       actionButton={
         <div className="flex gap-3">
