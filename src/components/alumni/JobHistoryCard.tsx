@@ -91,8 +91,12 @@ const JobHistoryCard: React.FC<JobHistoryCardProps> = ({
                       </div>
                     </TableCell>
                     <TableCell>
-                      {formatMonthYear(job.startDate)} - 
-                      {job.endDate ? formatMonthYear(job.endDate) : 'Present'}
+                      {formatMonthYear(job.startDate)}
+                      {job.isCurrent 
+                        ? ' - Present' 
+                        : job.endDate 
+                          ? ` - ${formatMonthYear(job.endDate)}` 
+                          : ''}
                     </TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${
