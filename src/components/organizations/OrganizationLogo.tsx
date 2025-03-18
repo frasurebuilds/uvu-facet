@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building, Globe, Image } from "lucide-react";
+import { Building, Building2, CircleUser, Globe, Image, Shield } from "lucide-react";
 
 interface OrganizationLogoProps {
   name: string;
-  website?: string;
+  website?: string | null;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }
@@ -23,7 +23,7 @@ const OrganizationLogo = ({ name, website, size = "md", className = "" }: Organi
     xl: "h-16 w-16 text-lg"
   };
   
-  const firstLetter = name ? name[0] : "?";
+  const firstLetter = name ? name[0].toUpperCase() : "?";
   
   // Function to try to extract a logo from the website
   useEffect(() => {
@@ -44,13 +44,8 @@ const OrganizationLogo = ({ name, website, size = "md", className = "" }: Organi
         const domain = new URL(fullUrl).hostname;
         const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
         
-        // Check if favicon exists
-        const response = await fetch(faviconUrl, { method: 'HEAD' });
-        if (response.ok) {
-          setLogoUrl(faviconUrl);
-        } else {
-          setError(true);
-        }
+        // Set the logo URL - we'll handle errors in the image onError handler
+        setLogoUrl(faviconUrl);
       } catch (error) {
         console.error("Error fetching logo:", error);
         setError(true);
@@ -63,17 +58,21 @@ const OrganizationLogo = ({ name, website, size = "md", className = "" }: Organi
   }, [website]);
   
   return (
-    <Avatar className={`${sizeClasses[size]} ${className}`}>
+    <Avatar className={`${sizeClasses[size]} ${className} bg-muted`}>
       {logoUrl && !error ? (
-        <AvatarImage src={logoUrl} alt={`${name} logo`} />
+        <AvatarImage 
+          src={logoUrl} 
+          alt={`${name} logo`} 
+          onError={() => setError(true)}
+        />
       ) : null}
-      <AvatarFallback className={`bg-uvu-green text-white font-bold ${error ? "" : "animate-pulse"}`}>
+      <AvatarFallback className={`bg-uvu-green text-white font-bold ${loading ? "animate-pulse" : ""}`}>
         {loading ? (
           <Globe className="h-4 w-4 animate-spin" />
         ) : error ? (
           firstLetter
         ) : (
-          <Building className="h-4 w-4" />
+          <Building2 className="h-4 w-4" />
         )}
       </AvatarFallback>
     </Avatar>
