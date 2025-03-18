@@ -98,7 +98,18 @@ const OrganizationDetailPage = () => {
   };
 
   // Create the organization title component
-  const OrganizationTitle = () => (
+  const organizationTitle = organization?.name || "Organization Details";
+
+  const onCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedValues({ ...copiedValues, [text]: true });
+    setTimeout(() => {
+      setCopiedValues({ ...copiedValues, [text]: false });
+    }, 2000);
+  };
+
+  // Create a title element for PageLayout that includes the logo and name
+  const TitleWithLogo = () => (
     <div className="flex items-center gap-2">
       <OrganizationLogo 
         name={organization?.name || ''} 
@@ -109,17 +120,9 @@ const OrganizationDetailPage = () => {
     </div>
   );
 
-  const onCopy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedValues({ ...copiedValues, [text]: true });
-    setTimeout(() => {
-      setCopiedValues({ ...copiedValues, [text]: false });
-    }, 2000);
-  };
-
   return (
     <PageLayout
-      title={<OrganizationTitle />}
+      title={<TitleWithLogo />}
       subtitle={organization?.industry}
       actionButton={
         <div className="flex gap-3">
