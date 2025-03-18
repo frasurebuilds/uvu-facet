@@ -1,4 +1,4 @@
-import { Alumni, Organization, FormSubmission } from "@/types/models";
+import { Alumni, Organization, FormSubmission, JobHistory } from "@/types/models";
 
 // Mock Alumni Data
 export const mockAlumni: Alumni[] = [
@@ -227,5 +227,85 @@ export const mockFormSubmissions: FormSubmission[] = [
     status: "reviewed",
     createdAt: "2023-10-28T13:10:00Z",
     notes: "Forwarded to Development Office.",
+  },
+];
+
+// Mock Job History Data
+export const mockJobHistory: JobHistory[] = [
+  {
+    id: "j1",
+    alumniId: "a1",
+    organizationId: "o1",
+    organizationName: "Tech Innovations",
+    jobTitle: "Senior Software Engineer",
+    startDate: "2022-01-15",
+    endDate: undefined,
+    isCurrent: true,
+    description: "Leading the development of cloud-based solutions.",
+    createdAt: "2022-01-20T10:00:00Z",
+    updatedAt: "2022-01-20T10:00:00Z",
+  },
+  {
+    id: "j2",
+    alumniId: "a2",
+    organizationId: "o2",
+    organizationName: "Global Marketing Solutions",
+    jobTitle: "Marketing Manager",
+    startDate: "2021-06-01",
+    endDate: undefined,
+    isCurrent: true,
+    createdAt: "2021-06-05T09:30:00Z",
+    updatedAt: "2021-06-05T09:30:00Z",
+  },
+  {
+    id: "j3",
+    alumniId: "a3",
+    organizationId: "o3",
+    organizationName: "First National Bank",
+    jobTitle: "Financial Analyst",
+    startDate: "2022-03-10",
+    endDate: undefined,
+    isCurrent: true,
+    description: "Analyzing market trends and investment opportunities.",
+    createdAt: "2022-03-15T11:20:00Z",
+    updatedAt: "2022-03-15T11:20:00Z",
+  },
+  {
+    id: "j4",
+    alumniId: "a4",
+    organizationId: "o4",
+    organizationName: "Media Matters",
+    jobTitle: "Communications Specialist",
+    startDate: "2021-09-22",
+    endDate: undefined,
+    isCurrent: true,
+    createdAt: "2021-09-25T14:45:00Z",
+    updatedAt: "2021-09-25T14:45:00Z",
+  },
+  {
+    id: "j5",
+    alumniId: "a5",
+    organizationId: "o5",
+    organizationName: "Green Energy Solutions",
+    jobTitle: "System Administrator",
+    startDate: "2021-11-08",
+    endDate: undefined,
+    isCurrent: true,
+    description: "Managing IT infrastructure and cloud services.",
+    createdAt: "2021-11-12T08:15:00Z",
+    updatedAt: "2021-11-12T08:15:00Z",
+  },
+  {
+    id: "j6",
+    alumniId: "a1",
+    organizationId: "o2",
+    organizationName: "Global Marketing Solutions",
+    jobTitle: "Junior Developer",
+    startDate: "2020-05-15",
+    endDate: "2021-12-31",
+    isCurrent: false,
+    description: "Developed web applications using React and Node.js.",
+    createdAt: "2020-05-20T09:00:00Z",
+    updatedAt: "2022-01-05T15:30:00Z",
   },
 ];

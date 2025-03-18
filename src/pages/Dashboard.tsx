@@ -4,7 +4,7 @@ import PageLayout from "@/components/layout/PageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
 import { Users, Building2, FileText, Mail, GraduationCap, Calendar, Briefcase, Award } from "lucide-react";
-import { mockAlumni, mockOrganizations, mockFormSubmissions } from "@/data/mockData";
+import { mockAlumni, mockOrganizations, mockFormSubmissions, mockJobHistory } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Link } from "react-router-dom";
@@ -56,14 +56,24 @@ const Dashboard = () => {
     
     setGraduationData(chartData);
 
-    // Prepare employment sector data
-    const sectors = mockAlumni.reduce((acc, alumni) => {
-      const sector = alumni.currentEmployer?.industry || "Unknown";
-      acc[sector] = (acc[sector] || 0) + 1;
+    // Prepare employment sector data using job history instead of currentEmployer
+    // First, find current jobs for each alumni
+    const currentJobs = mockJobHistory.filter(job => job.isCurrent);
+    
+    // Map alumni to their industries based on current jobs
+    const alumniIndustries = currentJobs.map(job => {
+      // Find the organization for this job
+      const org = mockOrganizations.find(org => org.id === job.organizationId);
+      return org ? org.industry : "Unknown";
+    });
+    
+    // Count industries
+    const industries = alumniIndustries.reduce((acc, industry) => {
+      acc[industry] = (acc[industry] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    const sectorData = Object.entries(sectors)
+    const sectorData = Object.entries(industries)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
     
