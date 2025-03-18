@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Organization } from "@/types/models";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Building2, Globe, MapPin, Users, Phone, Mail, Save } from "lucide-react";
+import { Building2, Globe, Users, Phone, Mail, Save } from "lucide-react";
+import LocationAutocomplete from "./LocationAutocomplete";
 
 interface OrganizationInfoCardProps {
   organization: Organization;
@@ -47,6 +49,13 @@ const OrganizationInfoCard = ({
         [name]: value
       });
     }
+  };
+
+  const handleLocationChange = (value: string) => {
+    setFormData({
+      ...formData,
+      location: value
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -101,19 +110,12 @@ const OrganizationInfoCard = ({
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <div className="flex items-center">
-                <MapPin className="mr-2 h-4 w-4 text-gray-500" />
-                <Input
-                  id="location"
-                  name="location"
-                  value={formData.location || ""}
-                  onChange={handleChange}
-                  placeholder="City, State"
-                />
-              </div>
-            </div>
+            <LocationAutocomplete
+              id="location"
+              name="location"
+              value={formData.location || ""}
+              onChange={handleLocationChange}
+            />
             
             <div className="space-y-2">
               <Label htmlFor="employeeCount">Employee Count</Label>
