@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { fetchOrganizations } from "@/lib/api";
+import { fetchAlumniByOrganizationId } from "@/lib/api/alumniApi";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 import OrganizationFormDialog from "@/components/organizations/OrganizationFormDialog";
 import OrganizationLogo from "@/components/organizations/OrganizationLogo";
@@ -37,6 +38,7 @@ const OrganizationsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [alumniCounts, setAlumniCounts] = useState<Record<string, number>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
@@ -45,6 +47,28 @@ const OrganizationsPage = () => {
     queryKey: ['organizations'],
     queryFn: fetchOrganizations
   });
+
+  useEffect(() => {
+    const fetchAlumniCounts = async () => {
+      const counts: Record<string, number> = {};
+      
+      for (const org of organizations) {
+        try {
+          const alumni = await fetchAlumniByOrganizationId(org.id, true);
+          counts[org.id] = alumni.length;
+        } catch (error) {
+          console.error(`Error fetching alumni count for organization ${org.id}:`, error);
+          counts[org.id] = 0;
+        }
+      }
+      
+      setAlumniCounts(counts);
+    };
+    
+    if (organizations.length > 0) {
+      fetchAlumniCounts();
+    }
+  }, [organizations]);
 
   const filteredOrganizations = organizations.filter((org) => {
     const searchLower = searchTerm.toLowerCase();
@@ -133,7 +157,7 @@ const OrganizationsPage = () => {
                 </TableCell>
                 <TableCell>{org.industry}</TableCell>
                 <TableCell className="hidden md:table-cell">{org.location || "-"}</TableCell>
-                <TableCell className="hidden lg:table-cell">{org.employeeCount !== undefined ? org.employeeCount : "-"}</TableCell>
+                <TableCell className="hidden lg:table-cell">{alumniCounts[org.id] !== undefined ? alumniCounts[org.id] : "-"}</TableCell>
                 <TableCell className="hidden lg:table-cell">{org.contactPerson || "-"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
@@ -255,6 +279,7 @@ const OrganizationsPage = () => {
             onCopy={handleCopy}
             onOpenLink={handleOpenLink}
             copiedValues={copiedValues}
+            alumniCount={alumniCounts[org.id] || 0}
           />
         ))
       ) : (
@@ -340,6 +365,7 @@ interface OrganizationCardProps {
   onCopy: (text: string, label: string) => void;
   onOpenLink: (url: string) => void;
   copiedValues: Record<string, boolean>;
+  alumniCount: number;
 }
 
 const OrganizationCard = ({
@@ -347,7 +373,8 @@ const OrganizationCard = ({
   onEdit,
   onCopy,
   onOpenLink,
-  copiedValues
+  copiedValues,
+  alumniCount
 }: OrganizationCardProps) => {
   const navigate = useNavigate();
 
@@ -378,12 +405,10 @@ const OrganizationCard = ({
               <span>{organization.location}</span>
             </div>
           )}
-          {organization.employeeCount !== undefined && (
-            <div className="flex items-center text-sm">
-              <Users size={16} className="mr-2 text-gray-500" />
-              <span>{organization.employeeCount} alumni employees</span>
-            </div>
-          )}
+          <div className="flex items-center text-sm">
+            <Users size={16} className="mr-2 text-gray-500" />
+            <span>{alumniCount} alumni employees</span>
+          </div>
           {organization.contactPerson && (
             <div className="flex items-center text-sm">
               <Mail size={16} className="mr-2 text-gray-500" />
