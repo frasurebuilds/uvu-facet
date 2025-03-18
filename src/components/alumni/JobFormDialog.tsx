@@ -100,6 +100,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
   const setDateValue = (field: 'startDate' | 'endDate', date: Date | undefined) => {
     if (!date) return;
     
+    // Standardize to the first day of the month
     const standardizedDate = new Date(date.getFullYear(), date.getMonth(), 1);
     setCurrentJob({
       ...job,
@@ -169,7 +170,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {job?.startDate ? formatMonthYear(job.startDate) : "Select start date"}
+                      {job?.startDate ? formatMonthYear(job.startDate) : "Select start month"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 z-[9999]" align="start">
@@ -179,6 +180,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       onSelect={(day) => setDateValue('startDate', day)}
                       initialFocus
                       defaultMonth={job?.startDate ? new Date(job.startDate) : new Date()}
+                      showMonthYearPicker
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
@@ -230,7 +232,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {job?.endDate ? formatMonthYear(job.endDate) : "Select end date"}
+                        {job?.endDate ? formatMonthYear(job.endDate) : "Select end month"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 z-[9999]" align="start">
@@ -240,6 +242,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                         onSelect={(day) => setDateValue('endDate', day)}
                         initialFocus
                         defaultMonth={job?.endDate ? new Date(job.endDate) : new Date()}
+                        showMonthYearPicker
                         className="pointer-events-auto"
                       />
                     </PopoverContent>
