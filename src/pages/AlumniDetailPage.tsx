@@ -21,11 +21,12 @@ import {
   fetchOrganizations
 } from "@/lib/api";
 
-// Import our new components
+// Import our components
 import PersonalInfoCard from "@/components/alumni/PersonalInfoCard";
 import ContactCard from "@/components/alumni/ContactCard";
 import JobHistoryCard from "@/components/alumni/JobHistoryCard";
 import JobFormDialog from "@/components/alumni/JobFormDialog";
+import FormSubmissionsCard from "@/components/alumni/FormSubmissionsCard";
 
 const AlumniDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -235,6 +236,11 @@ const AlumniDetailPage = () => {
     );
   }
 
+  // Extract UVID from email if it's a UVU email
+  const uvid = alumni.email.endsWith('@uvu.edu') 
+    ? alumni.email.split('@')[0] 
+    : undefined;
+
   const actionButton = editMode ? (
     <div className="flex gap-2">
       <Button 
@@ -299,6 +305,12 @@ const AlumniDetailPage = () => {
           onAddJob={openNewJobDialog}
           onEditJob={openEditJobDialog}
           onDeleteJob={handleDeleteJob}
+        />
+        
+        <FormSubmissionsCard 
+          alumniId={alumni.id}
+          alumniEmail={alumni.email}
+          uvid={uvid}
         />
       </div>
 

@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  fetchOrganizationById, 
-  updateOrganization, 
-  fetchAlumniByOrganizationId 
-} from "@/lib/api";
 import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save } from "lucide-react";
+import { ExternalLink, Pencil, Save, Copy, Check, ArrowLeft } from "lucide-react";
+import { fetchOrganizationById, updateOrganization, fetchAlumniByOrganizationId } from "@/lib/api";
+import OrganizationFormDialog from "@/components/organizations/OrganizationFormDialog";
 import OrganizationInfoCard from "@/components/organizations/OrganizationInfoCard";
 import AlumniDisplay from "@/components/alumni/AlumniDisplay";
 import { Alumni } from "@/types/models";
@@ -21,108 +21,89 @@ const OrganizationDetailPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
-  const formRef = useRef<HTMLFormElement>(null);
 
-  // Fetch organization data
-  const { 
-    data: organization, 
-    isLoading: organizationLoading 
-  } = useQuery({
-    queryKey: ['organization', id],
-    queryFn: () => fetchOrganizationById(id as string),
-    enabled: !!id,
-  });
+  const [organization, setOrganization] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [isCurrentEmployees, setIsCurrentEmployees] = useState(true);
+  const [alumni, setAlumni] = useState<Alumni[]>([]);
+  const [saving, setSaving] = useState(false);
 
-  // Fetch current alumni
-  const { 
-    data: currentAlumni = [], 
-    isLoading: currentAlumniLoading 
-  } = useQuery({
-    queryKey: ['organization-alumni-current', id],
-    queryFn: () => fetchAlumniByOrganizationId(id as string, true),
-    enabled: !!id,
-  });
+  const websiteRef = useRef<HTMLInputElement>(null);
 
-  // Fetch past alumni
-  const { 
-    data: pastAlumni = [], 
-    isLoading: pastAlumniLoading 
-  } = useQuery({
-    queryKey: ['organization-alumni-past', id],
-    queryFn: () => fetchAlumniByOrganizationId(id as string, false),
-    enabled: !!id,
-  });
-
-  // Update organization mutation
-  const updateOrganizationMutation = useMutation({
-    mutationFn: updateOrganization,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization', id] });
-      toast({
-        title: "Success",
-        description: "Organization information updated successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating organization:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update organization information",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleCopy = (text: string, label: string) => {
-    if (!text) return;
-    
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        setCopiedValues({ ...copiedValues, [text]: true });
-        toast({
-          title: "Copied!",
-          description: `${label} copied to clipboard`,
-        });
-        setTimeout(() => {
-          setCopiedValues({ ...copiedValues, [text]: false });
-        }, 2000);
-      })
-      .catch(err => {
-        console.error('Failed to copy text: ', err);
-        toast({
-          title: "Error",
-          description: "Failed to copy to clipboard",
-          variant: "destructive",
-        });
-      });
-  };
-
-  const handleOpenLinkedIn = (url: string) => {
-    if (!url) return;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
-  const handleAlumniClick = (alumniId: string) => {
-    navigate(`/alumni/${alumniId}`);
-  };
-
-  const handleSaveChanges = (updatedData: any) => {
+  useEffect(() => {
     if (!id) return;
-    
-    updateOrganizationMutation.mutate({
-      id,
-      ...updatedData
+
+    const loadOrganization = async () => {
+      const orgData = await fetchOrganizationById(id);
+      setOrganization(orgData);
+      setFormData(orgData);
+    };
+
+    loadOrganization();
+  }, [id]);
+
+  useEffect(() => {
+    if (!organization) return;
+
+    const loadAlumni = async () => {
+      const alumniData = await fetchAlumniByOrganizationId(organization.id, isCurrentEmployees);
+      setAlumni(alumniData);
+    };
+
+    loadAlumni();
+  }, [organization, isCurrentEmployees]);
+
+  const handleCopyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied to clipboard",
+      description: `${label} copied!`,
     });
   };
 
-  const handleBack = () => {
-    navigate('/organizations');
+  const handleEditToggle = () => {
+    setEditMode(!editMode);
+    if (!editMode && organization) {
+      setFormData(organization);
+    }
   };
 
-  const triggerFormSubmit = () => {
-    if (formRef.current) {
-      formRef.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!organization) return;
+
+    try {
+      setSaving(true);
+      const updatedOrganization = await updateOrganization({
+        id: organization.id,
+        ...formData,
+      });
+      setOrganization(updatedOrganization);
+      setEditMode(false);
+      // Invalidate and refetch organization data
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      toast({
+        title: "Success",
+        description: "Organization updated successfully.",
+      });
+    } catch (error) {
+      console.error("Failed to update organization:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update organization.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -139,85 +120,183 @@ const OrganizationDetailPage = () => {
 
   return (
     <PageLayout
-      title={organization ? <OrganizationTitle /> : "Organization Details"}
+      title={<OrganizationTitle />}
       subtitle={organization?.industry}
       actionButton={
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Organizations
-          </Button>
-          <Button 
-            className="bg-uvu-green hover:bg-uvu-green-medium"
-            onClick={triggerFormSubmit}
-            disabled={updateOrganizationMutation.isPending}
-          >
-            <Save className="mr-2 h-4 w-4" />
-            Save Changes
-          </Button>
+          {isCurrentEmployees && (
+            <Button 
+              variant="outline" 
+              onClick={() => setIsCurrentEmployees(false)}
+            >
+              Show All Alumni
+            </Button>
+          )}
+          {!isCurrentEmployees && organization && (
+            <Button 
+              variant="outline" 
+              onClick={() => setIsCurrentEmployees(true)}
+            >
+              Show Current Employees
+            </Button>
+          )}
+          {organization && (
+            <Button 
+              className="bg-uvu-green hover:bg-uvu-green-medium"
+              onClick={handleEditToggle}
+            >
+              {editMode ? (
+                <>
+                  <Save className="mr-2 h-4 w-4" /> Save
+                </>
+              ) : (
+                <>
+                  <Pencil className="mr-2 h-4 w-4" /> Edit
+                </>
+              )}
+            </Button>
+          )}
         </div>
       }
     >
-      {organizationLoading ? (
-        <div className="text-center py-10">
-          <p className="text-gray-500">Loading organization data...</p>
-        </div>
-      ) : organization ? (
-        <div className="space-y-8">
-          <OrganizationInfoCard
-            organization={organization}
-            onSave={handleSaveChanges}
-            isLoading={updateOrganizationMutation.isPending}
-            formRef={formRef}
-          />
-          
-          <div className="mt-6">
-            <h2 className="text-2xl font-bold mb-4">Alumni Employees</h2>
-            
-            <Tabs defaultValue="current">
-              <TabsList>
-                <TabsTrigger value="current">
-                  Current Employees ({currentAlumni?.length || 0})
-                </TabsTrigger>
-                <TabsTrigger value="past">
-                  Past Employees ({pastAlumni?.length || 0})
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="current" className="pt-4">
-                <AlumniDisplay
-                  viewMode="table"
-                  alumni={currentAlumni as Alumni[]}
-                  loading={currentAlumniLoading}
-                  copiedValues={copiedValues}
-                  onAlumniClick={handleAlumniClick}
-                  onCopy={handleCopy}
-                  onOpenLinkedIn={handleOpenLinkedIn}
-                />
-              </TabsContent>
-              
-              <TabsContent value="past" className="pt-4">
-                <AlumniDisplay
-                  viewMode="table"
-                  alumni={pastAlumni as Alumni[]}
-                  loading={pastAlumniLoading}
-                  copiedValues={copiedValues}
-                  onAlumniClick={handleAlumniClick}
-                  onCopy={handleCopy}
-                  onOpenLinkedIn={handleOpenLinkedIn}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-      ) : (
-        <div className="text-center py-10">
-          <p className="text-gray-500">Organization not found</p>
-        </div>
-      )}
+      <Button 
+        variant="ghost" 
+        className="w-fit" 
+        onClick={() => navigate("/organizations")}
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Organization List
+      </Button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <OrganizationInfoCard 
+          organization={organization}
+          formData={formData}
+          editMode={editMode}
+          handleChange={handleChange}
+          handleSave={handleSave}
+          saving={saving}
+        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Information</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div>
+                <p className="text-sm font-medium">Website</p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={organization?.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline truncate"
+                  >
+                    {organization?.website || "N/A"}
+                  </a>
+                  {organization?.website && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopyToClipboard(organization.website, "Website")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {organization?.website && (
+                    <a
+                      href={organization?.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="ghost" size="icon">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Contact Person</p>
+                <div className="flex items-center gap-2">
+                  <span>{organization?.contactPerson || "N/A"}</span>
+                  {organization?.contactPerson && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopyToClipboard(organization.contactPerson, "Contact Person")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div>
+                <p className="text-sm font-medium">Contact Email</p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`mailto:${organization?.contactEmail}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    {organization?.contactEmail || "N/A"}
+                  </a>
+                  {organization?.contactEmail && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopyToClipboard(organization.contactEmail, "Contact Email")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Contact Phone</p>
+                <div className="flex items-center gap-2">
+                  <span>{organization?.contactPhone || "N/A"}</span>
+                  {organization?.contactPhone && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopyToClipboard(organization.contactPhone, "Contact Phone")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium">Location</p>
+              <div className="flex items-center gap-2">
+                <span>{organization?.location || "N/A"}</span>
+                {organization?.location && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleCopyToClipboard(organization.location, "Location")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Alumni at {organization?.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AlumniDisplay alumni={alumni} />
+          </CardContent>
+        </Card>
+      </div>
     </PageLayout>
   );
 };
