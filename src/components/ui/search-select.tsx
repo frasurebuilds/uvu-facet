@@ -81,6 +81,7 @@ export function SearchSelect({
     
     if (onCreateOption && searchQuery) {
       onCreateOption(searchQuery);
+      setSearchQuery("");
       setOpen(false);
     }
   }, [onCreateOption, searchQuery]);
@@ -90,10 +91,11 @@ export function SearchSelect({
     (value: string) => {
       if (onCreateOption && searchQuery) {
         onCreateOption(searchQuery);
+        setSearchQuery("");
         setOpen(false);
       }
     },
-    [onCreateOption, searchQuery, setOpen]
+    [onCreateOption, searchQuery]
   );
 
   const clearSelection = React.useCallback(
@@ -133,10 +135,16 @@ export function SearchSelect({
       <PopoverContent 
         className="w-full p-0" 
         align="start"
-        style={{ zIndex: 100 }}
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        style={{ zIndex: 9999 }}
+        sideOffset={5}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+        }}
       >
-        <Command className="w-full">
+        <Command 
+          className="w-full"
+          shouldFilter={false}
+        >
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <CommandInput
@@ -145,6 +153,9 @@ export function SearchSelect({
               value={searchQuery}
               onValueChange={setSearchQuery}
               autoFocus
+              onPointerDown={(e) => {
+                e.stopPropagation();
+              }}
             />
           </div>
           <CommandList>
@@ -156,6 +167,9 @@ export function SearchSelect({
                   className="w-full justify-start mt-2 text-uvu-green hover:text-uvu-green-medium hover:bg-uvu-green/10"
                   onClick={handleCreateOption}
                   type="button"
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                  }}
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   {createOptionLabel} "{searchQuery}"
@@ -169,6 +183,9 @@ export function SearchSelect({
                   value={option.label}
                   onSelect={() => handleSelect(option.value)}
                   className="cursor-pointer"
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                  }}
                 >
                   <Check
                     className={cn(
@@ -187,6 +204,9 @@ export function SearchSelect({
                   <CommandItem
                     onSelect={handleCreateOptionCommand}
                     className="cursor-pointer text-uvu-green hover:text-uvu-green-medium"
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                    }}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     {createOptionLabel} "{searchQuery}"
