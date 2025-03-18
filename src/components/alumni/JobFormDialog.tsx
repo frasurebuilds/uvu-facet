@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import { JobHistory, Organization } from "@/types/models";
 import { Button } from "@/components/ui/button";
@@ -53,7 +52,6 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
   const { toast } = useToast();
   const [creatingOrganization, setCreatingOrganization] = useState(false);
   
-  // Transform organizations array into SearchSelectOption format
   const organizationOptions: SearchSelectOption[] = organizations.map((org) => ({
     value: org.id,
     label: org.name
@@ -67,7 +65,6 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
         industry: "Unknown", // Required field
       });
       
-      // Update the job with the new organization
       setCurrentJob(prev => ({
         ...prev,
         organizationId: newOrganization.id
@@ -89,7 +86,6 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
     }
   }, [setCurrentJob, toast]);
 
-  // Helper function to format a date string to a month/year format
   const formatMonthYear = (dateString?: string) => {
     if (!dateString) return "";
     try {
@@ -100,11 +96,9 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
     }
   };
 
-  // Helper function to set date values from calendar
   const setDateValue = (field: 'startDate' | 'endDate', date: Date | undefined) => {
     if (!date) return;
     
-    // Set the day to the 1st of the month to standardize
     const standardizedDate = new Date(date.getFullYear(), date.getMonth(), 1);
     setCurrentJob({
       ...job,

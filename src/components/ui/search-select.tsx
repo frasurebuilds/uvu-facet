@@ -13,10 +13,11 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogPortal,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export interface SearchSelectOption {
   value: string;
@@ -74,28 +75,13 @@ export function SearchSelect({
     [onValueChange]
   );
 
-  const handleCreateOption = React.useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleCreateOption = React.useCallback(() => {
     if (onCreateOption && searchQuery) {
       onCreateOption(searchQuery);
       setSearchQuery("");
       setOpen(false);
     }
   }, [onCreateOption, searchQuery]);
-  
-  // This function is used for CommandItem onSelect
-  const handleCreateOptionCommand = React.useCallback(
-    (_value: string) => {
-      if (onCreateOption && searchQuery) {
-        onCreateOption(searchQuery);
-        setSearchQuery("");
-        setOpen(false);
-      }
-    },
-    [onCreateOption, searchQuery]
-  );
 
   const clearSelection = React.useCallback(
     (e: React.MouseEvent) => {
@@ -105,9 +91,16 @@ export function SearchSelect({
     [onValueChange]
   );
 
+  // Reset search query when dialog closes
+  React.useEffect(() => {
+    if (!open) {
+      setSearchQuery("");
+    }
+  }, [open]);
+
   return (
-    <Popover open={open} onOpenChange={disabled ? undefined : setOpen}>
-      <PopoverTrigger asChild>
+    <Dialog open={open} onOpenChange={disabled ? undefined : setOpen}>
+      <DialogTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
@@ -130,80 +123,76 @@ export function SearchSelect({
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </div>
         </Button>
-      </PopoverTrigger>
-      <PopoverContent 
-        className="w-full p-0 z-[9999]" 
-        align="start"
-        sideOffset={8}
-        onOpenAutoFocus={(e) => {
-          // Prevent auto focus which can sometimes interfere with interaction
-          e.preventDefault();
-        }}
-      >
-        <Command 
-          className="w-full"
-          shouldFilter={false}
+      </DialogTrigger>
+      <DialogPortal>
+        <DialogContent
+          className="p-0 max-w-[400px] top-1/4 translate-y-0"
+          onInteractOutside={(e) => {
+            e.preventDefault(); // Prevent closing on interaction outside
+          }}
         >
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <CommandInput
-              placeholder={placeholder}
-              className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-none"
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-              autoFocus
-            />
-          </div>
-          <CommandList className="max-h-[300px] overflow-y-auto">
-            <CommandEmpty>
-              {emptyMessage}
-              {showCreateOption && (
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start mt-2 text-uvu-green hover:text-uvu-green-medium hover:bg-uvu-green/10"
-                  onClick={handleCreateOption}
-                  type="button"
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  {createOptionLabel} "{searchQuery}"
-                </Button>
-              )}
-            </CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.label}
-                  onSelect={() => handleSelect(option.value)}
-                  className="cursor-pointer"
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            {showCreateOption && (
-              <>
-                <CommandSeparator />
-                <CommandGroup>
-                  <CommandItem
-                    onSelect={handleCreateOptionCommand}
-                    className="cursor-pointer text-uvu-green hover:text-uvu-green-medium"
+          <Command shouldFilter={false} className="w-full">
+            <div className="flex items-center border-b px-3">
+              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+              <CommandInput
+                placeholder={placeholder}
+                className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-none"
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+                autoFocus
+              />
+            </div>
+            <CommandList className="max-h-[200px] overflow-y-auto">
+              <CommandEmpty>
+                {emptyMessage}
+                {showCreateOption && (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start mt-2 text-uvu-green hover:text-uvu-green-medium hover:bg-uvu-green/10"
+                    onClick={handleCreateOption}
+                    type="button"
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     {createOptionLabel} "{searchQuery}"
+                  </Button>
+                )}
+              </CommandEmpty>
+              <CommandGroup>
+                {options.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.label}
+                    onSelect={() => handleSelect(option.value)}
+                    className="cursor-pointer"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === option.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {option.label}
                   </CommandItem>
-                </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                ))}
+              </CommandGroup>
+              {showCreateOption && (
+                <>
+                  <CommandSeparator />
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={handleCreateOption}
+                      className="cursor-pointer text-uvu-green hover:text-uvu-green-medium"
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      {createOptionLabel} "{searchQuery}"
+                    </CommandItem>
+                  </CommandGroup>
+                </>
+              )}
+            </CommandList>
+          </Command>
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
   );
 }
