@@ -40,6 +40,7 @@ export interface JobHistory {
   alumniId: string;
   organizationId?: string;
   organizationName?: string;
+  website?: string; // Added website property
   jobTitle: string;
   startDate: string;
   endDate?: string;

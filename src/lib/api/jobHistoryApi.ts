@@ -8,7 +8,7 @@ export const fetchJobHistoryByAlumniId = async (alumniId: string): Promise<JobHi
     .from('job_history')
     .select(`
       *,
-      organizations (id, name)
+      organizations (id, name, website)
     `)
     .eq('alumni_id', alumniId)
     .order('is_current', { ascending: false })
@@ -24,7 +24,8 @@ export const fetchJobHistoryByAlumniId = async (alumniId: string): Promise<JobHi
     const { organizations, ...jobData } = job;
     return {
       ...jobData,
-      organizationName: organizations ? organizations.name : undefined
+      organizationName: organizations ? organizations.name : undefined,
+      website: organizations ? organizations.website : undefined
     };
   });
   

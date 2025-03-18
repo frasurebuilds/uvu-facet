@@ -179,7 +179,6 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       onSelect={(day) => setDateValue('startDate', day)}
                       initialFocus
                       defaultMonth={job?.startDate ? new Date(job.startDate) : new Date()}
-                      monthPickerMode={true}
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
@@ -241,7 +240,6 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                         onSelect={(day) => setDateValue('endDate', day)}
                         initialFocus
                         defaultMonth={job?.endDate ? new Date(job.endDate) : new Date()}
-                        monthPickerMode={true}
                         className="pointer-events-auto"
                       />
                     </PopoverContent>
