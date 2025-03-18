@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { JobHistory } from "@/types/models";
 import { Button } from "@/components/ui/button";
 import { 
@@ -34,12 +35,20 @@ const JobHistoryCard: React.FC<JobHistoryCardProps> = ({
   onEditJob,
   onDeleteJob
 }) => {
+  const navigate = useNavigate();
+
   // Format date to show only month and year
   const formatMonthYear = (dateString: string) => {
     try {
       return format(new Date(dateString), "MMMM yyyy");
     } catch (error) {
       return "Invalid date";
+    }
+  };
+
+  const handleOrganizationClick = (organizationId: string | undefined) => {
+    if (organizationId) {
+      navigate(`/organizations/${organizationId}`);
     }
   };
 
@@ -87,7 +96,14 @@ const JobHistoryCard: React.FC<JobHistoryCardProps> = ({
                           website={job.website || null}
                           size="sm"
                         />
-                        <span>{job.organizationName || 'N/A'}</span>
+                        <span 
+                          className={job.organizationId ? 
+                            "text-uvu-green hover:text-uvu-green-medium cursor-pointer hover:underline" : 
+                            ""}
+                          onClick={() => handleOrganizationClick(job.organizationId)}
+                        >
+                          {job.organizationName || 'N/A'}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
