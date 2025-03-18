@@ -187,7 +187,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       captionLayout="dropdown-buttons"
                       fromYear={1970}
                       toYear={2030}
-                      showMonthYearPicker
+                      // The month view is the default, so we don't need any special property for month picker
                     />
                   </PopoverContent>
                 </Popover>
@@ -251,7 +251,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                         captionLayout="dropdown-buttons"
                         fromYear={1970}
                         toYear={2030}
-                        showMonthYearPicker
+                        // The month view is the default, so we don't need any special property for month picker
                       />
                     </PopoverContent>
                   </Popover>
