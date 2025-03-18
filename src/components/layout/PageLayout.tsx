@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface PageLayoutProps {
   children: ReactNode;
-  title?: string;
+  title?: ReactNode;
   subtitle?: string;
   actionButton?: ReactNode;
 }
