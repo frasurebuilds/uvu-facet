@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createOrganization } from "@/lib/api";
@@ -24,7 +23,6 @@ const OrganizationFormDialog = ({ onSuccess, onCancel }: OrganizationFormDialogP
     contactPerson: "",
     contactEmail: "",
     contactPhone: "",
-    employeeCount: "",
     notes: ""
   });
 
@@ -47,11 +45,6 @@ const OrganizationFormDialog = ({ onSuccess, onCancel }: OrganizationFormDialogP
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Convert employeeCount to number or undefined
-    const employeeCount = formData.employeeCount 
-      ? parseInt(formData.employeeCount, 10) 
-      : undefined;
-    
     createOrganizationMutation.mutate({
       name: formData.name,
       industry: formData.industry,
@@ -60,7 +53,6 @@ const OrganizationFormDialog = ({ onSuccess, onCancel }: OrganizationFormDialogP
       contactPerson: formData.contactPerson || undefined,
       contactEmail: formData.contactEmail || undefined,
       contactPhone: formData.contactPhone || undefined,
-      employeeCount,
       notes: formData.notes || undefined
     });
   };
@@ -115,22 +107,6 @@ const OrganizationFormDialog = ({ onSuccess, onCancel }: OrganizationFormDialogP
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="City, State"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="employeeCount">Employee Count</Label>
-            <div className="flex items-center">
-              <Users className="mr-2 h-4 w-4 text-gray-500" />
-              <Input
-                id="employeeCount"
-                name="employeeCount"
-                type="number"
-                min="0"
-                value={formData.employeeCount}
-                onChange={handleChange}
-                placeholder="Number of employees"
               />
             </div>
           </div>

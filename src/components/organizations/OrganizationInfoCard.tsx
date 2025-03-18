@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Organization } from "@/types/models";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Building2, Globe, MapPin, Users, Phone, Mail, Save } from "lucide-react";
+import { fetchAlumniByOrganizationId } from "@/lib/api/alumniApi";
 
 interface OrganizationInfoCardProps {
   organization: Organization;
@@ -28,25 +30,32 @@ const OrganizationInfoCard = ({
     contactPerson: organization.contactPerson,
     contactEmail: organization.contactEmail,
     contactPhone: organization.contactPhone,
-    employeeCount: organization.employeeCount,
     notes: organization.notes
   });
+  const [alumniCount, setAlumniCount] = useState<number>(0);
+
+  useEffect(() => {
+    // Fetch alumni count when organization ID is available
+    if (organization.id) {
+      const fetchAlumniCount = async () => {
+        try {
+          const alumni = await fetchAlumniByOrganizationId(organization.id, true);
+          setAlumniCount(alumni.length);
+        } catch (error) {
+          console.error("Error fetching alumni count:", error);
+        }
+      };
+      
+      fetchAlumniCount();
+    }
+  }, [organization.id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
-    if (name === "employeeCount") {
-      // Convert to number for employeeCount
-      setFormData({
-        ...formData,
-        [name]: value ? parseInt(value, 10) : undefined
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -116,17 +125,14 @@ const OrganizationInfoCard = ({
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="employeeCount">Employee Count</Label>
+              <Label htmlFor="alumniCount">Alumni Employees</Label>
               <div className="flex items-center">
                 <Users className="mr-2 h-4 w-4 text-gray-500" />
                 <Input
-                  id="employeeCount"
-                  name="employeeCount"
-                  type="number"
-                  min="0"
-                  value={formData.employeeCount || ""}
-                  onChange={handleChange}
-                  placeholder="Number of employees"
+                  id="alumniCount"
+                  value={alumniCount || "0"}
+                  className="bg-gray-50"
+                  readOnly
                 />
               </div>
             </div>

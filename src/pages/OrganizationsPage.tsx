@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
@@ -42,7 +41,6 @@ const OrganizationsPage = () => {
   const { toast } = useToast();
   const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
 
-  // Fetch organizations
   const { data: organizations = [], isLoading } = useQuery({
     queryKey: ['organizations'],
     queryFn: fetchOrganizations
@@ -62,16 +60,11 @@ const OrganizationsPage = () => {
     
     navigator.clipboard.writeText(text)
       .then(() => {
-        // Set copied state for this specific value
         setCopiedValues({ ...copiedValues, [text]: true });
-        
-        // Show toast notification
         toast({
           title: "Copied!",
           description: `${label} copied to clipboard`,
         });
-        
-        // Reset icon after 2 seconds
         setTimeout(() => {
           setCopiedValues({ ...copiedValues, [text]: false });
         }, 2000);
@@ -89,7 +82,6 @@ const OrganizationsPage = () => {
   const handleOpenLink = (url: string) => {
     if (!url) return;
     
-    // Add http:// prefix if not present
     const fullUrl = url.startsWith('http') ? url : `https://${url}`;
     window.open(fullUrl, '_blank', 'noopener,noreferrer');
   };
@@ -114,7 +106,7 @@ const OrganizationsPage = () => {
             <TableHead>Organization</TableHead>
             <TableHead>Industry</TableHead>
             <TableHead className="hidden md:table-cell">Location</TableHead>
-            <TableHead className="hidden lg:table-cell">Employees</TableHead>
+            <TableHead className="hidden lg:table-cell">Alumni Employees</TableHead>
             <TableHead className="hidden lg:table-cell">Contact Person</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -141,7 +133,7 @@ const OrganizationsPage = () => {
                 </TableCell>
                 <TableCell>{org.industry}</TableCell>
                 <TableCell className="hidden md:table-cell">{org.location || "-"}</TableCell>
-                <TableCell className="hidden lg:table-cell">{org.employeeCount || "-"}</TableCell>
+                <TableCell className="hidden lg:table-cell">{org.employeeCount !== undefined ? org.employeeCount : "-"}</TableCell>
                 <TableCell className="hidden lg:table-cell">{org.contactPerson || "-"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
@@ -386,10 +378,10 @@ const OrganizationCard = ({
               <span>{organization.location}</span>
             </div>
           )}
-          {organization.employeeCount && (
+          {organization.employeeCount !== undefined && (
             <div className="flex items-center text-sm">
               <Users size={16} className="mr-2 text-gray-500" />
-              <span>{organization.employeeCount} employees</span>
+              <span>{organization.employeeCount} alumni employees</span>
             </div>
           )}
           {organization.contactPerson && (
