@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Organization } from "@/types/models";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,12 +11,14 @@ interface OrganizationInfoCardProps {
   organization: Organization;
   onSave: (updatedData: Partial<Organization>) => void;
   isLoading: boolean;
+  formRef?: React.RefObject<HTMLFormElement>;
 }
 
 const OrganizationInfoCard = ({ 
   organization, 
   onSave,
-  isLoading
+  isLoading,
+  formRef
 }: OrganizationInfoCardProps) => {
   const [formData, setFormData] = useState<Partial<Organization>>({
     name: organization.name,
@@ -62,7 +63,7 @@ const OrganizationInfoCard = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} ref={formRef} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Organization Name</Label>
@@ -184,7 +185,7 @@ const OrganizationInfoCard = ({
             />
           </div>
           
-          <div className="flex justify-end">
+          <div className="hidden lg:hidden">
             <Button 
               type="submit" 
               className="bg-uvu-green hover:bg-uvu-green-medium"

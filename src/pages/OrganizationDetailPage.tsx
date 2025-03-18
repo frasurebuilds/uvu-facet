@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
@@ -22,6 +22,7 @@ const OrganizationDetailPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Fetch organization data
   const { 
@@ -124,6 +125,12 @@ const OrganizationDetailPage = () => {
     navigate('/organizations');
   };
 
+  const triggerFormSubmit = () => {
+    if (formRef.current) {
+      formRef.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+  };
+
   return (
     <PageLayout
       title={organization?.name || "Organization Details"}
@@ -139,9 +146,8 @@ const OrganizationDetailPage = () => {
           </Button>
           <Button 
             className="bg-uvu-green hover:bg-uvu-green-medium"
-            onClick={() => {
-              // This will be triggered by the OrganizationInfoCard
-            }}
+            onClick={triggerFormSubmit}
+            disabled={updateOrganizationMutation.isPending}
           >
             <Save className="mr-2 h-4 w-4" />
             Save Changes
@@ -159,6 +165,7 @@ const OrganizationDetailPage = () => {
             organization={organization}
             onSave={handleSaveChanges}
             isLoading={updateOrganizationMutation.isPending}
+            formRef={formRef}
           />
           
           <div className="mt-6">

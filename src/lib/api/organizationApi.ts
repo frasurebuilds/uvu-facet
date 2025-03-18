@@ -34,6 +34,9 @@ export const fetchOrganizationById = async (id: string): Promise<Organization> =
 
 export const updateOrganization = async (organization: Partial<Organization> & { id: string }): Promise<Organization> => {
   const { id, ...updateData } = organization;
+  
+  console.log('Updating organization:', id, updateData);
+  
   const { data, error } = await supabase
     .from('organizations')
     .update(toSnakeCase(updateData))
