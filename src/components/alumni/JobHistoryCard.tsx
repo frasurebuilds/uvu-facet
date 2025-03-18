@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Briefcase, Plus, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import OrganizationLogo from "@/components/organizations/OrganizationLogo";
 
 interface JobHistoryCardProps {
   jobHistory: JobHistory[];
@@ -79,7 +80,16 @@ const JobHistoryCard: React.FC<JobHistoryCardProps> = ({
                 {jobHistory.map((job) => (
                   <TableRow key={job.id}>
                     <TableCell className="font-medium">{job.jobTitle}</TableCell>
-                    <TableCell>{job.organizationName || 'N/A'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <OrganizationLogo 
+                          name={job.organizationName || 'Unknown'} 
+                          website={job.website || null}
+                          size="sm"
+                        />
+                        <span>{job.organizationName || 'N/A'}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       {formatMonthYear(job.startDate)} - 
                       {job.endDate ? formatMonthYear(job.endDate) : 'Present'}
