@@ -16,6 +16,7 @@ import {
   Dialog,
   DialogContent,
   DialogPortal,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 
@@ -126,23 +127,25 @@ export function SearchSelect({
       </DialogTrigger>
       <DialogPortal>
         <DialogContent
-          className="p-0 max-w-[400px] top-1/4 translate-y-0 border bg-background shadow-md rounded-md overflow-hidden"
+          className="p-0 max-w-[400px] border bg-background shadow-md rounded-md overflow-hidden"
           style={{
-            position: "fixed",
+            position: "absolute",
             width: "calc(100% - 3rem)",
             maxHeight: "300px",
-            zIndex: 9999,
-            // Remove the overlay/backdrop with transparent background
+            zIndex: 1000,
             backgroundColor: "var(--background)",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            // Position the dropdown near the organization field
-            top: "auto",
-            transform: "none"
+            top: "calc(100% + 5px)", // Position right below the trigger button
+            left: "0",
+            transform: "none",
+            marginTop: "0",
           }}
           onInteractOutside={(e) => {
             e.preventDefault(); // Prevent closing on interaction outside
           }}
         >
+          {/* Add hidden DialogTitle for accessibility */}
+          <DialogTitle className="sr-only">Search Options</DialogTitle>
           <Command shouldFilter={false} className="w-full">
             <div className="flex items-center border-b px-3 bg-background">
               <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />

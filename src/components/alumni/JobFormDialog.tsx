@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { JobHistory, Organization } from "@/types/models";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,7 +108,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
   };
 
   // This will be applied to the parent Dialog to ensure correct stacking
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       // Add a higher z-index to the parent modal when it's open
       const parentModal = document.querySelector('[role="dialog"]');
@@ -150,7 +149,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
               <label htmlFor="organization" className="text-right text-sm font-medium">
                 Organization
               </label>
-              <div className="col-span-3" ref={organizationFieldRef}>
+              <div className="col-span-3 relative" ref={organizationFieldRef}>
                 <SearchSelect
                   options={organizationOptions}
                   value={job?.organizationId || ''}
