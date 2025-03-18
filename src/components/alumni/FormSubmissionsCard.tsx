@@ -34,6 +34,7 @@ const FormSubmissionsCard = ({ alumniId, alumniEmail, uvid }: FormSubmissionsCar
           return false;
         });
         
+        // The API function fetchFormSubmissions already converts the JSON to the proper FormSubmission type
         setSubmissions(filteredSubmissions);
       } catch (error) {
         console.error("Failed to load form submissions:", error);

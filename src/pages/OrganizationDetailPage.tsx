@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ import { fetchOrganizationById, updateOrganization, fetchAlumniByOrganizationId 
 import OrganizationFormDialog from "@/components/organizations/OrganizationFormDialog";
 import OrganizationInfoCard from "@/components/organizations/OrganizationInfoCard";
 import AlumniDisplay from "@/components/alumni/AlumniDisplay";
-import { Alumni } from "@/types/models";
+import { Alumni, Organization } from "@/types/models";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OrganizationLogo from "@/components/organizations/OrganizationLogo";
 
@@ -22,12 +23,14 @@ const OrganizationDetailPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [organization, setOrganization] = useState(null);
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<Partial<Organization>>({});
   const [isCurrentEmployees, setIsCurrentEmployees] = useState(true);
   const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [copiedValues, setCopiedValues] = useState<string[]>([]);
 
   const websiteRef = useRef<HTMLInputElement>(null);
 
@@ -47,8 +50,10 @@ const OrganizationDetailPage = () => {
     if (!organization) return;
 
     const loadAlumni = async () => {
+      setLoading(true);
       const alumniData = await fetchAlumniByOrganizationId(organization.id, isCurrentEmployees);
       setAlumni(alumniData);
+      setLoading(false);
     };
 
     loadAlumni();
@@ -107,6 +112,12 @@ const OrganizationDetailPage = () => {
     }
   };
 
+  // Function to handle alumni click
+  const handleAlumniClick = (alumniId: string) => {
+    navigate(`/alumni/${alumniId}`);
+  };
+
+  // Create the organization title component
   const OrganizationTitle = () => (
     <div className="flex items-center gap-2">
       <OrganizationLogo 
@@ -170,7 +181,6 @@ const OrganizationDetailPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <OrganizationInfoCard 
           organization={organization}
-          formData={formData}
           editMode={editMode}
           handleChange={handleChange}
           handleSave={handleSave}
@@ -293,7 +303,20 @@ const OrganizationDetailPage = () => {
             <CardTitle>Alumni at {organization?.name}</CardTitle>
           </CardHeader>
           <CardContent>
-            <AlumniDisplay alumni={alumni} />
+            <AlumniDisplay 
+              alumni={alumni} 
+              viewMode="list" 
+              loading={loading} 
+              copiedValues={copiedValues}
+              onAlumniClick={handleAlumniClick}
+              onCopy={(value) => {
+                navigator.clipboard.writeText(value);
+                setCopiedValues([...copiedValues, value]);
+                setTimeout(() => {
+                  setCopiedValues(prev => prev.filter(v => v !== value));
+                }, 2000);
+              }}
+            />
           </CardContent>
         </Card>
       </div>
