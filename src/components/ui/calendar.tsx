@@ -27,7 +27,7 @@ function Calendar({
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: cn(
           "text-sm font-medium",
-          showMonthYearPicker && "text-base"
+          showMonthYearPicker && "text-base font-semibold"
         ),
         nav: "space-x-1 flex items-center",
         nav_button: cn(
@@ -68,7 +68,7 @@ function Calendar({
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
-      captionLayout={showMonthYearPicker ? "dropdown-buttons" : "buttons"}
+      captionLayout={showMonthYearPicker ? "dropdown" : "buttons"}
       fromYear={1980}
       toYear={new Date().getFullYear() + 10}
       {...props}

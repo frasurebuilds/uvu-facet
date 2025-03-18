@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import { JobHistory, Organization } from "@/types/models";
 import { Button } from "@/components/ui/button";
@@ -170,7 +169,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {job?.startDate ? formatMonthYear(job.startDate) : "Select start month"}
+                      {job?.startDate ? formatMonthYear(job.startDate) : "Select month and year"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 z-[9999]" align="start">
@@ -232,7 +231,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {job?.endDate ? formatMonthYear(job.endDate) : "Select end month"}
+                        {job?.endDate ? formatMonthYear(job.endDate) : "Select month and year"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 z-[9999]" align="start">
