@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+
+import React, { useState, useCallback, useRef } from "react";
 import { JobHistory, Organization } from "@/types/models";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
 }) => {
   const { toast } = useToast();
   const [creatingOrganization, setCreatingOrganization] = useState(false);
+  const organizationFieldRef = useRef<HTMLDivElement>(null);
   
   const organizationOptions: SearchSelectOption[] = organizations.map((org) => ({
     value: org.id,
@@ -106,6 +108,17 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
     });
   };
 
+  // This will be applied to the parent Dialog to ensure correct stacking
+  React.useEffect(() => {
+    if (open) {
+      // Add a higher z-index to the parent modal when it's open
+      const parentModal = document.querySelector('[role="dialog"]');
+      if (parentModal) {
+        parentModal.setAttribute('style', 'z-index: 50;');
+      }
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -137,7 +150,7 @@ const JobFormDialog: React.FC<JobFormDialogProps> = ({
               <label htmlFor="organization" className="text-right text-sm font-medium">
                 Organization
               </label>
-              <div className="col-span-3">
+              <div className="col-span-3" ref={organizationFieldRef}>
                 <SearchSelect
                   options={organizationOptions}
                   value={job?.organizationId || ''}

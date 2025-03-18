@@ -132,6 +132,12 @@ export function SearchSelect({
             width: "calc(100% - 3rem)",
             maxHeight: "300px",
             zIndex: 9999,
+            // Remove the overlay/backdrop with transparent background
+            backgroundColor: "var(--background)",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            // Position the dropdown near the organization field
+            top: "auto",
+            transform: "none"
           }}
           onInteractOutside={(e) => {
             e.preventDefault(); // Prevent closing on interaction outside
