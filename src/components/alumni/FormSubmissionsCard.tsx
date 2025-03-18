@@ -34,11 +34,13 @@ const FormSubmissionsCard = ({ alumniId, alumniEmail, uvid }: FormSubmissionsCar
           return false;
         });
         
-        // Convert the JSON data to the proper FormSubmission type with Record<string, any>
+        // Convert the JSON data to the proper FormSubmission type
         const typedSubmissions: FormSubmission[] = filteredSubmissions.map(sub => ({
           ...sub,
           content: typeof sub.content === 'string' ? JSON.parse(sub.content) : sub.content,
-          mappedFields: typeof sub.mappedFields === 'string' ? JSON.parse(sub.mappedFields || '{}') : (sub.mappedFields || {})
+          mappedFields: typeof sub.mappedFields === 'string' ? JSON.parse(sub.mappedFields || '{}') : (sub.mappedFields || {}),
+          // Ensure status is one of the allowed values
+          status: (sub.status as "pending" | "reviewed" | "processed" | "archived") || "pending"
         }));
         
         setSubmissions(typedSubmissions);

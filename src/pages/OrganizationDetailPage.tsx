@@ -1,20 +1,16 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, Pencil, Save, Copy, Check, ArrowLeft } from "lucide-react";
+import { ExternalLink, Pencil, Save, Copy, ArrowLeft } from "lucide-react";
 import { fetchOrganizationById, updateOrganization, fetchAlumniByOrganizationId } from "@/lib/api";
-import OrganizationFormDialog from "@/components/organizations/OrganizationFormDialog";
 import OrganizationInfoCard from "@/components/organizations/OrganizationInfoCard";
 import AlumniDisplay from "@/components/alumni/AlumniDisplay";
 import { Alumni, Organization } from "@/types/models";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OrganizationLogo from "@/components/organizations/OrganizationLogo";
 
 const OrganizationDetailPage = () => {
@@ -24,15 +20,11 @@ const OrganizationDetailPage = () => {
   const queryClient = useQueryClient();
 
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState<Partial<Organization>>({});
   const [isCurrentEmployees, setIsCurrentEmployees] = useState(true);
   const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [copiedValues, setCopiedValues] = useState<string[]>([]);
-
-  const websiteRef = useRef<HTMLInputElement>(null);
+  const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!id) return;
@@ -40,7 +32,6 @@ const OrganizationDetailPage = () => {
     const loadOrganization = async () => {
       const orgData = await fetchOrganizationById(id);
       setOrganization(orgData);
-      setFormData(orgData);
     };
 
     loadOrganization();
@@ -61,39 +52,28 @@ const OrganizationDetailPage = () => {
 
   const handleCopyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
+    setCopiedValues({ ...copiedValues, [text]: true });
+    setTimeout(() => {
+      setCopiedValues({ ...copiedValues, [text]: false });
+    }, 2000);
+    
     toast({
       title: "Copied to clipboard",
       description: `${label} copied!`,
     });
   };
 
-  const handleEditToggle = () => {
-    setEditMode(!editMode);
-    if (!editMode && organization) {
-      setFormData(organization);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (updatedData: Partial<Organization>) => {
     if (!organization) return;
 
     try {
       setSaving(true);
       const updatedOrganization = await updateOrganization({
         id: organization.id,
-        ...formData,
+        ...updatedData,
       });
       setOrganization(updatedOrganization);
-      setEditMode(false);
+      
       // Invalidate and refetch organization data
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
       toast({
@@ -129,6 +109,14 @@ const OrganizationDetailPage = () => {
     </div>
   );
 
+  const onCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedValues({ ...copiedValues, [text]: true });
+    setTimeout(() => {
+      setCopiedValues({ ...copiedValues, [text]: false });
+    }, 2000);
+  };
+
   return (
     <PageLayout
       title={<OrganizationTitle />}
@@ -154,17 +142,9 @@ const OrganizationDetailPage = () => {
           {organization && (
             <Button 
               className="bg-uvu-green hover:bg-uvu-green-medium"
-              onClick={handleEditToggle}
+              onClick={() => handleSave(organization)}
             >
-              {editMode ? (
-                <>
-                  <Save className="mr-2 h-4 w-4" /> Save
-                </>
-              ) : (
-                <>
-                  <Pencil className="mr-2 h-4 w-4" /> Edit
-                </>
-              )}
+              <Save className="mr-2 h-4 w-4" /> Save
             </Button>
           )}
         </div>
@@ -179,13 +159,13 @@ const OrganizationDetailPage = () => {
         Back to Organization List
       </Button>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <OrganizationInfoCard 
-          organization={organization}
-          editMode={editMode}
-          handleChange={handleChange}
-          handleSave={handleSave}
-          saving={saving}
-        />
+        {organization && (
+          <OrganizationInfoCard 
+            organization={organization}
+            onSave={handleSave}
+            isLoading={saving}
+          />
+        )}
         <Card>
           <CardHeader>
             <CardTitle>Contact Information</CardTitle>
@@ -207,7 +187,7 @@ const OrganizationDetailPage = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleCopyToClipboard(organization.website, "Website")}
+                      onClick={() => handleCopyToClipboard(organization.website || "", "Website")}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -233,7 +213,7 @@ const OrganizationDetailPage = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleCopyToClipboard(organization.contactPerson, "Contact Person")}
+                      onClick={() => handleCopyToClipboard(organization.contactPerson || "", "Contact Person")}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -255,7 +235,7 @@ const OrganizationDetailPage = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleCopyToClipboard(organization.contactEmail, "Contact Email")}
+                      onClick={() => handleCopyToClipboard(organization.contactEmail || "", "Contact Email")}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -270,7 +250,7 @@ const OrganizationDetailPage = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleCopyToClipboard(organization.contactPhone, "Contact Phone")}
+                      onClick={() => handleCopyToClipboard(organization.contactPhone || "", "Contact Phone")}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -286,7 +266,7 @@ const OrganizationDetailPage = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleCopyToClipboard(organization.location, "Location")}
+                    onClick={() => handleCopyToClipboard(organization.location || "", "Location")}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -305,17 +285,12 @@ const OrganizationDetailPage = () => {
           <CardContent>
             <AlumniDisplay 
               alumni={alumni} 
-              viewMode="list" 
+              viewMode="table" 
               loading={loading} 
               copiedValues={copiedValues}
               onAlumniClick={handleAlumniClick}
-              onCopy={(value) => {
-                navigator.clipboard.writeText(value);
-                setCopiedValues([...copiedValues, value]);
-                setTimeout(() => {
-                  setCopiedValues(prev => prev.filter(v => v !== value));
-                }, 2000);
-              }}
+              onCopy={onCopy}
+              onOpenLinkedIn={(url) => window.open(url, '_blank')}
             />
           </CardContent>
         </Card>
