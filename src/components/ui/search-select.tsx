@@ -74,6 +74,7 @@ export function SearchSelect({
     [onValueChange]
   );
 
+  // This function is used directly with a button click
   const handleCreateOption = React.useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -83,6 +84,17 @@ export function SearchSelect({
       setOpen(false);
     }
   }, [onCreateOption, searchQuery]);
+  
+  // This is a wrapper function for CommandItem that expects a string parameter
+  const handleCreateOptionCommand = React.useCallback(
+    (value: string) => {
+      if (onCreateOption && searchQuery) {
+        onCreateOption(searchQuery);
+        setOpen(false);
+      }
+    },
+    [onCreateOption, searchQuery, setOpen]
+  );
 
   const clearSelection = React.useCallback(
     (e: React.MouseEvent) => {
@@ -173,7 +185,7 @@ export function SearchSelect({
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem
-                    onSelect={handleCreateOption}
+                    onSelect={handleCreateOptionCommand}
                     className="cursor-pointer text-uvu-green hover:text-uvu-green-medium"
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
