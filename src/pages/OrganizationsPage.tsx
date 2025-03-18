@@ -32,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchOrganizations } from "@/lib/api";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 import OrganizationFormDialog from "@/components/organizations/OrganizationFormDialog";
+import OrganizationLogo from "@/components/organizations/OrganizationLogo";
 
 const OrganizationsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -132,7 +133,12 @@ const OrganizationsPage = () => {
                 className="hover:bg-gray-50 cursor-pointer"
                 onClick={() => handleOrganizationClick(org.id)}
               >
-                <TableCell className="font-medium">{org.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-3">
+                    <OrganizationLogo name={org.name} website={org.website} size="sm" />
+                    <span>{org.name}</span>
+                  </div>
+                </TableCell>
                 <TableCell>{org.industry}</TableCell>
                 <TableCell className="hidden md:table-cell">{org.location || "-"}</TableCell>
                 <TableCell className="hidden lg:table-cell">{org.employeeCount || "-"}</TableCell>
@@ -352,7 +358,6 @@ const OrganizationCard = ({
   copiedValues
 }: OrganizationCardProps) => {
   const navigate = useNavigate();
-  const firstLetter = organization.name[0];
 
   const handleCardClick = () => {
     navigate(`/organizations/${organization.id}`);
@@ -362,9 +367,11 @@ const OrganizationCard = ({
     <Card className="uvu-card card-hover-effect overflow-hidden cursor-pointer" onClick={handleCardClick}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
-          <div className="bg-uvu-green h-10 w-10 rounded-full flex items-center justify-center text-white font-bold">
-            {firstLetter}
-          </div>
+          <OrganizationLogo 
+            name={organization.name} 
+            website={organization.website} 
+            size="md"
+          />
           <div>
             <CardTitle className="text-lg">{organization.name}</CardTitle>
             <CardDescription>{organization.industry}</CardDescription>
