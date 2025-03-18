@@ -74,7 +74,10 @@ export function SearchSelect({
     [onValueChange]
   );
 
-  const handleCreateOption = React.useCallback(() => {
+  const handleCreateOption = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (onCreateOption && searchQuery) {
       onCreateOption(searchQuery);
       setOpen(false);
@@ -115,7 +118,12 @@ export function SearchSelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent 
+        className="w-full p-0" 
+        align="start"
+        style={{ zIndex: 100 }}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <Command className="w-full">
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -124,6 +132,7 @@ export function SearchSelect({
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-none"
               value={searchQuery}
               onValueChange={setSearchQuery}
+              autoFocus
             />
           </div>
           <CommandList>
