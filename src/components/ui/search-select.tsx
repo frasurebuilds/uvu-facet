@@ -57,6 +57,15 @@ export function SearchSelect({
     [options, value]
   );
 
+  // Filter options based on search query
+  const filteredOptions = React.useMemo(() => {
+    if (!searchQuery) return options;
+    
+    return options.filter(option => 
+      option.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [options, searchQuery]);
+
   const showCreateOption = React.useMemo(() => {
     if (!allowCreate || !searchQuery || !onCreateOption) return false;
     
@@ -169,22 +178,43 @@ export function SearchSelect({
               </CommandEmpty>
               
               <CommandGroup>
-                {options.map((option) => (
-                  <CommandItem
-                    key={option.value}
-                    value={option.label}
-                    onSelect={() => handleSelect(option.value)}
-                    className="cursor-pointer px-4 py-2 hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === option.value ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {option.label}
-                  </CommandItem>
-                ))}
+                {filteredOptions.length === 0 && !searchQuery ? (
+                  // Show all options when no search query
+                  options.map((option) => (
+                    <CommandItem
+                      key={option.value}
+                      value={option.value}
+                      onSelect={() => handleSelect(option.value)}
+                      className="cursor-pointer px-4 py-2 hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === option.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  ))
+                ) : (
+                  // Show filtered options when there's a search query
+                  filteredOptions.map((option) => (
+                    <CommandItem
+                      key={option.value}
+                      value={option.value}
+                      onSelect={() => handleSelect(option.value)}
+                      className="cursor-pointer px-4 py-2 hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === option.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  ))
+                )}
               </CommandGroup>
               {/* Removed the create option from the bottom */}
             </CommandList>
