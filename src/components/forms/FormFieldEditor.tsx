@@ -41,6 +41,38 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
     { value: 'date', label: 'Date Picker' },
   ];
 
+  // Alumni profile mapping options
+  const alumniProfileFields = [
+    { value: '', label: 'None (No Mapping)' },
+    { value: 'firstName', label: 'First Name' },
+    { value: 'lastName', label: 'Last Name' },
+    { value: 'email', label: 'Email' },
+    { value: 'phone', label: 'Phone' },
+    { value: 'graduationYear', label: 'Graduation Year' },
+    { value: 'degree', label: 'Degree' },
+    { value: 'major', label: 'Major' },
+    { value: 'linkedIn', label: 'LinkedIn' },
+    { value: 'notes', label: 'Notes' },
+  ];
+
+  // Employment mapping options
+  const employmentFields = [
+    { value: 'employment.jobTitle', label: 'Job Title' },
+    { value: 'employment.organizationName', label: 'Organization Name' },
+    { value: 'employment.startDate', label: 'Start Date' },
+    { value: 'employment.endDate', label: 'End Date' },
+    { value: 'employment.isCurrent', label: 'Current Position' },
+    { value: 'employment.description', label: 'Job Description' },
+    { value: 'employment.website', label: 'Company Website' },
+  ];
+
+  // Combined mapping options
+  const mappingOptions = [
+    { label: 'No Mapping', options: [{ value: '', label: 'None (No Mapping)' }] },
+    { label: 'Alumni Profile Fields', options: alumniProfileFields.filter(f => f.value !== '') },
+    { label: 'Employment History Fields', options: employmentFields },
+  ];
+
   useEffect(() => {
     // If field type is changed, reset options if needed
     if (
@@ -85,6 +117,11 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
     setEditField({ ...editField, required: checked });
   };
 
+  // Handle field mapping change
+  const handleMappingChange = (value: string) => {
+    setEditField({ ...editField, mappedField: value });
+  };
+
   // Handle options for select, checkbox, and radio types
   const addOption = () => {
     if (tempOption.trim() === "") return;
@@ -120,7 +157,7 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
   };
 
   // Determine if the field is a display element (non-input)
-  const isDisplayElement = ['header', 'description'].includes(editField.type);
+  const isDisplayElement = ['header', 'description', 'divider'].includes(editField.type);
 
   return (
     <Card className="mb-4">
@@ -188,6 +225,54 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
                 checked={editField.required}
                 onCheckedChange={handleRequiredChange}
               />
+            </div>
+          )}
+
+          {/* Field Mapping - Only for input fields (not display elements) */}
+          {!isDisplayElement && (
+            <div className="space-y-2">
+              <Label htmlFor="mapping">Map to Alumni Profile Field</Label>
+              <Select 
+                value={editField.mappedField || ''} 
+                onValueChange={handleMappingChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select field mapping" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mappingOptions.map((group) => (
+                    <SelectItem key={group.label} value={group.label} disabled>
+                      {group.label}
+                    </SelectItem>
+                  ))}
+                  {mappingOptions[0].options.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                  
+                  <SelectItem value="alumni_profile_divider" disabled>
+                    --- Alumni Profile Fields ---
+                  </SelectItem>
+                  {alumniProfileFields.filter(f => f.value !== '').map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                  
+                  <SelectItem value="employment_divider" disabled>
+                    --- Employment History Fields ---
+                  </SelectItem>
+                  {employmentFields.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                Mapping a field allows form submissions to update alumni profiles automatically
+              </p>
             </div>
           )}
 
