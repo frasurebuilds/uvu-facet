@@ -287,11 +287,19 @@ const FormBuilder = ({
 
   const updateField = (index: number, field: FormField) => {
     try {
+      console.log(`Updating field at index ${index}:`, field);
       const newFields = [...formData.fields];
       newFields[index] = field;
       setFormData(prev => ({ ...prev, fields: newFields }));
+      
+      console.log("Form fields after update:", newFields);
     } catch (error) {
       console.error("Error updating field:", error);
+      toast({
+        title: "Error updating field",
+        description: "There was a problem updating the field",
+        variant: "destructive"
+      });
     }
   };
 
@@ -663,7 +671,11 @@ const FormBuilder = ({
                             {activeFieldIndex === index && (
                               <FormFieldEditor 
                                 field={field} 
-                                onSave={(updatedField) => updateField(index, updatedField)}
+                                onSave={(updatedField) => {
+                                  console.log("Field editor: saving field", updatedField);
+                                  updateField(index, updatedField);
+                                  setActiveFieldIndex(null); // Close the editor after saving
+                                }}
                                 onCancel={() => setActiveFieldIndex(null)}
                                 onDelete={() => removeField(index)}
                                 isNew={false} 

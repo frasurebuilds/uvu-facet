@@ -116,6 +116,8 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
       ? { ...editField, id: uuidv4() } 
       : editField;
     
+    console.log("Applying changes to field:", fieldToSave);
+    
     // Call the onSave prop with the updated field data
     onSave(fieldToSave);
   };
