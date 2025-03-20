@@ -13,6 +13,7 @@ import AlumniDetailPage from "./pages/AlumniDetailPage";
 import OrganizationsPage from "./pages/OrganizationsPage";
 import OrganizationDetailPage from "./pages/OrganizationDetailPage";
 import FormSubmissionsPage from "./pages/FormSubmissionsPage";
+import SubmissionDetailPage from "./pages/SubmissionDetailPage";
 import FormsPage from "./pages/FormsPage";
 import FormCreatePage from "./pages/FormCreatePage";
 import FormEditPage from "./pages/FormEditPage";
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/forms/edit/:id" element={<ProtectedRoute><FormEditPage /></ProtectedRoute>} />
               <Route path="/forms/view/:id" element={<ProtectedRoute><FormViewPage /></ProtectedRoute>} />
               <Route path="/form-submissions" element={<ProtectedRoute><FormSubmissionsPage /></ProtectedRoute>} />
+              <Route path="/submissions/:id" element={<ProtectedRoute><SubmissionDetailPage /></ProtectedRoute>} />
               
               {/* Public routes for form submission (no authentication required) */}
               <Route path="/public-form/:id" element={<PublicFormPage />} />

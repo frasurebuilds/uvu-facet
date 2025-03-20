@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useToast } from "@/hooks/use-toast";
 import ThemeToggle from "@/components/ThemeToggle";
 import logo from "/lovable-uploads/9f7e0c80-4ba0-4e4b-a293-620fa15d35f0.png";
+
 const Sidebar = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -20,9 +21,11 @@ const Sidebar = () => {
   const {
     toast
   } = useToast();
+
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -34,6 +37,7 @@ const Sidebar = () => {
       window.removeEventListener("keydown", handleEsc);
     };
   }, []);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -44,6 +48,7 @@ const Sidebar = () => {
       document.body.style.overflow = "auto";
     };
   }, [isOpen]);
+
   const handleSignOut = async () => {
     await signOut();
     toast({
@@ -51,6 +56,7 @@ const Sidebar = () => {
       description: "You have been successfully signed out"
     });
   };
+
   const navItems = [{
     name: "Dashboard",
     icon: <LayoutDashboard size={20} />,
@@ -72,6 +78,7 @@ const Sidebar = () => {
     icon: <FileText size={20} />,
     href: "/form-submissions"
   }];
+
   const NavLink = ({
     item
   }: {
@@ -92,6 +99,7 @@ const Sidebar = () => {
         </TooltipContent>
       </Tooltip>;
   };
+
   return <>
       <div className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b dark:border-gray-800 p-3 md:hidden">
         <div className="flex items-center justify-between">
@@ -159,4 +167,5 @@ const Sidebar = () => {
       </nav>
     </>;
 };
+
 export default Sidebar;
