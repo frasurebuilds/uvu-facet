@@ -27,6 +27,11 @@ const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
   handleInputChange,
   handleCheckboxChange
 }) => {
+  // Extract UVID from email if it's a UVU email
+  const uvid = alumni.email.endsWith('@uvu.edu') 
+    ? alumni.email.split('@')[0] 
+    : undefined;
+  
   return (
     <Card className="md:col-span-2">
       <CardHeader>
@@ -80,6 +85,13 @@ const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
                 <p>{alumni.email}</p>
               )}
             </div>
+            
+            {uvid && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">UVID</label>
+                <p>{uvid}</p>
+              </div>
+            )}
             
             <div>
               <label className="text-sm font-medium text-gray-500">Phone</label>
