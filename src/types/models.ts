@@ -1,4 +1,3 @@
-
 // Type definitions for our data models
 
 export interface Alumni {
@@ -76,16 +75,17 @@ export interface FormField {
 export interface FormSubmission {
   id: string;
   type: string;
+  content: Record<string, any>;
   submittedByName: string;
   submittedByEmail: string;
   submittedByUvid?: string;
   submittedByAlumniId?: string;
   isAnonymous?: boolean;
-  content: Record<string, any>; // This is the correct type
-  mappedFields?: Record<string, any>; // This is the correct type
-  status: 'pending' | 'reviewed' | 'processed' | 'archived';
   createdAt: string;
+  status: 'pending' | 'reviewed' | 'processed' | 'archived';
   notes?: string;
+  mappedFields?: Record<string, any>;
+  metadata?: Record<string, any>;
 }
 
 // Add this new interface for employment form fields
