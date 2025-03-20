@@ -1,236 +1,267 @@
-
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FormField } from "@/types/models";
-import { Input } from "@/components/ui/input";
+import { v4 as uuidv4 } from "uuid";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { X, Plus, Link } from "lucide-react";
-
-// Alumni profile fields that can be mapped
-const ALUMNI_PROFILE_FIELDS = [
-  { id: "firstName", label: "First Name" },
-  { id: "lastName", label: "Last Name" },
-  { id: "email", label: "Email" },
-  { id: "phone", label: "Phone" },
-  { id: "graduationYear", label: "Graduation Year" },
-  { id: "degree", label: "Degree" },
-  { id: "major", label: "Major" },
-  { id: "linkedIn", label: "LinkedIn Profile" }
-];
-
-// Employment history fields that can be mapped
-const EMPLOYMENT_HISTORY_FIELDS = [
-  { id: "jobTitle", label: "Position/Job Title" },
-  { id: "organizationName", label: "Organization Name" },
-  { id: "startDate", label: "Start Date" },
-  { id: "endDate", label: "End Date" },
-  { id: "isCurrent", label: "Current Position" },
-  { id: "description", label: "Job Description" },
-  { id: "website", label: "Organization Website" }
-];
+import { Card, CardContent } from "@/components/ui/card";
+import { X, Plus, Trash2 } from "lucide-react";
 
 interface FormFieldEditorProps {
   field: FormField;
-  onChange: (field: FormField) => void;
+  onSave: (field: FormField) => void;
+  onCancel: () => void;
+  onDelete?: () => void;
+  isNew?: boolean;
 }
 
-const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
-  const [newOption, setNewOption] = useState("");
+const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
+  field,
+  onSave,
+  onCancel,
+  onDelete,
+  isNew = false,
+}) => {
+  const [editField, setEditField] = useState<FormField>({...field});
+  const [tempOption, setTempOption] = useState("");
+  
+  // Field type options including new display elements
+  const fieldTypes = [
+    { value: 'header', label: 'Header' },
+    { value: 'description', label: 'Description Text' },
+    { value: 'divider', label: 'Divider Line' },
+    { value: 'text', label: 'Text Input' },
+    { value: 'textarea', label: 'Text Area' },
+    { value: 'email', label: 'Email Input' },
+    { value: 'number', label: 'Number Input' },
+    { value: 'select', label: 'Dropdown Select' },
+    { value: 'checkbox', label: 'Checkbox Group' },
+    { value: 'radio', label: 'Radio Button Group' },
+    { value: 'date', label: 'Date Picker' },
+  ];
 
-  const updateField = (updates: Partial<FormField>) => {
-    onChange({ ...field, ...updates });
+  useEffect(() => {
+    // If field type is changed, reset options if needed
+    if (
+      !['select', 'checkbox', 'radio'].includes(editField.type) && 
+      editField.options && 
+      editField.options.length > 0
+    ) {
+      setEditField({ ...editField, options: [] });
+    }
+  }, [editField.type]);
+
+  // Handle field property changes
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditField({ ...editField, [name]: value });
   };
 
-  const addOption = () => {
-    if (!newOption.trim()) return;
+  // Handle field type changes
+  const handleTypeChange = (value: string) => {
+    const isDisplayElementType = ['header', 'description', 'divider'].includes(value);
     
-    const updatedOptions = field.options ? [...field.options, newOption.trim()] : [newOption.trim()];
-    updateField({ options: updatedOptions });
-    setNewOption("");
+    // For display elements, set required to false and clear placeholder
+    if (isDisplayElementType) {
+      setEditField({ 
+        ...editField, 
+        type: value as FormField['type'],
+        required: false,
+        placeholder: '',
+      });
+    } else {
+      setEditField({ 
+        ...editField, 
+        type: value as FormField['type'] 
+      });
+    }
+  };
+
+  // Handle required toggle
+  const handleRequiredChange = (checked: boolean) => {
+    setEditField({ ...editField, required: checked });
+  };
+
+  // Handle options for select, checkbox, and radio types
+  const addOption = () => {
+    if (tempOption.trim() === "") return;
+    
+    const updatedOptions = editField.options 
+      ? [...editField.options, tempOption] 
+      : [tempOption];
+    
+    setEditField({ ...editField, options: updatedOptions });
+    setTempOption("");
   };
 
   const removeOption = (index: number) => {
-    if (!field.options) return;
+    if (!editField.options) return;
     
-    const updatedOptions = field.options.filter((_, i) => i !== index);
-    updateField({ options: updatedOptions });
+    const updatedOptions = [...editField.options];
+    updatedOptions.splice(index, 1);
+    
+    setEditField({ ...editField, options: updatedOptions });
   };
 
-  // Special field types that don't need certain properties
-  const isNonInputField = ['header', 'description', 'divider'].includes(field.type);
-  const isSpecialField = isNonInputField;
+  // Save the field
+  const handleSave = () => {
+    // Generate a new ID for new fields
+    const fieldToSave = isNew 
+      ? { ...editField, id: uuidv4() } 
+      : editField;
+    
+    onSave(fieldToSave);
+  };
+
+  // Determine if the field is a display element (non-input)
+  const isDisplayElement = ['header', 'description', 'divider'].includes(editField.type);
 
   return (
-    <div className="border-t pt-4 mt-2 space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor={`field-label-${field.id}`}>
-            {field.type === 'divider' ? 'Line Label (Optional)' : 'Field Label'}
-          </Label>
-          <Input
-            id={`field-label-${field.id}`}
-            value={field.label}
-            onChange={(e) => updateField({ label: e.target.value })}
-            placeholder={field.type === 'divider' ? "Optional text to display with line" : "Enter field label"}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`field-type-${field.id}`}>Field Type</Label>
-          <Select 
-            value={field.type}
-            onValueChange={(value: any) => updateField({ type: value })}
-          >
-            <SelectTrigger id={`field-type-${field.id}`}>
-              <SelectValue placeholder="Select field type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="header">Section Header</SelectItem>
-              <SelectItem value="description">Descriptive Text</SelectItem>
-              <SelectItem value="divider">Horizontal Line</SelectItem>
-              <SelectItem value="text">Text</SelectItem>
-              <SelectItem value="textarea">Text Area</SelectItem>
-              <SelectItem value="email">Email</SelectItem>
-              <SelectItem value="number">Number</SelectItem>
-              <SelectItem value="date">Date</SelectItem>
-              <SelectItem value="month-year">Month & Year</SelectItem>
-              <SelectItem value="select">Dropdown</SelectItem>
-              <SelectItem value="checkbox">Checkboxes</SelectItem>
-              <SelectItem value="radio">Radio Buttons</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {!isSpecialField && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <Card className="mb-4">
+      <CardContent className="pt-6">
+        <div className="space-y-4">
+          {/* Field Type Selection */}
           <div className="space-y-2">
-            <Label htmlFor={`field-placeholder-${field.id}`}>Placeholder</Label>
-            <Input
-              id={`field-placeholder-${field.id}`}
-              value={field.placeholder || ''}
-              onChange={(e) => updateField({ placeholder: e.target.value })}
-              placeholder="Enter placeholder text"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`field-default-${field.id}`}>Default Value</Label>
-            <Input
-              id={`field-default-${field.id}`}
-              value={field.defaultValue || ''}
-              onChange={(e) => updateField({ defaultValue: e.target.value })}
-              placeholder="Enter default value"
-            />
-          </div>
-        </div>
-      )}
-
-      {!isNonInputField && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor={`field-mapping-${field.id}`} className="flex items-center gap-2">
-              <Link size={16} className="text-gray-500" />
-              Map to Profile Field
-            </Label>
+            <Label htmlFor="type">Field Type</Label>
             <Select 
-              value={field.mappedField || ''}
-              onValueChange={(value) => updateField({ mappedField: value || undefined })}
+              value={editField.type} 
+              onValueChange={handleTypeChange}
             >
-              <SelectTrigger id={`field-mapping-${field.id}`}>
-                <SelectValue placeholder="Select a profile field to map" />
+              <SelectTrigger>
+                <SelectValue placeholder="Select field type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Not mapped</SelectItem>
-                
-                <SelectItem value="_separator_1" disabled className="font-semibold">
-                  Alumni Profile
-                </SelectItem>
-                {ALUMNI_PROFILE_FIELDS.map((profileField) => (
-                  <SelectItem key={profileField.id} value={profileField.id}>
-                    {profileField.label}
-                  </SelectItem>
-                ))}
-                
-                <SelectItem value="_separator_2" disabled className="font-semibold">
-                  Employment History
-                </SelectItem>
-                {EMPLOYMENT_HISTORY_FIELDS.map((historyField) => (
-                  <SelectItem key={historyField.id} value={`employment.${historyField.id}`}>
-                    {historyField.label}
+                {fieldTypes.map(type => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              Mapping a field allows form submissions to update alumni profiles and employment history
-            </p>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
-              id={`field-required-${field.id}`}
-              checked={field.required}
-              onCheckedChange={(checked) => updateField({ required: checked })}
+          {/* Label Field */}
+          <div className="space-y-2">
+            <Label htmlFor="label">
+              {isDisplayElement ? 'Content' : 'Label'}
+            </Label>
+            <Textarea
+              id="label"
+              name="label"
+              value={editField.label}
+              onChange={handleChange}
+              className="min-h-[80px]"
+              placeholder={isDisplayElement ? "Enter content text" : "Enter field label"}
             />
-            <Label htmlFor={`field-required-${field.id}`}>Required field</Label>
           </div>
-        </>
-      )}
 
-      {/* Options for select, checkbox, radio */}
-      {['select', 'checkbox', 'radio'].includes(field.type) && (
-        <div className="space-y-4">
-          <Label>Options</Label>
-          
-          <div className="flex space-x-2">
-            <Input
-              value={newOption}
-              onChange={(e) => setNewOption(e.target.value)}
-              placeholder="Add new option"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addOption();
-                }
-              }}
-            />
-            <Button 
-              type="button" 
-              onClick={addOption}
-              className="bg-uvu-green hover:bg-uvu-green-medium"
+          {/* Placeholder - Only for input fields */}
+          {!isDisplayElement && editField.type !== 'checkbox' && editField.type !== 'radio' && (
+            <div className="space-y-2">
+              <Label htmlFor="placeholder">Placeholder (Optional)</Label>
+              <Input
+                id="placeholder"
+                name="placeholder"
+                value={editField.placeholder || ""}
+                onChange={handleChange}
+                placeholder="Enter placeholder text"
+              />
+            </div>
+          )}
+
+          {/* Required Toggle - Only for input fields */}
+          {!isDisplayElement && (
+            <div className="flex items-center justify-between">
+              <Label htmlFor="required" className="cursor-pointer">
+                Required Field
+              </Label>
+              <Switch
+                id="required"
+                checked={editField.required}
+                onCheckedChange={handleRequiredChange}
+              />
+            </div>
+          )}
+
+          {/* Options Manager - For select, checkbox, and radio fields */}
+          {['select', 'checkbox', 'radio'].includes(editField.type) && (
+            <div className="space-y-4">
+              <Label>Options</Label>
+              
+              <div className="space-y-2">
+                {/* Existing options */}
+                {editField.options?.map((option, index) => (
+                  <div key={index} className="flex items-center">
+                    <Input 
+                      value={option} 
+                      readOnly 
+                      className="flex-1 mr-2" 
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeOption(index)}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+                ))}
+                
+                {/* Add new option */}
+                <div className="flex items-center">
+                  <Input
+                    value={tempOption}
+                    onChange={(e) => setTempOption(e.target.value)}
+                    placeholder="Add option"
+                    className="flex-1 mr-2"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addOption}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-2 pt-4">
+            {onDelete && !isNew && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={onDelete}
+              >
+                <Trash2 className="h-4 w-4 mr-1" /> Delete
+              </Button>
+            )}
+            <div className="flex-grow"></div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
             >
-              <Plus size={16} />
+              <X className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSave}
+            >
+              Save
             </Button>
           </div>
-          
-          <div className="space-y-2">
-            {field.options?.map((option, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <div className="flex-grow border px-3 py-2 rounded-md">
-                  {option}
-                </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => removeOption(index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <X size={16} />
-                </Button>
-              </div>
-            ))}
-            
-            {(!field.options || field.options.length === 0) && (
-              <p className="text-gray-500 text-sm">No options added yet</p>
-            )}
-          </div>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
