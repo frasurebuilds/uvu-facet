@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { EmploymentFields } from "@/types/models";
@@ -212,11 +213,13 @@ const createEmploymentHistoryEntry = async (alumniId: string, employmentData: Em
       is_current: employmentData.isCurrent === 'true' || employmentData.isCurrent === true || false
     };
     
-    // Handle start date
+    // Handle start date - always ensure month-year format is processed correctly
     if (employmentData.startDate) {
-      // If it's a month-year format (YYYY-MM), append day to make it a valid date
+      // Make sure it's in YYYY-MM format for the database
+      // If it's already in YYYY-MM format, append day
       if (/^\d{4}-\d{2}$/.test(employmentData.startDate)) {
         jobData.start_date = `${employmentData.startDate}-01`;
+        console.log(`Formatted start date from ${employmentData.startDate} to ${jobData.start_date}`);
       } else {
         jobData.start_date = employmentData.startDate;
       }
@@ -225,11 +228,12 @@ const createEmploymentHistoryEntry = async (alumniId: string, employmentData: Em
       jobData.start_date = new Date().toISOString().split('T')[0];
     }
     
-    // Handle end date
+    // Handle end date - using same format as start date
     if (employmentData.endDate) {
-      // If it's a month-year format (YYYY-MM), append day to make it a valid date
+      // Make sure it's in YYYY-MM format for the database
       if (/^\d{4}-\d{2}$/.test(employmentData.endDate)) {
         jobData.end_date = `${employmentData.endDate}-01`;
+        console.log(`Formatted end date from ${employmentData.endDate} to ${jobData.end_date}`);
       } else {
         jobData.end_date = employmentData.endDate;
       }

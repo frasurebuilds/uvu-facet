@@ -76,6 +76,14 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
     ) {
       setEditField({ ...editField, options: [] });
     }
+    
+    // When switching to a non-month-year field type, clear the mapping if it was set to a date field
+    if (
+      editField.type !== 'month-year' && 
+      (editField.mappedField === 'employment.startDate' || editField.mappedField === 'employment.endDate')
+    ) {
+      setEditField({ ...editField, mappedField: '' });
+    }
   }, [editField.type]);
 
   // Handle field property changes
@@ -153,17 +161,18 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
   // Determine if the field is a display element (non-input)
   const isDisplayElement = ['header', 'description', 'divider'].includes(editField.type);
 
-  // Check if the current field type can be mapped to start/end dates
+  // Check if the current field type is a date field type
   const isDateFieldType = editField.type === 'month-year';
   
   // Filter employment fields based on field type
   const filteredEmploymentFields = employmentFields.filter(field => {
-    // If it's a month-year field, allow mapping to start/end dates
     if (isDateFieldType) {
-      return true;
+      // For month-year fields, ONLY allow mapping to start/end dates
+      return field.value === 'employment.startDate' || field.value === 'employment.endDate';
+    } else {
+      // For other field types, exclude start/end dates
+      return field.value !== 'employment.startDate' && field.value !== 'employment.endDate';
     }
-    // For other field types, exclude start/end dates
-    return !['employment.startDate', 'employment.endDate'].includes(field.value);
   });
 
   return (
@@ -271,11 +280,15 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500 mt-1">
-                {isDateFieldType 
-                  ? "Month & Year fields can be mapped to employment dates"
-                  : "Mapping a field allows form submissions to update alumni profiles automatically"}
-              </p>
+              {isDateFieldType ? (
+                <p className="text-xs text-gray-500 mt-1">
+                  Month & Year fields can only be mapped to employment dates
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500 mt-1">
+                  Mapping a field allows form submissions to update alumni profiles automatically
+                </p>
+              )}
               {editField.type !== 'month-year' && 
                 (editField.mappedField === 'employment.startDate' || editField.mappedField === 'employment.endDate') && (
                 <p className="text-xs text-amber-500 mt-1">

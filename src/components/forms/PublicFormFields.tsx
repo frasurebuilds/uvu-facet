@@ -245,8 +245,16 @@ const PublicFormFields: React.FC<PublicFormFieldsProps> = ({
                     value={selectedMonth}
                     onChange={(e) => {
                       const newMonth = e.target.value;
-                      const newValue = selectedYear ? `${selectedYear}-${newMonth}` : '';
-                      onInputChange(field.id, newValue);
+                      // Only update if we have both month and year
+                      if (newMonth && selectedYear) {
+                        // Always use YYYY-MM format for date values
+                        onInputChange(field.id, `${selectedYear}-${newMonth}`);
+                      } else if (selectedYear) {
+                        // If month is cleared but year exists
+                        onInputChange(field.id, '');
+                      }
+                      // Update local state
+                      selectedMonth = newMonth;
                     }}
                     required={field.required}
                   >
@@ -271,8 +279,16 @@ const PublicFormFields: React.FC<PublicFormFieldsProps> = ({
                     value={selectedYear}
                     onChange={(e) => {
                       const newYear = e.target.value;
-                      const newValue = selectedMonth ? `${newYear}-${selectedMonth}` : '';
-                      onInputChange(field.id, newValue);
+                      // Only update if we have both month and year
+                      if (selectedMonth && newYear) {
+                        // Always use YYYY-MM format for date values
+                        onInputChange(field.id, `${newYear}-${selectedMonth}`);
+                      } else if (selectedMonth) {
+                        // If year is cleared but month exists
+                        onInputChange(field.id, '');
+                      }
+                      // Update local state
+                      selectedYear = newYear;
                     }}
                     required={field.required}
                   >

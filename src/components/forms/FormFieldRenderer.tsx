@@ -40,6 +40,7 @@ const FormFieldRenderer = ({ field, value, onChange }: FormFieldRendererProps) =
   // Handle month-year changes
   const handleMonthYearChange = (monthVal: string, yearVal: string) => {
     if (monthVal && yearVal) {
+      // Ensure consistent YYYY-MM format for database compatibility
       onChange(field.id, `${yearVal}-${monthVal}`);
     } else {
       onChange(field.id, '');
