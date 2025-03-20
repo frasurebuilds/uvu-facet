@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Form } from "@/types/models";
 import { AlertCircle } from "lucide-react";
+import FormNotAvailableCard from "@/components/forms/FormNotAvailableCard";
 
 const FormEditPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,8 +24,10 @@ const FormEditPage = () => {
     queryFn: () => fetchFormById(id as string, false), // Admin access, so isPublicAccess = false
     enabled: !!id,
     retry: 1,
-    onError: (err) => {
-      console.error('Error fetching form:', err);
+    meta: {
+      onError: (err: any) => {
+        console.error('Error fetching form:', err);
+      }
     }
   });
 
@@ -74,6 +77,7 @@ const FormEditPage = () => {
   const handleFormSave = async (updatedForm: Form) => {
     setIsSaving(true);
     try {
+      console.log('Saving form with data:', updatedForm);
       await updateFormMutation.mutateAsync(updatedForm);
     } catch (error) {
       console.error('Form save error:', error);
@@ -92,19 +96,11 @@ const FormEditPage = () => {
           <p>Loading form details...</p>
         </div>
       ) : isError ? (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">Form Not Found</h2>
-          <p className="text-gray-600 mb-4">
-            The form you're trying to edit doesn't exist or has been deleted.
-          </p>
-          <button 
-            onClick={() => navigate('/forms')} 
-            className="bg-uvu-green hover:bg-uvu-green-medium text-white px-4 py-2 rounded"
-          >
-            Return to Forms
-          </button>
-        </div>
+        <FormNotAvailableCard 
+          isError={true} 
+          errorMessage={error instanceof Error ? error.message : 'Unknown error'} 
+          showReturnButton={true}
+        />
       ) : form ? (
         <FormBuilder 
           initialForm={form} 

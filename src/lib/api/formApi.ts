@@ -150,72 +150,64 @@ export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedA
 
 export const updateForm = async (form: Partial<Form> & { id: string }): Promise<Form> => {
   const { id, ...updateData } = form;
-  console.log('Updating form with ID:', id);
+  console.log('Updating form with ID:', id, 'Update data:', updateData);
   
   // Handle anonymous user case for createdBy
   if (updateData.createdBy === 'anonymous-user') {
     updateData.createdBy = null;
   }
   
-  // First, check if the form exists
-  const checkResult = await supabase
-    .from('forms')
-    .select('id')
-    .eq('id', id)
-    .maybeSingle();
+  try {
+    // Prepare data for database update in snake_case format
+    const dbData: any = {};
+    if (updateData.title !== undefined) dbData.title = updateData.title;
+    if (updateData.description !== undefined) dbData.description = updateData.description;
+    if (updateData.status !== undefined) dbData.status = updateData.status;
+    if (updateData.formType !== undefined) dbData.form_type = updateData.formType;
+    if (updateData.fields !== undefined) dbData.fields = updateData.fields as unknown as Json;
+    if (updateData.createdBy !== undefined) dbData.created_by = updateData.createdBy;
     
-  if (checkResult.error) {
-    console.error(`Error checking form existence with id ${id}:`, checkResult.error);
-    throw checkResult.error;
-  }
-  
-  if (!checkResult.data) {
-    console.error(`Form with id ${id} does not exist in the database`);
-    throw new Error(`Form with id ${id} does not exist`);
-  }
-  
-  console.log(`Form with id ${id} exists, proceeding with update`);
-  
-  // Convert to snake_case for database
-  const dbData: any = {};
-  if (updateData.title !== undefined) dbData.title = updateData.title;
-  if (updateData.description !== undefined) dbData.description = updateData.description;
-  if (updateData.status !== undefined) dbData.status = updateData.status;
-  if (updateData.formType !== undefined) dbData.form_type = updateData.formType;
-  if (updateData.fields !== undefined) dbData.fields = updateData.fields as unknown as Json;
-  if (updateData.createdBy !== undefined) dbData.created_by = updateData.createdBy;
-  
-  // Always update the updated_at timestamp
-  dbData.updated_at = new Date();
-  
-  const { data, error } = await supabase
-    .from('forms')
-    .update(dbData)
-    .eq('id', id)
-    .select()
-    .maybeSingle(); // Using maybeSingle instead of single to prevent PGRST116 errors
-  
-  if (error) {
-    console.error(`Error updating form with id ${id}:`, error);
+    // Always update the updated_at timestamp
+    dbData.updated_at = new Date();
+    
+    console.log(`Preparing to update form with ID ${id} with data:`, dbData);
+    
+    // Update the form with the validated ID
+    const { data, error } = await supabase
+      .from('forms')
+      .update(dbData)
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+    
+    if (error) {
+      console.error(`Error updating form with id ${id}:`, error);
+      throw error;
+    }
+    
+    if (!data) {
+      console.error(`Form with id ${id} was not updated or could not be retrieved after update`);
+      throw new Error(`Form with id ${id} was not updated or could not be retrieved`);
+    }
+    
+    console.log(`Successfully updated form with ID ${id}:`, data);
+    
+    // Transform the database record into our Form type
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      status: data.status as "active" | "draft" | "archived",
+      formType: data.form_type as "standard" | "anonymous",
+      fields: parseFormFields(data.fields),
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+      createdBy: data.created_by
+    };
+  } catch (error) {
+    console.error(`Failed to update form with id ${id}:`, error);
     throw error;
   }
-  
-  if (!data) {
-    console.error(`Updated form with id ${id} could not be retrieved`);
-    throw new Error(`Updated form could not be retrieved`);
-  }
-  
-  return {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    status: data.status as "active" | "draft" | "archived",
-    formType: data.form_type as "standard" | "anonymous",
-    fields: parseFormFields(data.fields),
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-    createdBy: data.created_by
-  };
 };
 
 export const deleteForm = async (id: string): Promise<void> => {
