@@ -11,6 +11,7 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface PersonalInfoCardProps {
   alumni: Alumni;
@@ -106,21 +107,6 @@ const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
                 <p>{alumni.phone || 'No phone number'}</p>
               )}
             </div>
-
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-500">Do Not Contact</label>
-              {editMode ? (
-                <Checkbox 
-                  id="doNotContact"
-                  checked={formData.doNotContact || false}
-                  onCheckedChange={(checked) => 
-                    handleCheckboxChange && handleCheckboxChange('doNotContact', checked === true)
-                  }
-                />
-              ) : (
-                <p>{alumni.doNotContact ? 'Yes' : 'No'}</p>
-              )}
-            </div>
           </div>
           
           <div className="space-y-4">
@@ -196,6 +182,33 @@ const PersonalInfoCard: React.FC<PersonalInfoCardProps> = ({
             />
           ) : (
             <p className="whitespace-pre-line">{alumni.notes || 'No notes'}</p>
+          )}
+        </div>
+
+        <Separator className="my-6" />
+        
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-gray-500 mb-2">Contact Preferences</h4>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="doNotContact"
+              checked={editMode ? (formData.doNotContact || false) : alumni.doNotContact}
+              onCheckedChange={(checked) => 
+                editMode && handleCheckboxChange && handleCheckboxChange('doNotContact', checked === true)
+              }
+              disabled={!editMode}
+            />
+            <label 
+              htmlFor="doNotContact" 
+              className={`text-sm ${alumni.doNotContact ? 'font-semibold text-red-600' : ''}`}
+            >
+              Do Not Contact
+            </label>
+          </div>
+          {alumni.doNotContact && !editMode && (
+            <p className="text-xs text-red-600 mt-1">
+              This alumni has requested not to be contacted. Please respect their privacy.
+            </p>
           )}
         </div>
       </CardContent>
