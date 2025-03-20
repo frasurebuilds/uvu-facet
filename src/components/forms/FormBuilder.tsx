@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FormField, Form } from "@/types/models";
@@ -170,6 +171,7 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
     }
 
     try {
+      console.log('Saving form with data:', formData);
       setLocalIsSubmitting(true);
       let savedForm;
 
@@ -194,6 +196,7 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
           });
         }
       } else {
+        console.log('Creating new form with data:', formData);
         savedForm = await createForm(formData);
         toast({
           title: "Form created",
@@ -206,7 +209,7 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
       console.error('Error saving form:', error);
       toast({
         title: "Error saving form",
-        description: typeof error === 'string' ? error : "There was an error saving your form",
+        description: typeof error === 'string' ? error : "There was an error saving your form. Please try again.",
         variant: "destructive"
       });
     } finally {

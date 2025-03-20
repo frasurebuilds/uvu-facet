@@ -111,6 +111,11 @@ export const fetchFormById = async (id: string, isPublicAccess: boolean = false)
 };
 
 export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedAt'>): Promise<Form> => {
+  console.log('Creating form:', form);
+  
+  // Ensure created_by is a valid value
+  const createdBy = form.createdBy === 'anonymous-user' ? null : form.createdBy;
+  
   // Convert FormField[] to Json before saving
   const { data, error } = await supabase
     .from('forms')
@@ -120,7 +125,7 @@ export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedA
       status: form.status,
       form_type: form.formType,
       fields: form.fields as unknown as Json,
-      created_by: form.createdBy
+      created_by: createdBy // Set to null if 'anonymous-user'
     })
     .select()
     .single();
@@ -145,6 +150,12 @@ export const createForm = async (form: Omit<Form, 'id' | 'createdAt' | 'updatedA
 
 export const updateForm = async (form: Partial<Form> & { id: string }): Promise<Form> => {
   const { id, ...updateData } = form;
+  console.log('Updating form with ID:', id);
+  
+  // Handle anonymous user case for createdBy
+  if (updateData.createdBy === 'anonymous-user') {
+    updateData.createdBy = null;
+  }
   
   // Convert to snake_case for database
   const dbData: any = {};
@@ -153,6 +164,7 @@ export const updateForm = async (form: Partial<Form> & { id: string }): Promise<
   if (updateData.status !== undefined) dbData.status = updateData.status;
   if (updateData.formType !== undefined) dbData.form_type = updateData.formType;
   if (updateData.fields !== undefined) dbData.fields = updateData.fields as unknown as Json;
+  if (updateData.createdBy !== undefined) dbData.created_by = updateData.createdBy;
   
   // Always update the updated_at timestamp
   dbData.updated_at = new Date();
