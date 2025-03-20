@@ -2,19 +2,26 @@
 import { ReactNode, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface PageLayoutProps {
   children: ReactNode;
   title?: ReactNode;
   subtitle?: string;
   actionButton?: ReactNode;
+  backButton?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 const PageLayout = ({ 
   children, 
   title, 
   subtitle,
-  actionButton
+  actionButton,
+  backButton
 }: PageLayoutProps) => {
   // Scroll to top on page change
   useEffect(() => {
@@ -27,12 +34,23 @@ const PageLayout = ({
       
       <main className="flex-1 overflow-y-auto md:ml-[70px] lg:ml-[250px]">
         <div className="uvu-container py-6 px-4 md:px-6 mt-14 md:mt-0">
-          {(title || actionButton) && (
+          {(title || actionButton || backButton) && (
             <div className={cn(
               "flex items-center justify-between pb-6 mb-6 border-b dark:border-gray-800",
               subtitle ? "flex-col sm:flex-row items-start sm:items-center gap-2" : ""
             )}>
               <div className="animate-fade-in">
+                {backButton && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={backButton.onClick} 
+                    className="mb-2 -ml-2"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    {backButton.label}
+                  </Button>
+                )}
                 {title && (
                   <h1 className="text-2xl md:text-3xl font-bold text-uvu-green dark:text-uvu-green-light">
                     {title}

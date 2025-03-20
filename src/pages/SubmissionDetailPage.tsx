@@ -22,6 +22,9 @@ import { fetchFormSubmissions, updateSubmissionStatus } from "@/lib/api/formSubm
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
+// Define the submission status type to match API expectations
+type SubmissionStatus = 'pending' | 'reviewed' | 'processed' | 'archived';
+
 const SubmissionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -41,7 +44,7 @@ const SubmissionDetailPage = () => {
     }
   }, [submission]);
 
-  const handleStatusUpdate = async (status: 'pending' | 'reviewed' | 'processed' | 'archived') => {
+  const handleStatusUpdate = async (status: SubmissionStatus) => {
     if (!id) return;
     
     try {
@@ -61,10 +64,12 @@ const SubmissionDetailPage = () => {
   };
 
   const handleSaveNotes = async () => {
-    if (!id) return;
+    if (!id || !submission) return;
     
     try {
-      await updateSubmissionStatus(id, submission?.status || 'pending', notes);
+      // Ensure we cast the status to the correct type
+      const status = submission.status as SubmissionStatus;
+      await updateSubmissionStatus(id, status, notes);
       toast({
         title: "Notes saved",
         description: "Submission notes have been updated"
