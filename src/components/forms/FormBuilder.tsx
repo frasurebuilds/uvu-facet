@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FormField, Form } from "@/types/models";
@@ -21,15 +22,166 @@ import {
   Copy, 
   Eye, 
   Save,
-  ArrowLeft
+  ArrowLeft,
+  GripVertical,
+  LayoutGrid,
+  Type,
+  Heading,
+  SplitSquareVertical
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { 
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface FormBuilderProps {
   initialForm?: Form;
   onSave?: (form: Form) => void;
   isSubmitting?: boolean;
 }
+
+// Sortable field item component
+const SortableFieldItem = ({ 
+  field, 
+  index, 
+  activeIndex, 
+  onEdit, 
+  onMove, 
+  onDuplicate, 
+  onRemove, 
+  updateField,
+  children
+}: { 
+  field: FormField; 
+  index: number; 
+  activeIndex: number | null; 
+  onEdit: (index: number) => void; 
+  onMove: (index: number, direction: 'up' | 'down') => void; 
+  onDuplicate: (index: number) => void; 
+  onRemove: (index: number) => void; 
+  updateField: (index: number, field: FormField) => void;
+  children?: React.ReactNode;
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: field.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1 : 0,
+  };
+
+  const isDisplayElement = ['header', 'description', 'divider'].includes(field.type);
+  let fieldIcon;
+  
+  switch (field.type) {
+    case 'header':
+      fieldIcon = <Heading size={16} className="mr-2 text-blue-500" />;
+      break;
+    case 'description':
+      fieldIcon = <Type size={16} className="mr-2 text-green-500" />;
+      break;
+    case 'divider':
+      fieldIcon = <SplitSquareVertical size={16} className="mr-2 text-gray-500" />;
+      break;
+    default:
+      fieldIcon = <LayoutGrid size={16} className="mr-2 text-uvu-green" />;
+      break;
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`p-4 border rounded-md transition-all ${
+        activeIndex === index ? 'border-uvu-green shadow-md' : 'border-gray-200'
+      } ${isDragging ? 'shadow-lg' : ''}`}
+    >
+      <div className="flex justify-between items-center mb-2">
+        <div 
+          className="font-medium cursor-pointer flex-grow flex items-center"
+          onClick={() => onEdit(index === activeIndex ? null : index)}
+        >
+          {fieldIcon}
+          {field.label} {!isDisplayElement && field.required && <span className="text-red-500">*</span>}
+        </div>
+        <div className="flex gap-1 items-center">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="h-8 w-8 p-0 cursor-grab touch-none"
+            {...attributes}
+            {...listeners}
+            type="button"
+          >
+            <GripVertical size={16} />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => onMove(index, 'up')}
+            disabled={index === 0}
+            className="h-8 w-8 p-0"
+            type="button"
+          >
+            <MoveUp size={16} />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => onMove(index, 'down')}
+            disabled={index === 0} // This will be updated dynamically
+            className="h-8 w-8 p-0"
+            type="button"
+          >
+            <MoveDown size={16} />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => onDuplicate(index)}
+            className="h-8 w-8 p-0"
+            type="button"
+          >
+            <Copy size={16} />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => onRemove(index)}
+            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+            type="button"
+          >
+            <Trash size={16} />
+          </Button>
+        </div>
+      </div>
+      
+      {children}
+    </div>
+  );
+};
 
 const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderProps) => {
   const { user } = useAuth();
@@ -49,6 +201,18 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
   const [previewMode, setPreviewMode] = useState(false);
   const [localIsSubmitting, setLocalIsSubmitting] = useState(false);
 
+  // Setup DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, title: e.target.value }));
   };
@@ -65,15 +229,34 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
     setFormData(prev => ({ ...prev, formType: value }));
   };
 
-  const addField = () => {
-    console.log("Adding new field");
+  const addField = (type: FormField['type'] = 'text') => {
+    console.log(`Adding new field of type: ${type}`);
     try {
+      let label = 'New Field';
+      let required = false;
+      
+      // Set appropriate defaults based on field type
+      switch (type) {
+        case 'header':
+          label = 'Section Header';
+          break;
+        case 'description':
+          label = 'Add some descriptive text here';
+          break;
+        case 'divider':
+          label = '';
+          break;
+        default:
+          label = 'New Field';
+          required = false;
+      }
+      
       const newField: FormField = {
         id: uuidv4(),
-        type: 'text',
-        label: 'New Field',
+        type,
+        label,
         placeholder: '',
-        required: false
+        required
       };
       
       const updatedFields = [...formData.fields, newField];
@@ -145,6 +328,28 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
       setActiveFieldIndex(newIndex);
     } catch (error) {
       console.error("Error moving field:", error);
+    }
+  };
+
+  // Handle drag end event
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setFormData(prev => {
+        const oldIndex = prev.fields.findIndex(field => field.id === active.id);
+        const newIndex = prev.fields.findIndex(field => field.id === over.id);
+        
+        // Update activeFieldIndex if it's being dragged
+        if (activeFieldIndex === oldIndex) {
+          setActiveFieldIndex(newIndex);
+        }
+        
+        return {
+          ...prev,
+          fields: arrayMove(prev.fields, oldIndex, newIndex)
+        };
+      });
     }
   };
 
@@ -314,14 +519,65 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
                   </p>
                 </div>
                 
-                <Button 
-                  onClick={addField}
-                  className="w-full mt-4 bg-uvu-green hover:bg-uvu-green-medium"
-                  type="button"
-                >
-                  <Plus size={16} className="mr-2" />
-                  Add Field
-                </Button>
+                <div className="border-t pt-4 mt-4">
+                  <Label className="mb-2 block">Add Field</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      onClick={() => addField('text')}
+                      className="w-full bg-uvu-green hover:bg-uvu-green-medium"
+                      type="button"
+                      size="sm"
+                    >
+                      <Plus size={14} className="mr-1" />
+                      Text Field
+                    </Button>
+                    <Button 
+                      onClick={() => addField('select')}
+                      className="w-full bg-uvu-green hover:bg-uvu-green-medium"
+                      type="button"
+                      size="sm"
+                    >
+                      <Plus size={14} className="mr-1" />
+                      Dropdown
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <Label className="mb-2 block">Add Display Element</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button 
+                      onClick={() => addField('header')}
+                      className="w-full"
+                      variant="outline"
+                      type="button"
+                      size="sm"
+                    >
+                      <Heading size={14} className="mr-1" />
+                      Header
+                    </Button>
+                    <Button 
+                      onClick={() => addField('description')}
+                      className="w-full"
+                      variant="outline"
+                      type="button"
+                      size="sm"
+                    >
+                      <Type size={14} className="mr-1" />
+                      Text
+                    </Button>
+                    <Button 
+                      onClick={() => addField('divider')}
+                      className="w-full"
+                      variant="outline"
+                      type="button"
+                      size="sm"
+                    >
+                      <SplitSquareVertical size={14} className="mr-1" />
+                      Divider
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
             
@@ -348,7 +604,7 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
                     <p className="text-gray-500">No fields added yet</p>
                     <Button 
                       variant="link" 
-                      onClick={addField}
+                      onClick={() => addField('text')}
                       className="mt-2"
                       type="button"
                     >
@@ -357,71 +613,40 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {formData.fields.map((field, index) => (
-                      <div 
-                        key={field.id} 
-                        className={`p-4 border rounded-md transition-all ${activeFieldIndex === index ? 'border-uvu-green shadow-md' : 'border-gray-200'}`}
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={formData.fields.map(field => field.id)}
+                        strategy={verticalListSortingStrategy}
                       >
-                        <div className="flex justify-between items-center mb-2">
-                          <div 
-                            className="font-medium cursor-pointer flex-grow"
-                            onClick={() => setActiveFieldIndex(index === activeFieldIndex ? null : index)}
+                        {formData.fields.map((field, index) => (
+                          <SortableFieldItem
+                            key={field.id}
+                            field={field}
+                            index={index}
+                            activeIndex={activeFieldIndex}
+                            onEdit={setActiveFieldIndex}
+                            onMove={moveField}
+                            onDuplicate={duplicateField}
+                            onRemove={removeField}
+                            updateField={updateField}
                           >
-                            {field.label} {field.required && <span className="text-red-500">*</span>}
-                          </div>
-                          <div className="flex gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => moveField(index, 'up')}
-                              disabled={index === 0}
-                              className="h-8 w-8 p-0"
-                              type="button"
-                            >
-                              <MoveUp size={16} />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => moveField(index, 'down')}
-                              disabled={index === formData.fields.length - 1}
-                              className="h-8 w-8 p-0"
-                              type="button"
-                            >
-                              <MoveDown size={16} />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => duplicateField(index)}
-                              className="h-8 w-8 p-0"
-                              type="button"
-                            >
-                              <Copy size={16} />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeField(index)}
-                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                              type="button"
-                            >
-                              <Trash size={16} />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {activeFieldIndex === index && (
-                          <FormFieldEditor 
-                            field={field} 
-                            onSave={(updatedField) => updateField(index, updatedField)}
-                            onCancel={() => setActiveFieldIndex(null)}
-                            onDelete={() => removeField(index)}
-                            isNew={false} 
-                          />
-                        )}
-                      </div>
-                    ))}
+                            {activeFieldIndex === index && (
+                              <FormFieldEditor 
+                                field={field} 
+                                onSave={(updatedField) => updateField(index, updatedField)}
+                                onCancel={() => setActiveFieldIndex(null)}
+                                onDelete={() => removeField(index)}
+                                isNew={false} 
+                              />
+                            )}
+                          </SortableFieldItem>
+                        ))}
+                      </SortableContext>
+                    </DndContext>
                   </div>
                 )}
               </CardContent>
