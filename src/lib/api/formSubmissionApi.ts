@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { EmploymentFields } from "@/types/models";
@@ -85,9 +86,9 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
         console.log(`Found existing alumni profile for UVID ${submission.submittedByUvid}`);
         submissionData.submitted_by_alumni_id = existingAlumni.id;
         
-        // Set the name from first_name and last_name
-        if (existingAlumni.first_name && existingAlumni.last_name) {
-          submissionData.submitted_by_name = `${existingAlumni.first_name} ${existingAlumni.last_name}`;
+        // Set the name from firstName and lastName
+        if (existingAlumni.firstName && existingAlumni.lastName) {
+          submissionData.submitted_by_name = `${existingAlumni.firstName} ${existingAlumni.lastName}`;
         }
         
         // Update alumni profile with mapped fields if there are any
@@ -136,7 +137,7 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
           console.log('Created new alumni profile:', newAlumni);
           submissionData.submitted_by_alumni_id = newAlumni.id;
           
-          // Set the name from first_name and last_name
+          // Set the name from first_name and last_name database fields
           submissionData.submitted_by_name = `${newAlumni.first_name} ${newAlumni.last_name}`;
           
           // Create employment history entry if we have sufficient data

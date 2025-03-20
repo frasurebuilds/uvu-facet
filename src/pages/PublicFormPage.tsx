@@ -2,137 +2,141 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { fetchFormById } from "@/lib/api/formApi";
-import { submitFormResponse } from "@/lib/api/formSubmissionApi";
-import { FormField } from "@/types/models";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PublicFormHeader from "@/components/forms/PublicFormHeader";
 import PublicFormFields from "@/components/forms/PublicFormFields";
-import FormLoadingState from "@/components/forms/FormLoadingState";
-import FormNotAvailableCard from "@/components/forms/FormNotAvailableCard";
-import FormSubmitButton from "@/components/forms/FormSubmitButton";
 import UvidField from "@/components/forms/UvidField";
-import { Card, CardContent } from "@/components/ui/card";
+import FormSubmitButton from "@/components/forms/FormSubmitButton";
+import FormNotAvailableCard from "@/components/forms/FormNotAvailableCard";
+import FormLoadingState from "@/components/forms/FormLoadingState";
+import { fetchFormById } from "@/lib/api/formApi";
+import { submitFormResponse } from "@/lib/api/formSubmissionApi";
+import { Form } from "@/types/models";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const PublicFormPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [form, setForm] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState<Form | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [uvid, setUvid] = useState<string>("");
+  const [uvid, setUvid] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const formMethods = useForm();
   
+  // Fetch the form data
   useEffect(() => {
-    const loadForm = async () => {
-      if (!id) return;
-      
+    const getForm = async () => {
       try {
-        const formData = await fetchFormById(id);
-        setForm(formData);
+        if (!id) throw new Error("Form ID is missing");
         
-        // Reset form with default values
-        if (formData && formData.fields) {
-          const defaultValues = formData.fields.reduce((acc: any, field: FormField) => {
-            acc[field.id] = field.defaultValue || "";
-            return acc;
-          }, {});
-          
-          formMethods.reset(defaultValues);
+        const formData = await fetchFormById(id);
+        
+        if (!formData) {
+          setError("The requested form could not be found.");
+          return;
         }
+        
+        if (formData.status !== 'active') {
+          setError("This form is not currently active.");
+          return;
+        }
+        
+        setForm(formData);
       } catch (error) {
-        console.error("Error loading form:", error);
-        setError("The requested form could not be loaded. Please try again later.");
+        console.error("Error fetching form:", error);
+        setError("There was an error loading the form. Please try again later.");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     
-    loadForm();
-  }, [id, formMethods]);
+    getForm();
+  }, [id]);
   
-  const handleSubmit = async (formData: any) => {
-    if (!id) return;
+  const onSubmit = async (data: any) => {
+    if (!form || !id) return;
     
-    setSubmitting(true);
+    setIsSubmitting(true);
     
     try {
-      // Collect client metadata
+      // Get client IP address from edge function
+      const { data: ipData, error: ipError } = await supabase.functions.invoke('get-client-ip');
+      
+      if (ipError) {
+        console.error('Error getting client IP:', ipError);
+      }
+      
+      // Prepare metadata
       const metadata = {
-        ipAddress: "Client IP not available", // This will be populated server-side
+        ipAddress: ipData?.ip || 'Unknown',
         userAgent: navigator.userAgent,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
       };
       
-      // Build submission data
-      const submissionData = {
+      // Prepare submission data
+      const submission = {
         formId: id,
-        content: formData,
-        metadata
+        content: data,
+        metadata,
+        ...(form.formType === 'standard' && uvid ? { submittedByUvid: uvid } : { isAnonymous: true })
       };
       
-      // Add UVID if provided
-      if (uvid) {
-        submissionData.submittedByUvid = uvid;
-      }
+      await submitFormResponse(submission);
       
-      await submitFormResponse(submissionData);
+      toast({
+        title: "Form submitted",
+        description: "Your form has been submitted successfully."
+      });
       
-      // Redirect to success page
-      navigate(`/forms/${id}/submitted`);
-      
+      navigate(`/form-submitted/${id}`);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
-        title: "Submission Failed",
-        description: "There was a problem submitting your form. Please try again.",
+        title: "Submission failed",
+        description: "There was an error submitting your form. Please try again.",
         variant: "destructive"
       });
-      setSubmitting(false);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
-  if (loading) {
+  if (isLoading) {
     return <FormLoadingState />;
   }
   
   if (error || !form) {
-    return <FormNotAvailableCard error={error} />;
+    return <FormNotAvailableCard isError message={error || "Form not found"} />;
   }
   
   return (
-    <div className="container max-w-3xl py-10 px-4">
-      <PublicFormHeader 
-        title={form.title} 
-        description={form.description}
-      />
-      
+    <div className="max-w-3xl mx-auto px-4 py-8">
       <Card>
-        <CardContent className="pt-6">
-          <form onSubmit={formMethods.handleSubmit(handleSubmit)}>
-            {/* Form fields */}
-            <PublicFormFields 
-              fields={form.fields || []} 
-              form={formMethods} 
-            />
+        <CardHeader>
+          <CardTitle>{form.title}</CardTitle>
+          {form.description && <PublicFormHeader description={form.description} />}
+        </CardHeader>
+        
+        <CardContent>
+          <form onSubmit={formMethods.handleSubmit(onSubmit)} className="space-y-6">
+            <PublicFormFields fields={form.fields} formMethods={formMethods} />
             
-            {/* UVID field for standard forms */}
-            {form.form_type === 'standard' && (
+            {form.formType === 'standard' && (
               <UvidField
-                value={uvid}
-                onChange={setUvid}
-                required={true}
+                uvid={uvid}
+                setUvid={setUvid}
+                isRequired={true}
               />
             )}
             
-            {/* Submit button */}
-            <div className="mt-8">
+            <div className="flex justify-end">
               <FormSubmitButton 
-                isSubmitting={submitting} 
-                isDisabled={form.form_type === 'standard' && !uvid}
+                isSubmitting={isSubmitting} 
+                disabled={form.formType === 'standard' && !uvid} 
               />
             </div>
           </form>
