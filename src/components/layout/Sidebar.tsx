@@ -9,7 +9,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useToast } from "@/hooks/use-toast";
 import ThemeToggle from "@/components/ThemeToggle";
 import logo from "/lovable-uploads/9f7e0c80-4ba0-4e4b-a293-620fa15d35f0.png";
-
 const Sidebar = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -21,11 +20,9 @@ const Sidebar = () => {
   const {
     toast
   } = useToast();
-
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
-
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -37,7 +34,6 @@ const Sidebar = () => {
       window.removeEventListener("keydown", handleEsc);
     };
   }, []);
-
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -48,7 +44,6 @@ const Sidebar = () => {
       document.body.style.overflow = "auto";
     };
   }, [isOpen]);
-
   const handleSignOut = async () => {
     await signOut();
     toast({
@@ -56,35 +51,27 @@ const Sidebar = () => {
       description: "You have been successfully signed out"
     });
   };
-
-  const navItems = [
-    {
-      name: "Dashboard",
-      icon: <LayoutDashboard size={20} />,
-      href: "/"
-    },
-    {
-      name: "Alumni",
-      icon: <Users size={20} />,
-      href: "/alumni"
-    },
-    {
-      name: "Organizations",
-      icon: <Building2 size={20} />,
-      href: "/organizations"
-    },
-    {
-      name: "Forms",
-      icon: <ClipboardList size={20} />,
-      href: "/forms"
-    },
-    {
-      name: "Form Submissions",
-      icon: <FileText size={20} />,
-      href: "/form-submissions"
-    }
-  ];
-
+  const navItems = [{
+    name: "Dashboard",
+    icon: <LayoutDashboard size={20} />,
+    href: "/"
+  }, {
+    name: "Alumni",
+    icon: <Users size={20} />,
+    href: "/alumni"
+  }, {
+    name: "Organizations",
+    icon: <Building2 size={20} />,
+    href: "/organizations"
+  }, {
+    name: "Forms",
+    icon: <ClipboardList size={20} />,
+    href: "/forms"
+  }, {
+    name: "Form Submissions",
+    icon: <FileText size={20} />,
+    href: "/form-submissions"
+  }];
   const NavLink = ({
     item
   }: {
@@ -105,14 +92,13 @@ const Sidebar = () => {
         </TooltipContent>
       </Tooltip>;
   };
-
   return <>
       <div className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b dark:border-gray-800 p-3 md:hidden">
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)}>
             <Menu size={24} />
           </Button>
-          <img src={logo} alt="UVU Logo" className="h-8" />
+          
           <div className="flex items-center">
             <ThemeToggle className="mr-1" />
             <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign Out">
@@ -124,13 +110,7 @@ const Sidebar = () => {
 
       {isMobile && isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={() => setIsOpen(false)} />}
 
-      <nav className={cn(
-        "fixed left-0 top-0 h-full bg-white dark:bg-gray-900 border-r dark:border-gray-800 z-50",
-        "transition-all duration-300 ease-in-out",
-        "md:w-[70px] md:translate-x-0 md:block",
-        "lg:w-[250px]",
-        isMobile ? isOpen ? "w-[250px] translate-x-0" : "w-[250px] -translate-x-full" : ""
-      )}>
+      <nav className={cn("fixed left-0 top-0 h-full bg-white dark:bg-gray-900 border-r dark:border-gray-800 z-50", "transition-all duration-300 ease-in-out", "md:w-[70px] md:translate-x-0 md:block", "lg:w-[250px]", isMobile ? isOpen ? "w-[250px] translate-x-0" : "w-[250px] -translate-x-full" : "")}>
         {isMobile && <Button variant="ghost" size="icon" className="absolute top-4 right-4 md:hidden" onClick={() => setIsOpen(false)}>
             <X size={20} />
           </Button>}
@@ -164,11 +144,7 @@ const Sidebar = () => {
           </div>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" onClick={handleSignOut} className={cn(
-                "w-full flex items-center justify-center gap-2", 
-                "lg:justify-start",
-                "dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
-              )}>
+              <Button variant="outline" onClick={handleSignOut} className={cn("w-full flex items-center justify-center gap-2", "lg:justify-start", "dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700")}>
                 <LogOut size={18} />
                 <span className={cn("lg:block", isMobile ? "block" : "hidden")}>
                   Sign Out
@@ -183,5 +159,4 @@ const Sidebar = () => {
       </nav>
     </>;
 };
-
 export default Sidebar;
