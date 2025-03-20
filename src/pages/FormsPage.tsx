@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -26,14 +27,15 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { fetchForms, deleteForm, updateForm } from "@/lib/api/formApi";
@@ -85,23 +87,32 @@ const FormsPage = () => {
   };
 
   const confirmDeleteForm = (form: Form) => {
+    console.log("Confirming deletion for form:", form.id);
     setFormToDelete(form);
     setDialogOpen(true);
   };
 
   const handleDeleteForm = async () => {
-    if (!formToDelete) return;
+    if (!formToDelete) {
+      console.error("No form selected for deletion");
+      return;
+    }
+    
+    console.log("Proceeding with deletion of form:", formToDelete.id);
     
     try {
       setIsDeleting(true);
       await deleteForm(formToDelete.id);
       
-      queryClient.invalidateQueries({ queryKey: ['forms'] });
+      // Invalidate and refetch forms query to update the UI
+      await queryClient.invalidateQueries({ queryKey: ['forms'] });
       
       toast({
         title: "Form deleted",
         description: "The form has been successfully deleted",
       });
+      
+      console.log("Form deletion successful");
     } catch (error) {
       console.error('Error deleting form:', error);
       toast({
@@ -304,32 +315,36 @@ const FormsPage = () => {
         )}
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Form</DialogTitle>
-            <DialogDescription>
+      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Form</AlertDialogTitle>
+            <AlertDialogDescription>
               Are you sure you want to delete the form "{formToDelete?.title}"? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
+              {formToDelete?.status === 'active' && (
+                <p className="mt-2 text-red-500 font-medium">
+                  Warning: This form is currently active and may have submissions.
+                </p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
               onClick={() => setDialogOpen(false)}
               disabled={isDeleting}
             >
               Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
+            </AlertDialogCancel>
+            <AlertDialogAction 
               onClick={handleDeleteForm}
               disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageLayout>
   );
 };
@@ -509,4 +524,3 @@ const getStatusBadge = (status: string) => {
 };
 
 export default FormsPage;
-

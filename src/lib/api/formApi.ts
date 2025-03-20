@@ -211,13 +211,41 @@ export const updateForm = async (form: Partial<Form> & { id: string }): Promise<
 };
 
 export const deleteForm = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from('forms')
-    .delete()
-    .eq('id', id);
+  console.log(`Attempting to delete form with ID: ${id}`);
   
-  if (error) {
-    console.error(`Error deleting form with id ${id}:`, error);
+  if (!id) {
+    console.error('Invalid form ID provided for deletion');
+    throw new Error('Invalid form ID');
+  }
+  
+  try {
+    // First, delete any submissions that reference this form
+    const { error: submissionsError } = await supabase
+      .from('form_submissions')
+      .delete()
+      .eq('form_id', id);
+    
+    if (submissionsError) {
+      console.error(`Error deleting submissions for form ${id}:`, submissionsError);
+      // Continue with form deletion even if submission deletion fails
+    } else {
+      console.log(`Successfully deleted submissions for form ${id}`);
+    }
+    
+    // Now delete the form itself
+    const { error } = await supabase
+      .from('forms')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error(`Error deleting form with id ${id}:`, error);
+      throw error;
+    }
+    
+    console.log(`Successfully deleted form with ID ${id}`);
+  } catch (error) {
+    console.error(`Failed to delete form with id ${id}:`, error);
     throw error;
   }
 };
