@@ -16,12 +16,6 @@ interface FormSubmissionRequest {
   submittedByName?: string;
   submittedByEmail?: string;
   submittedByAlumniId?: string;
-  // Metadata about the submission
-  metadata?: {
-    ipAddress?: string;
-    userAgent?: string;
-    timezone?: string;
-  };
 }
 
 export const submitFormResponse = async (submission: FormSubmissionRequest) => {
@@ -60,11 +54,6 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
     mapped_fields: mappedFields as unknown as Json
   };
 
-  // Add metadata if provided
-  if (submission.metadata) {
-    submissionData.metadata = submission.metadata as unknown as Json;
-  }
-
   // Handle different submission types
   if (submission.isAnonymous) {
     // Anonymous submission - set placeholder values for required fields
@@ -85,11 +74,6 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
       if (existingAlumni) {
         console.log(`Found existing alumni profile for UVID ${submission.submittedByUvid}`);
         submissionData.submitted_by_alumni_id = existingAlumni.id;
-        
-        // Set the name from firstName and lastName
-        if (existingAlumni.firstName && existingAlumni.lastName) {
-          submissionData.submitted_by_name = `${existingAlumni.firstName} ${existingAlumni.lastName}`;
-        }
         
         // Update alumni profile with mapped fields if there are any
         if (Object.keys(mappedFields).length > 0) {
@@ -137,9 +121,6 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
           console.log('Created new alumni profile:', newAlumni);
           submissionData.submitted_by_alumni_id = newAlumni.id;
           
-          // Set the name from first_name and last_name database fields
-          submissionData.submitted_by_name = `${newAlumni.first_name} ${newAlumni.last_name}`;
-          
           // Create employment history entry if we have sufficient data
           if (Object.keys(employmentFields).length > 0 && 
               employmentFields.jobTitle && 
@@ -158,21 +139,6 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
     submissionData.submitted_by_email = submission.submittedByEmail || 'unknown@example.com';
     if (submission.submittedByAlumniId) {
       submissionData.submitted_by_alumni_id = submission.submittedByAlumniId;
-      
-      // Try to get first and last name from alumni profile
-      try {
-        const { data: alumni, error } = await supabase
-          .from('alumni')
-          .select('first_name, last_name')
-          .eq('id', submission.submittedByAlumniId)
-          .single();
-          
-        if (!error && alumni && alumni.first_name && alumni.last_name) {
-          submissionData.submitted_by_name = `${alumni.first_name} ${alumni.last_name}`;
-        }
-      } catch (error) {
-        console.warn("Error fetching alumni name:", error);
-      }
       
       // Create employment history entry if we have an alumni ID and sufficient data
       if (Object.keys(employmentFields).length > 0 && 
@@ -316,8 +282,7 @@ export const fetchFormSubmissions = async () => {
     createdAt: submission.created_at,
     status: submission.status,
     notes: submission.notes,
-    mappedFields: submission.mapped_fields,
-    metadata: submission.metadata
+    mappedFields: submission.mapped_fields
   }));
 };
 

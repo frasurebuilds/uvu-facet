@@ -16,10 +16,7 @@ import {
   User,
   Mail,
   CalendarDays,
-  ClipboardList,
-  Globe,
-  Monitor,
-  MapPin
+  ClipboardList
 } from "lucide-react";
 import { fetchFormSubmissions, updateSubmissionStatus } from "@/lib/api/formSubmissionApi";
 import { useToast } from "@/hooks/use-toast";
@@ -152,9 +149,6 @@ const SubmissionDetailPage = () => {
     );
   }
 
-  // Extract metadata for display
-  const metadata = submission.metadata as Record<string, any> || {};
-
   return (
     <PageLayout
       title="Submission Details"
@@ -220,45 +214,6 @@ const SubmissionDetailPage = () => {
                       <p className="text-sm text-muted-foreground">Submission Date</p>
                     </div>
                   </div>
-                  
-                  {/* Display metadata if available */}
-                  {metadata && (
-                    <>
-                      {metadata.ipAddress && (
-                        <div className="flex items-start gap-3">
-                          <Globe className="h-5 w-5 text-muted-foreground mt-0.5" />
-                          <div>
-                            <p className="font-medium">{metadata.ipAddress}</p>
-                            <p className="text-sm text-muted-foreground">IP Address</p>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {metadata.userAgent && (
-                        <div className="flex items-start gap-3">
-                          <Monitor className="h-5 w-5 text-muted-foreground mt-0.5" />
-                          <div>
-                            <p className="font-medium text-xs break-words">
-                              {metadata.userAgent.length > 50 
-                                ? `${metadata.userAgent.substring(0, 50)}...` 
-                                : metadata.userAgent}
-                            </p>
-                            <p className="text-sm text-muted-foreground">User Agent</p>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {metadata.timezone && (
-                        <div className="flex items-start gap-3">
-                          <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                          <div>
-                            <p className="font-medium">{metadata.timezone}</p>
-                            <p className="text-sm text-muted-foreground">Timezone</p>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
                 </CardContent>
               </Card>
               

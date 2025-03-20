@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -37,6 +38,7 @@ const FormSubmissionsCard = ({ alumniId, alumniEmail, uvid }: FormSubmissionsCar
       setLoading(true);
       const allSubmissions = await fetchFormSubmissions();
       
+      // Filter submissions by alumniId, email or UVID
       const filteredSubmissions = allSubmissions.filter(sub => {
         if (alumniId && sub.submittedByAlumniId === alumniId) return true;
         if (alumniEmail && sub.submittedByEmail === alumniEmail) return true;
@@ -44,11 +46,12 @@ const FormSubmissionsCard = ({ alumniId, alumniEmail, uvid }: FormSubmissionsCar
         return false;
       });
       
+      // Convert the JSON data to the proper FormSubmission type
       const typedSubmissions: FormSubmission[] = filteredSubmissions.map(sub => ({
         ...sub,
         content: typeof sub.content === 'string' ? JSON.parse(sub.content) : sub.content,
         mappedFields: typeof sub.mappedFields === 'string' ? JSON.parse(sub.mappedFields || '{}') : (sub.mappedFields || {}),
-        metadata: typeof sub.metadata === 'string' ? JSON.parse(sub.metadata || '{}') : (sub.metadata || {}),
+        // Ensure status is one of the allowed values
         status: (sub.status as "pending" | "reviewed" | "processed" | "archived") || "pending"
       }));
       
@@ -70,6 +73,7 @@ const FormSubmissionsCard = ({ alumniId, alumniEmail, uvid }: FormSubmissionsCar
     try {
       await deleteFormSubmission(submissionToDelete);
       
+      // Remove the deleted submission from the state
       setSubmissions(submissions.filter(sub => sub.id !== submissionToDelete));
       
       toast({
