@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { FormField } from "@/types/models";
 import { v4 as uuidv4 } from "uuid";
@@ -108,8 +109,8 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
     setEditField({ ...editField, options: updatedOptions });
   };
 
-  // Save the field
-  const handleSave = () => {
+  // Auto-save when changes are made
+  const handleApplyChanges = () => {
     // Generate a new ID for new fields
     const fieldToSave = isNew 
       ? { ...editField, id: uuidv4() } 
@@ -254,9 +255,9 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
             </Button>
             <Button
               type="button"
-              onClick={handleSave}
+              onClick={handleApplyChanges}
             >
-              Save
+              Apply
             </Button>
           </div>
         </div>

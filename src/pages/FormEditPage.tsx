@@ -8,7 +8,7 @@ import { fetchFormById, updateForm } from "@/lib/api/formApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Form } from "@/types/models";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ExternalLink, Link2 } from "lucide-react";
 import FormNotAvailableCard from "@/components/forms/FormNotAvailableCard";
 
 const FormEditPage = () => {
@@ -86,6 +86,38 @@ const FormEditPage = () => {
     }
   };
 
+  const handleOpenForm = () => {
+    if (form && id) {
+      // Open the form in a new tab
+      window.open(`/form/${id}`, '_blank');
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (form && id) {
+      // Create the full URL for the form
+      const baseUrl = window.location.origin;
+      const formUrl = `${baseUrl}/form/${id}`;
+      
+      // Copy to clipboard
+      navigator.clipboard.writeText(formUrl)
+        .then(() => {
+          toast({
+            title: "Link copied",
+            description: "Form link has been copied to clipboard"
+          });
+        })
+        .catch(err => {
+          console.error('Failed to copy link:', err);
+          toast({
+            title: "Copy failed",
+            description: "Could not copy the form link to clipboard",
+            variant: "destructive"
+          });
+        });
+    }
+  };
+
   return (
     <PageLayout
       title={isLoading ? "Loading Form..." : `Edit Form: ${form?.title || 'Not Found'}`}
@@ -106,6 +138,8 @@ const FormEditPage = () => {
           initialForm={form} 
           onSave={handleFormSave} 
           isSubmitting={isSaving}
+          onOpenForm={handleOpenForm}
+          onCopyLink={handleCopyLink}
         />
       ) : null}
     </PageLayout>

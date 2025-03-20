@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FormField, Form } from "@/types/models";
@@ -27,7 +26,9 @@ import {
   LayoutGrid,
   Type,
   Heading,
-  SplitSquareVertical
+  SplitSquareVertical,
+  ExternalLink,
+  Link2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -52,9 +53,10 @@ interface FormBuilderProps {
   initialForm?: Form;
   onSave?: (form: Form) => void;
   isSubmitting?: boolean;
+  onOpenForm?: () => void;
+  onCopyLink?: () => void;
 }
 
-// Sortable field item component
 const SortableFieldItem = ({ 
   field, 
   index, 
@@ -151,7 +153,7 @@ const SortableFieldItem = ({
             variant="ghost" 
             size="sm"
             onClick={() => onMove(index, 'down')}
-            disabled={index === 0} // This will be updated dynamically
+            disabled={index === 0}
             className="h-8 w-8 p-0"
             type="button"
           >
@@ -183,7 +185,13 @@ const SortableFieldItem = ({
   );
 };
 
-const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderProps) => {
+const FormBuilder = ({ 
+  initialForm, 
+  onSave, 
+  isSubmitting = false,
+  onOpenForm,
+  onCopyLink
+}: FormBuilderProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -201,7 +209,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
   const [previewMode, setPreviewMode] = useState(false);
   const [localIsSubmitting, setLocalIsSubmitting] = useState(false);
 
-  // Setup DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -235,7 +242,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
       let label = 'New Field';
       let required = false;
       
-      // Set appropriate defaults based on field type
       switch (type) {
         case 'header':
           label = 'Section Header';
@@ -331,7 +337,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
     }
   };
 
-  // Handle drag end event
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
@@ -340,7 +345,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
         const oldIndex = prev.fields.findIndex(field => field.id === active.id);
         const newIndex = prev.fields.findIndex(field => field.id === over.id);
         
-        // Update activeFieldIndex if it's being dragged
         if (activeFieldIndex === oldIndex) {
           setActiveFieldIndex(newIndex);
         }
@@ -432,6 +436,28 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
         </Button>
         
         <div className="flex gap-2">
+          {initialForm?.id && (
+            <>
+              <Button
+                variant="outline"
+                onClick={onOpenForm}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink size={16} />
+                Open
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={onCopyLink}
+                className="flex items-center gap-2"
+              >
+                <Link2 size={16} />
+                Copy Link
+              </Button>
+            </>
+          )}
+          
           <Button
             variant="outline"
             onClick={() => setPreviewMode(!previewMode)}
