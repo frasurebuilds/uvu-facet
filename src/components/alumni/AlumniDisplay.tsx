@@ -1,5 +1,5 @@
 
-import { Alumni } from "@/types/models";
+import { Alumni, JobHistory } from "@/types/models";
 import AlumniTable from "./AlumniTable";
 import AlumniCard from "./AlumniCard";
 
@@ -11,6 +11,7 @@ interface AlumniDisplayProps {
   onAlumniClick: (id: string) => void;
   onCopy: (text: string, label: string) => void;
   onOpenLinkedIn: (url: string) => void;
+  alumniJobs?: Record<string, JobHistory | null>;
 }
 
 const AlumniDisplay = ({
@@ -20,7 +21,8 @@ const AlumniDisplay = ({
   copiedValues,
   onAlumniClick,
   onCopy,
-  onOpenLinkedIn
+  onOpenLinkedIn,
+  alumniJobs = {}
 }: AlumniDisplayProps) => {
   if (loading) {
     return (
@@ -46,6 +48,7 @@ const AlumniDisplay = ({
         onAlumniClick={onAlumniClick}
         onCopy={onCopy}
         onOpenLinkedIn={onOpenLinkedIn}
+        alumniJobs={alumniJobs}
       />
     );
   }
