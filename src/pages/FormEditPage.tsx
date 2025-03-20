@@ -8,7 +8,7 @@ import { fetchFormById, updateForm } from "@/lib/api/formApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Form } from "@/types/models";
-import { cn } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 
 const FormEditPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,11 +18,14 @@ const FormEditPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   
   // Fetch form data
-  const { data: form, isLoading, error } = useQuery({
+  const { data: form, isLoading, error, isError } = useQuery({
     queryKey: ['form', id],
     queryFn: () => fetchFormById(id as string, false), // Admin access, so isPublicAccess = false
-    enabled: !!id && !!user,
-    retry: 1
+    enabled: !!id,
+    retry: 1,
+    onError: (err) => {
+      console.error('Error fetching form:', err);
+    }
   });
 
   // Update form mutation
@@ -47,21 +50,26 @@ const FormEditPage = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate("/auth");
+      // For this page, we'll allow non-authenticated users too
+      console.log("Non-authenticated user accessing form edit page");
     }
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (error) {
+    if (isError && error) {
       console.error('Error in FormEditPage:', error);
       toast({
         title: "Error loading form",
-        description: "The form could not be loaded",
+        description: "The form could not be loaded. It may have been deleted or doesn't exist.",
         variant: "destructive"
       });
-      navigate("/forms");
+      
+      // Redirect after a short delay to allow the user to see the error
+      setTimeout(() => {
+        navigate("/forms");
+      }, 3000);
     }
-  }, [error, toast, navigate]);
+  }, [error, isError, toast, navigate]);
 
   const handleFormSave = async (updatedForm: Form) => {
     setIsSaving(true);
@@ -76,12 +84,26 @@ const FormEditPage = () => {
 
   return (
     <PageLayout
-      title={isLoading ? "Loading Form..." : `Edit Form: ${form?.title}`}
+      title={isLoading ? "Loading Form..." : `Edit Form: ${form?.title || 'Not Found'}`}
       subtitle="Update your form details and fields"
     >
       {isLoading ? (
         <div className="flex justify-center items-center py-8">
           <p>Loading form details...</p>
+        </div>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
+          <h2 className="text-2xl font-semibold mb-2">Form Not Found</h2>
+          <p className="text-gray-600 mb-4">
+            The form you're trying to edit doesn't exist or has been deleted.
+          </p>
+          <button 
+            onClick={() => navigate('/forms')} 
+            className="bg-uvu-green hover:bg-uvu-green-medium text-white px-4 py-2 rounded"
+          >
+            Return to Forms
+          </button>
         </div>
       ) : form ? (
         <FormBuilder 

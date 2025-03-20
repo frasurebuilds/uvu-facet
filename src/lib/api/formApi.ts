@@ -157,6 +157,25 @@ export const updateForm = async (form: Partial<Form> & { id: string }): Promise<
     updateData.createdBy = null;
   }
   
+  // First, check if the form exists
+  const checkResult = await supabase
+    .from('forms')
+    .select('id')
+    .eq('id', id)
+    .maybeSingle();
+    
+  if (checkResult.error) {
+    console.error(`Error checking form existence with id ${id}:`, checkResult.error);
+    throw checkResult.error;
+  }
+  
+  if (!checkResult.data) {
+    console.error(`Form with id ${id} does not exist in the database`);
+    throw new Error(`Form with id ${id} does not exist`);
+  }
+  
+  console.log(`Form with id ${id} exists, proceeding with update`);
+  
   // Convert to snake_case for database
   const dbData: any = {};
   if (updateData.title !== undefined) dbData.title = updateData.title;
@@ -174,11 +193,16 @@ export const updateForm = async (form: Partial<Form> & { id: string }): Promise<
     .update(dbData)
     .eq('id', id)
     .select()
-    .single();
+    .maybeSingle(); // Using maybeSingle instead of single to prevent PGRST116 errors
   
   if (error) {
     console.error(`Error updating form with id ${id}:`, error);
     throw error;
+  }
+  
+  if (!data) {
+    console.error(`Updated form with id ${id} could not be retrieved`);
+    throw new Error(`Updated form could not be retrieved`);
   }
   
   return {
