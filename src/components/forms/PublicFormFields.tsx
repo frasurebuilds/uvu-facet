@@ -222,6 +222,74 @@ const PublicFormFields: React.FC<PublicFormFieldsProps> = ({
               </div>
             );
             
+          case 'month-year':
+            // Parse existing value (if any)
+            let selectedYear = '';
+            let selectedMonth = '';
+            
+            if (formValues[field.id]) {
+              const [year, month] = formValues[field.id].split('-');
+              selectedYear = year || '';
+              selectedMonth = month || '';
+            }
+            
+            return (
+              <div key={field.id} className="space-y-2">
+                <label htmlFor={field.id} className="block text-sm font-medium text-gray-700">
+                  {field.label} {field.required && <span className="text-red-500">*</span>}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    id={`${field.id}-month`}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    value={selectedMonth}
+                    onChange={(e) => {
+                      const newMonth = e.target.value;
+                      const newValue = selectedYear ? `${selectedYear}-${newMonth}` : '';
+                      onInputChange(field.id, newValue);
+                    }}
+                    required={field.required}
+                  >
+                    <option value="">Month</option>
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                  </select>
+                  
+                  <select
+                    id={`${field.id}-year`}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    value={selectedYear}
+                    onChange={(e) => {
+                      const newYear = e.target.value;
+                      const newValue = selectedMonth ? `${newYear}-${selectedMonth}` : '';
+                      onInputChange(field.id, newValue);
+                    }}
+                    required={field.required}
+                  >
+                    <option value="">Year</option>
+                    {Array.from({ length: 100 }, (_, i) => {
+                      const year = (new Date().getFullYear() - 70 + i).toString();
+                      return (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+            );
+            
           default:
             return null;
         }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { FormField } from "@/types/models";
 import { v4 as uuidv4 } from "uuid";
@@ -38,6 +39,7 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
     { value: 'checkbox', label: 'Checkbox Group' },
     { value: 'radio', label: 'Radio Button Group' },
     { value: 'date', label: 'Date Picker' },
+    { value: 'month-year', label: 'Date (Month & Year Only)' },
   ];
 
   // Alumni profile mapping options
@@ -151,6 +153,19 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
   // Determine if the field is a display element (non-input)
   const isDisplayElement = ['header', 'description', 'divider'].includes(editField.type);
 
+  // Check if the current field type can be mapped to start/end dates
+  const isDateFieldType = editField.type === 'month-year';
+  
+  // Filter employment fields based on field type
+  const filteredEmploymentFields = employmentFields.filter(field => {
+    // If it's a month-year field, allow mapping to start/end dates
+    if (isDateFieldType) {
+      return true;
+    }
+    // For other field types, exclude start/end dates
+    return !['employment.startDate', 'employment.endDate'].includes(field.value);
+  });
+
   return (
     <Card className="mb-4">
       <CardContent className="pt-6">
@@ -248,7 +263,7 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
                   {/* Employment History Fields */}
                   <SelectGroup>
                     <SelectLabel>Employment History Fields</SelectLabel>
-                    {employmentFields.map((option) => (
+                    {filteredEmploymentFields.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -257,8 +272,16 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500 mt-1">
-                Mapping a field allows form submissions to update alumni profiles automatically
+                {isDateFieldType 
+                  ? "Month & Year fields can be mapped to employment dates"
+                  : "Mapping a field allows form submissions to update alumni profiles automatically"}
               </p>
+              {editField.type !== 'month-year' && 
+                (editField.mappedField === 'employment.startDate' || editField.mappedField === 'employment.endDate') && (
+                <p className="text-xs text-amber-500 mt-1">
+                  Note: Start and End dates should be mapped to Month & Year fields only
+                </p>
+              )}
             </div>
           )}
 
