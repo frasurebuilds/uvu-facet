@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
+import { EmploymentFields } from "@/types/models";
 import { fetchFormById } from "./formApi";
 import { fetchAlumniByEmail } from "./alumniApi";
 
@@ -19,7 +20,7 @@ interface FormSubmissionRequest {
 export const submitFormResponse = async (submission: FormSubmissionRequest) => {
   // First get the form to check for field mappings
   let mappedFields = {};
-  let employmentFields = {};
+  let employmentFields: EmploymentFields = {};
   
   try {
     const form = await fetchFormById(submission.formId);
@@ -195,7 +196,7 @@ const updateAlumniProfile = async (alumniId: string, mappedFields: Record<string
 };
 
 // Helper function to create a job history entry
-const createEmploymentHistoryEntry = async (alumniId: string, employmentData: Record<string, any>) => {
+const createEmploymentHistoryEntry = async (alumniId: string, employmentData: EmploymentFields) => {
   if (!alumniId || !employmentData.jobTitle) {
     console.log('Insufficient data to create employment history entry');
     return;

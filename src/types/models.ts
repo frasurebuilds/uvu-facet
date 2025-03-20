@@ -1,4 +1,3 @@
-
 // Type definitions for our data models
 
 export interface Alumni {
@@ -40,7 +39,6 @@ export interface JobHistory {
   alumniId: string;
   organizationId?: string;
   organizationName?: string;
-  website?: string; // Added website property
   jobTitle: string;
   startDate: string;
   endDate?: string;
@@ -86,4 +84,16 @@ export interface FormSubmission {
   status: 'pending' | 'reviewed' | 'processed' | 'archived';
   createdAt: string;
   notes?: string;
+}
+
+// Add this new interface for employment form fields
+export interface EmploymentFields {
+  jobTitle?: string;
+  organizationName?: string;
+  startDate?: string;
+  endDate?: string;
+  isCurrent?: boolean | string; // Can be boolean or string "true"/"false"
+  description?: string;
+  website?: string;
+  [key: string]: any; // Allow for other potential fields
 }
