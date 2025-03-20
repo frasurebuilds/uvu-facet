@@ -32,6 +32,37 @@ export const fetchJobHistoryByAlumniId = async (alumniId: string): Promise<JobHi
   return toCamelCase(jobHistory) as JobHistory[];
 };
 
+export const fetchCurrentJobByAlumniId = async (alumniId: string): Promise<JobHistory | null> => {
+  const { data, error } = await supabase
+    .from('job_history')
+    .select(`
+      *,
+      organizations (id, name, website)
+    `)
+    .eq('alumni_id', alumniId)
+    .eq('is_current', true)
+    .order('start_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  
+  if (error) {
+    console.error(`Error fetching current job for alumni ${alumniId}:`, error);
+    throw error;
+  }
+  
+  if (!data) return null;
+  
+  // Transform the data to match our JobHistory interface
+  const { organizations, ...jobData } = data;
+  const job = {
+    ...jobData,
+    organizationName: organizations ? organizations.name : undefined,
+    website: organizations ? organizations.website : undefined
+  };
+  
+  return toCamelCase(job) as JobHistory;
+};
+
 export const createJobHistory = async (jobHistory: Omit<JobHistory, 'id' | 'createdAt' | 'updatedAt'>): Promise<JobHistory> => {
   // Remove organizationName and website properties before sending to Supabase
   const { organizationName, website, ...jobData } = jobHistory as any;

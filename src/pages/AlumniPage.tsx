@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import { UserPlus, FileText, EyeOff, Eye } from "lucide-react";
-import { Alumni } from "@/types/models";
-import { fetchAlumni } from "@/lib/api";
+import { Alumni, JobHistory } from "@/types/models";
+import { fetchAlumni, fetchCurrentJobByAlumniId } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AlumniControls from "@/components/alumni/AlumniControls";
@@ -20,6 +20,7 @@ const AlumniPage = () => {
   const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
   const [showImportExport, setShowImportExport] = useState(false);
   const [showDoNotContact, setShowDoNotContact] = useState(false);
+  const [alumniJobs, setAlumniJobs] = useState<Record<string, JobHistory | null>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,6 +30,26 @@ const AlumniPage = () => {
         setLoading(true);
         const data = await fetchAlumni();
         setAlumni(data);
+
+        // Fetch current jobs for all alumni
+        const jobsPromises = data.map(async (alum) => {
+          try {
+            const currentJob = await fetchCurrentJobByAlumniId(alum.id);
+            return { alumniId: alum.id, job: currentJob };
+          } catch (error) {
+            console.error(`Error fetching job for alumni ${alum.id}:`, error);
+            return { alumniId: alum.id, job: null };
+          }
+        });
+
+        const jobsResults = await Promise.all(jobsPromises);
+        const jobsMap: Record<string, JobHistory | null> = {};
+        
+        jobsResults.forEach(({ alumniId, job }) => {
+          jobsMap[alumniId] = job;
+        });
+
+        setAlumniJobs(jobsMap);
       } catch (error) {
         console.error("Failed to load alumni:", error);
         toast({
@@ -166,6 +187,7 @@ const AlumniPage = () => {
           onAlumniClick={handleAlumniClick}
           onCopy={handleCopy}
           onOpenLinkedIn={handleOpenLinkedIn}
+          alumniJobs={alumniJobs}
         />
       </TooltipProvider>
 
