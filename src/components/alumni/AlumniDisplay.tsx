@@ -63,6 +63,7 @@ const AlumniDisplay = ({
           onCopy={onCopy}
           onOpenLinkedIn={onOpenLinkedIn}
           copiedValues={copiedValues}
+          currentJob={alumniJobs[alumni.id]}
         />
       ))}
     </div>

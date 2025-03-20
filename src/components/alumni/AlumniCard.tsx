@@ -1,10 +1,11 @@
 
-import { Alumni } from "@/types/models";
+import { Alumni, JobHistory } from "@/types/models";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, Linkedin, CheckCircle, UserX } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import OrganizationLogo from "../organizations/OrganizationLogo";
 
 interface AlumniCardProps {
   alumni: Alumni;
@@ -12,6 +13,7 @@ interface AlumniCardProps {
   onCopy: (text: string, label: string) => void;
   onOpenLinkedIn: (url: string) => void;
   copiedValues: Record<string, boolean>;
+  currentJob?: JobHistory | null;
 }
 
 const AlumniCard = ({ 
@@ -19,7 +21,8 @@ const AlumniCard = ({
   onClick, 
   onCopy,
   onOpenLinkedIn,
-  copiedValues
+  copiedValues,
+  currentJob
 }: AlumniCardProps) => {
   const initials = `${alumni.firstName[0]}${alumni.lastName[0]}`;
 
@@ -61,6 +64,29 @@ const AlumniCard = ({
               <span className="text-gray-500">Major:</span>
               <span>{alumni.major}</span>
             </div>
+            {currentJob && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Current Position:</span>
+                  <span>{currentJob.jobTitle}</span>
+                </div>
+                {currentJob.organizationName && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Organization:</span>
+                    <div className="flex items-center gap-2">
+                      {currentJob.website && (
+                        <OrganizationLogo
+                          name={currentJob.organizationName}
+                          website={currentJob.website}
+                          size="sm"
+                        />
+                      )}
+                      <span>{currentJob.organizationName}</span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           <div className="mt-4 pt-4 border-t flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>

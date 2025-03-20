@@ -11,6 +11,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, Linkedin, CheckCircle, UserX } from "lucide-react";
+import OrganizationLogo from "../organizations/OrganizationLogo";
 
 interface AlumniTableProps {
   alumni: Alumni[];
@@ -74,7 +75,20 @@ const AlumniTable = ({
                   {currentJob ? currentJob.jobTitle : "-"}
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
-                  {currentJob?.organizationName || "-"}
+                  {currentJob?.organizationName ? (
+                    <div className="flex items-center gap-2">
+                      {currentJob.website && (
+                        <OrganizationLogo
+                          name={currentJob.organizationName}
+                          website={currentJob.website}
+                          size="sm"
+                        />
+                      )}
+                      <span>{currentJob.organizationName}</span>
+                    </div>
+                  ) : (
+                    "-"
+                  )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-center">
                   {alum.doNotContact ? (
