@@ -109,13 +109,14 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
     setEditField({ ...editField, options: updatedOptions });
   };
 
-  // Auto-save when changes are made
+  // Apply changes when the Apply button is clicked
   const handleApplyChanges = () => {
     // Generate a new ID for new fields
     const fieldToSave = isNew 
       ? { ...editField, id: uuidv4() } 
       : editField;
     
+    // Call the onSave prop with the updated field data
     onSave(fieldToSave);
   };
 
