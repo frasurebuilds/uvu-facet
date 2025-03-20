@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator, SelectLabel } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator, SelectLabel, SelectGroup } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, Plus, Trash2 } from "lucide-react";
 
@@ -233,25 +233,27 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   {/* None option */}
-                  <SelectItem value="">None (No Mapping)</SelectItem>
+                  <SelectItem value="none-option">None (No Mapping)</SelectItem>
                   
                   {/* Alumni Profile Fields */}
-                  <SelectSeparator />
-                  <SelectLabel>Alumni Profile Fields</SelectLabel>
-                  {alumniProfileFields.filter(f => f.value !== '').map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                  <SelectGroup>
+                    <SelectLabel>Alumni Profile Fields</SelectLabel>
+                    {alumniProfileFields.filter(f => f.value !== '').map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                   
                   {/* Employment History Fields */}
-                  <SelectSeparator />
-                  <SelectLabel>Employment History Fields</SelectLabel>
-                  {employmentFields.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                  <SelectGroup>
+                    <SelectLabel>Employment History Fields</SelectLabel>
+                    {employmentFields.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500 mt-1">
