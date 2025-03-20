@@ -174,6 +174,7 @@ export type Database = {
           organization_id: string | null
           start_date: string
           updated_at: string
+          website: string | null
         }
         Insert: {
           alumni_id: string
@@ -186,6 +187,7 @@ export type Database = {
           organization_id?: string | null
           start_date: string
           updated_at?: string
+          website?: string | null
         }
         Update: {
           alumni_id?: string
@@ -198,6 +200,7 @@ export type Database = {
           organization_id?: string | null
           start_date?: string
           updated_at?: string
+          website?: string | null
         }
         Relationships: [
           {
