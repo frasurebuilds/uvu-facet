@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FormField, Form } from "@/types/models";
@@ -37,7 +36,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Using useState with a type ensures we have the right structure
   const [formData, setFormData] = useState<Omit<Form, 'id' | 'createdAt' | 'updatedAt'>>({
     title: initialForm?.title || '',
     description: initialForm?.description || '',
@@ -85,7 +83,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
         fields: updatedFields
       }));
       
-      // Set the new field as active
       setActiveFieldIndex(updatedFields.length - 1);
       
       console.log("New field added successfully", updatedFields);
@@ -176,7 +173,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
       let savedForm;
 
       if (initialForm?.id) {
-        // Use the onSave prop if provided (for FormEditPage)
         if (onSave) {
           await onSave({
             id: initialForm.id,
@@ -185,7 +181,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
             updatedAt: initialForm.updatedAt
           });
         } else {
-          // Fallback to direct API call
           savedForm = await updateForm({
             id: initialForm.id,
             ...formData
@@ -419,7 +414,10 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
                         {activeFieldIndex === index && (
                           <FormFieldEditor 
                             field={field} 
-                            onChange={(updatedField) => updateField(index, updatedField)} 
+                            onSave={(updatedField) => updateField(index, updatedField)}
+                            onCancel={() => setActiveFieldIndex(null)}
+                            onDelete={() => removeField(index)}
+                            isNew={false} 
                           />
                         )}
                       </div>
