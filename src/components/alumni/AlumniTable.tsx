@@ -37,6 +37,7 @@ const AlumniTable = ({
             <TableHead className="hidden md:table-cell">Major</TableHead>
             <TableHead className="hidden lg:table-cell">Current Position</TableHead>
             <TableHead className="hidden lg:table-cell">Organization</TableHead>
+            <TableHead className="hidden md:table-cell text-center">Contact Status</TableHead>
             <TableHead className="text-right">Contact</TableHead>
           </TableRow>
         </TableHeader>
@@ -44,7 +45,7 @@ const AlumniTable = ({
           {alumni.map((alum) => (
             <TableRow 
               key={alum.id} 
-              className="hover:bg-gray-50 cursor-pointer"
+              className={`hover:bg-gray-50 cursor-pointer ${alum.doNotContact ? 'bg-gray-50' : ''}`}
               onClick={() => onAlumniClick(alum.id)}
             >
               <TableCell className="font-medium">
@@ -69,6 +70,18 @@ const AlumniTable = ({
               </TableCell>
               <TableCell className="hidden lg:table-cell">
                 {"-"}
+              </TableCell>
+              <TableCell className="hidden md:table-cell text-center">
+                {alum.doNotContact ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <UserX size={12} className="mr-1" />
+                    Restricted
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Active
+                  </span>
+                )}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>

@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
-import { UserPlus, FileText } from "lucide-react";
+import { UserPlus, FileText, EyeOff, Eye } from "lucide-react";
 import { Alumni } from "@/types/models";
 import { fetchAlumni } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,7 @@ const AlumniPage = () => {
   const [loading, setLoading] = useState(true);
   const [copiedValues, setCopiedValues] = useState<Record<string, boolean>>({});
   const [showImportExport, setShowImportExport] = useState(false);
+  const [showDoNotContact, setShowDoNotContact] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -43,13 +45,17 @@ const AlumniPage = () => {
   }, [toast]);
 
   const filteredAlumni = alumni.filter((alum) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      alum.firstName.toLowerCase().includes(searchLower) ||
-      alum.lastName.toLowerCase().includes(searchLower) ||
-      alum.email.toLowerCase().includes(searchLower) ||
-      alum.major.toLowerCase().includes(searchLower)
-    );
+    // First filter by search term
+    const searchMatch = 
+      alum.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alum.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alum.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alum.major.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Then filter by do not contact status
+    const doNotContactMatch = showDoNotContact ? true : !alum.doNotContact;
+
+    return searchMatch && doNotContactMatch;
   });
 
   const handleAlumniClick = (id: string) => {
@@ -98,12 +104,33 @@ const AlumniPage = () => {
     setShowImportExport(true);
   };
 
+  const toggleDoNotContactView = () => {
+    setShowDoNotContact(prev => !prev);
+  };
+
   return (
     <PageLayout
       title="Alumni Directory"
       subtitle="Manage and view UVU alumni records"
       actionButton={
         <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={toggleDoNotContactView}
+            className="border-uvu-green text-uvu-green hover:bg-uvu-green hover:text-white"
+          >
+            {showDoNotContact ? (
+              <>
+                <EyeOff className="mr-2 h-4 w-4" />
+                Hide Restricted Contacts
+              </>
+            ) : (
+              <>
+                <Eye className="mr-2 h-4 w-4" />
+                Show Restricted Contacts
+              </>
+            )}
+          </Button>
           <Button 
             variant="outline"
             onClick={handleImportExport}
