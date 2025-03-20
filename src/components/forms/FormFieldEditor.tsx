@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { FormField } from "@/types/models";
 import { v4 as uuidv4 } from "uuid";
@@ -28,10 +29,8 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
   const [editField, setEditField] = useState<FormField>({...field});
   const [tempOption, setTempOption] = useState("");
   
-  // Field type options including new display elements
+  // Field type options excluding display elements
   const fieldTypes = [
-    { value: 'header', label: 'Header' },
-    { value: 'description', label: 'Description Text' },
     { value: 'text', label: 'Text Input' },
     { value: 'textarea', label: 'Text Area' },
     { value: 'email', label: 'Email Input' },
@@ -127,27 +126,29 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
     <Card className="mb-4">
       <CardContent className="pt-6">
         <div className="space-y-4">
-          {/* Field Type Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="type">Field Type</Label>
-            <Select 
-              value={editField.type} 
-              onValueChange={handleTypeChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select field type" />
-              </SelectTrigger>
-              <SelectContent>
-                {fieldTypes.map(type => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Field Type Selection - Only show for input fields, not for display elements */}
+          {!isDisplayElement && (
+            <div className="space-y-2">
+              <Label htmlFor="type">Field Type</Label>
+              <Select 
+                value={editField.type} 
+                onValueChange={handleTypeChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select field type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fieldTypes.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          {/* Label Field */}
+          {/* Label Field - For display elements, only show content field */}
           <div className="space-y-2">
             <Label htmlFor="label">
               {isDisplayElement ? 'Content' : 'Label'}
