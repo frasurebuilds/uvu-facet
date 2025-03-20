@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link, BriefcaseBusiness } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface FormFieldPreviewProps {
   field: FormField;
@@ -17,6 +18,24 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
     const fieldId = `preview-${field.id}`;
     
     switch (field.type) {
+      case 'header':
+        return (
+          <h3 className="text-lg font-semibold">{field.label}</h3>
+        );
+        
+      case 'description':
+        return (
+          <p className="text-gray-600 dark:text-gray-300">{field.label}</p>
+        );
+        
+      case 'divider':
+        return (
+          <div className="py-2">
+            {field.label && <p className="text-sm text-gray-500 mb-2">{field.label}</p>}
+            <Separator />
+          </div>
+        );
+        
       case 'text':
       case 'email':
       case 'number':
@@ -142,16 +161,21 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
     );
   };
 
+  // Special field types that don't need labels
+  const isLabelless = ['header', 'description', 'divider'].includes(field.type);
+
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label htmlFor={`preview-${field.id}`}>
-          {field.label}
-          {field.required && <span className="text-red-500 ml-1">*</span>}
-        </Label>
-        
-        {renderMappingInfo()}
-      </div>
+      {!isLabelless && (
+        <div className="flex items-center justify-between">
+          <Label htmlFor={`preview-${field.id}`}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          
+          {renderMappingInfo()}
+        </div>
+      )}
       {renderField()}
     </div>
   );

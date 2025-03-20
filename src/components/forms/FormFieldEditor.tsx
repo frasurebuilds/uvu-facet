@@ -27,7 +27,8 @@ const EMPLOYMENT_HISTORY_FIELDS = [
   { id: "startDate", label: "Start Date" },
   { id: "endDate", label: "End Date" },
   { id: "isCurrent", label: "Current Position" },
-  { id: "description", label: "Job Description" }
+  { id: "description", label: "Job Description" },
+  { id: "website", label: "Organization Website" }
 ];
 
 interface FormFieldEditorProps {
@@ -57,16 +58,22 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
     updateField({ options: updatedOptions });
   };
 
+  // Special field types that don't need certain properties
+  const isNonInputField = ['header', 'description', 'divider'].includes(field.type);
+  const isSpecialField = isNonInputField;
+
   return (
     <div className="border-t pt-4 mt-2 space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor={`field-label-${field.id}`}>Field Label</Label>
+          <Label htmlFor={`field-label-${field.id}`}>
+            {field.type === 'divider' ? 'Line Label (Optional)' : 'Field Label'}
+          </Label>
           <Input
             id={`field-label-${field.id}`}
             value={field.label}
             onChange={(e) => updateField({ label: e.target.value })}
-            placeholder="Enter field label"
+            placeholder={field.type === 'divider' ? "Optional text to display with line" : "Enter field label"}
           />
         </div>
 
@@ -80,6 +87,9 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
               <SelectValue placeholder="Select field type" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="header">Section Header</SelectItem>
+              <SelectItem value="description">Descriptive Text</SelectItem>
+              <SelectItem value="divider">Horizontal Line</SelectItem>
               <SelectItem value="text">Text</SelectItem>
               <SelectItem value="textarea">Text Area</SelectItem>
               <SelectItem value="email">Email</SelectItem>
@@ -94,75 +104,81 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor={`field-placeholder-${field.id}`}>Placeholder</Label>
-          <Input
-            id={`field-placeholder-${field.id}`}
-            value={field.placeholder || ''}
-            onChange={(e) => updateField({ placeholder: e.target.value })}
-            placeholder="Enter placeholder text"
-          />
+      {!isSpecialField && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor={`field-placeholder-${field.id}`}>Placeholder</Label>
+            <Input
+              id={`field-placeholder-${field.id}`}
+              value={field.placeholder || ''}
+              onChange={(e) => updateField({ placeholder: e.target.value })}
+              placeholder="Enter placeholder text"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor={`field-default-${field.id}`}>Default Value</Label>
+            <Input
+              id={`field-default-${field.id}`}
+              value={field.defaultValue || ''}
+              onChange={(e) => updateField({ defaultValue: e.target.value })}
+              placeholder="Enter default value"
+            />
+          </div>
         </div>
+      )}
 
-        <div className="space-y-2">
-          <Label htmlFor={`field-default-${field.id}`}>Default Value</Label>
-          <Input
-            id={`field-default-${field.id}`}
-            value={field.defaultValue || ''}
-            onChange={(e) => updateField({ defaultValue: e.target.value })}
-            placeholder="Enter default value"
-          />
-        </div>
-      </div>
+      {!isNonInputField && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor={`field-mapping-${field.id}`} className="flex items-center gap-2">
+              <Link size={16} className="text-gray-500" />
+              Map to Profile Field
+            </Label>
+            <Select 
+              value={field.mappedField || ''}
+              onValueChange={(value) => updateField({ mappedField: value || undefined })}
+            >
+              <SelectTrigger id={`field-mapping-${field.id}`}>
+                <SelectValue placeholder="Select a profile field to map" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Not mapped</SelectItem>
+                
+                <SelectItem value="_separator_1" disabled className="font-semibold">
+                  Alumni Profile
+                </SelectItem>
+                {ALUMNI_PROFILE_FIELDS.map((profileField) => (
+                  <SelectItem key={profileField.id} value={profileField.id}>
+                    {profileField.label}
+                  </SelectItem>
+                ))}
+                
+                <SelectItem value="_separator_2" disabled className="font-semibold">
+                  Employment History
+                </SelectItem>
+                {EMPLOYMENT_HISTORY_FIELDS.map((historyField) => (
+                  <SelectItem key={historyField.id} value={`employment.${historyField.id}`}>
+                    {historyField.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Mapping a field allows form submissions to update alumni profiles and employment history
+            </p>
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor={`field-mapping-${field.id}`} className="flex items-center gap-2">
-          <Link size={16} className="text-gray-500" />
-          Map to Profile Field
-        </Label>
-        <Select 
-          value={field.mappedField || ''}
-          onValueChange={(value) => updateField({ mappedField: value || undefined })}
-        >
-          <SelectTrigger id={`field-mapping-${field.id}`}>
-            <SelectValue placeholder="Select a profile field to map" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Not mapped</SelectItem>
-            
-            <SelectItem value="_separator_1" disabled className="font-semibold">
-              Alumni Profile
-            </SelectItem>
-            {ALUMNI_PROFILE_FIELDS.map((profileField) => (
-              <SelectItem key={profileField.id} value={profileField.id}>
-                {profileField.label}
-              </SelectItem>
-            ))}
-            
-            <SelectItem value="_separator_2" disabled className="font-semibold">
-              Employment History
-            </SelectItem>
-            {EMPLOYMENT_HISTORY_FIELDS.map((historyField) => (
-              <SelectItem key={historyField.id} value={`employment.${historyField.id}`}>
-                {historyField.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground">
-          Mapping a field allows form submissions to update alumni profiles and employment history
-        </p>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Switch
-          id={`field-required-${field.id}`}
-          checked={field.required}
-          onCheckedChange={(checked) => updateField({ required: checked })}
-        />
-        <Label htmlFor={`field-required-${field.id}`}>Required field</Label>
-      </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id={`field-required-${field.id}`}
+              checked={field.required}
+              onCheckedChange={(checked) => updateField({ required: checked })}
+            />
+            <Label htmlFor={`field-required-${field.id}`}>Required field</Label>
+          </div>
+        </>
+      )}
 
       {/* Options for select, checkbox, radio */}
       {['select', 'checkbox', 'radio'].includes(field.type) && (

@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
+import { Separator } from "@/components/ui/separator";
 
 interface FormFieldRendererProps {
   field: FormField;
@@ -44,6 +45,26 @@ const FormFieldRenderer = ({ field, value, onChange }: FormFieldRendererProps) =
       onChange(field.id, '');
     }
   };
+  
+  // Special field types that don't need user input
+  const isNonInputField = ['header', 'description', 'divider'].includes(field.type);
+  if (isNonInputField) {
+    switch (field.type) {
+      case 'header':
+        return <h3 className="text-lg font-semibold mt-4 mb-2">{field.label}</h3>;
+      case 'description':
+        return <p className="text-gray-600 dark:text-gray-300 my-2">{field.label}</p>;
+      case 'divider':
+        return (
+          <div className="py-3">
+            {field.label && <p className="text-sm text-gray-500 mb-2">{field.label}</p>}
+            <Separator />
+          </div>
+        );
+      default:
+        return null;
+    }
+  }
   
   switch (field.type) {
     case 'text':

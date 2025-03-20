@@ -1,3 +1,4 @@
+
 // Type definitions for our data models
 
 export interface Alumni {
@@ -39,6 +40,7 @@ export interface JobHistory {
   alumniId: string;
   organizationId?: string;
   organizationName?: string;
+  website?: string;
   jobTitle: string;
   startDate: string;
   endDate?: string;
@@ -62,7 +64,7 @@ export interface Form {
 
 export interface FormField {
   id: string;
-  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'email' | 'number' | 'date' | 'month-year';
+  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'email' | 'number' | 'date' | 'month-year' | 'header' | 'description' | 'divider';
   label: string;
   placeholder?: string;
   required: boolean;
