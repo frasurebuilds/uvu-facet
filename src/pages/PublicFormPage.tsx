@@ -110,7 +110,7 @@ const PublicFormPage = () => {
   }
   
   if (error || !form) {
-    return <FormNotAvailableCard isError message={error || "Form not found"} />;
+    return <FormNotAvailableCard message={error || "Form not found"} />;
   }
   
   return (
@@ -118,18 +118,24 @@ const PublicFormPage = () => {
       <Card>
         <CardHeader>
           <CardTitle>{form.title}</CardTitle>
-          {form.description && <PublicFormHeader description={form.description} />}
+          {form.description && <PublicFormHeader title={form.title} description={form.description} />}
         </CardHeader>
         
         <CardContent>
           <form onSubmit={formMethods.handleSubmit(onSubmit)} className="space-y-6">
-            <PublicFormFields fields={form.fields} formMethods={formMethods} />
+            <PublicFormFields 
+              fields={form.fields} 
+              register={formMethods.register}
+              control={formMethods.control}
+              errors={formMethods.formState.errors}
+              setValue={formMethods.setValue}
+              watch={formMethods.watch}
+            />
             
             {form.formType === 'standard' && (
               <UvidField
                 uvid={uvid}
                 setUvid={setUvid}
-                isRequired={true}
               />
             )}
             
