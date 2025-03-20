@@ -149,20 +149,25 @@ export function SearchSelect({
               />
             </div>
             <CommandList className="max-h-[200px] overflow-y-auto">
-              <CommandEmpty className="py-3 px-4 text-sm text-center">
-                {emptyMessage}
-                {showCreateOption && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start mt-2 text-uvu-green hover:text-uvu-green-medium hover:bg-uvu-green/10"
-                    onClick={handleCreateOption}
-                    type="button"
+              {/* Show create option at the top when active */}
+              {showCreateOption && (
+                <CommandGroup>
+                  <CommandItem
+                    onSelect={handleCreateOption}
+                    className="cursor-pointer text-uvu-green hover:text-uvu-green-medium px-4 py-2 hover:bg-accent hover:text-accent-foreground"
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     {createOptionLabel} "{searchQuery}"
-                  </Button>
-                )}
+                  </CommandItem>
+                  <CommandSeparator className="mx-2" />
+                </CommandGroup>
+              )}
+              
+              <CommandEmpty className="py-3 px-4 text-sm text-center">
+                {emptyMessage}
+                {/* We don't need to show the create button here anymore since it's at the top */}
               </CommandEmpty>
+              
               <CommandGroup>
                 {options.map((option) => (
                   <CommandItem
@@ -181,20 +186,7 @@ export function SearchSelect({
                   </CommandItem>
                 ))}
               </CommandGroup>
-              {showCreateOption && (
-                <>
-                  <CommandSeparator className="mx-2" />
-                  <CommandGroup>
-                    <CommandItem
-                      onSelect={handleCreateOption}
-                      className="cursor-pointer text-uvu-green hover:text-uvu-green-medium px-4 py-2 hover:bg-accent hover:text-accent-foreground"
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      {createOptionLabel} "{searchQuery}"
-                    </CommandItem>
-                  </CommandGroup>
-                </>
-              )}
+              {/* Removed the create option from the bottom */}
             </CommandList>
           </Command>
         </DialogContent>

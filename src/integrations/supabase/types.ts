@@ -71,6 +71,7 @@ export type Database = {
           id: string
           is_anonymous: boolean | null
           mapped_fields: Json | null
+          metadata: Json | null
           notes: string | null
           status: string
           submitted_by_alumni_id: string | null
@@ -86,6 +87,7 @@ export type Database = {
           id?: string
           is_anonymous?: boolean | null
           mapped_fields?: Json | null
+          metadata?: Json | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
@@ -101,6 +103,7 @@ export type Database = {
           id?: string
           is_anonymous?: boolean | null
           mapped_fields?: Json | null
+          metadata?: Json | null
           notes?: string | null
           status?: string
           submitted_by_alumni_id?: string | null
