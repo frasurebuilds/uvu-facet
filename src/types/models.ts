@@ -64,7 +64,7 @@ export interface Form {
 
 export interface FormField {
   id: string;
-  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'email' | 'number' | 'date';
+  type: 'text' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'email' | 'number' | 'date' | 'month-year';
   label: string;
   placeholder?: string;
   required: boolean;

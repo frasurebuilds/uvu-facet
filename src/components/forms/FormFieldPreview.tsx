@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link } from "lucide-react";
+import { Link, BriefcaseBusiness } from "lucide-react";
 
 interface FormFieldPreviewProps {
   field: FormField;
@@ -49,6 +49,28 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
             defaultValue={field.defaultValue}
             required={field.required}
           />
+        );
+        
+      case 'month-year':
+        return (
+          <div className="grid grid-cols-2 gap-2">
+            <Select disabled>
+              <SelectTrigger>
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="01">January</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select disabled>
+              <SelectTrigger>
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2023">2023</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         );
         
       case 'select':
@@ -99,6 +121,27 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
     }
   };
 
+  // Helper to show the right mapping icon and text
+  const renderMappingInfo = () => {
+    if (!field.mappedField) return null;
+    
+    if (field.mappedField.startsWith('employment.')) {
+      return (
+        <div className="text-xs flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+          <BriefcaseBusiness size={12} />
+          <span>Employment: {field.mappedField.replace('employment.', '')}</span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400">
+        <Link size={12} />
+        <span>Alumni Profile: {field.mappedField}</span>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -107,12 +150,7 @@ const FormFieldPreview = ({ field }: FormFieldPreviewProps) => {
           {field.required && <span className="text-red-500 ml-1">*</span>}
         </Label>
         
-        {field.mappedField && (
-          <div className="text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400">
-            <Link size={12} />
-            <span>Mapped to Alumni {field.mappedField}</span>
-          </div>
-        )}
+        {renderMappingInfo()}
       </div>
       {renderField()}
     </div>

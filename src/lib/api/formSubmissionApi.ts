@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import { fetchFormById } from "./formApi";
@@ -20,17 +19,25 @@ interface FormSubmissionRequest {
 export const submitFormResponse = async (submission: FormSubmissionRequest) => {
   // First get the form to check for field mappings
   let mappedFields = {};
+  let employmentFields = {};
+  
   try {
     const form = await fetchFormById(submission.formId);
     
-    // Create a map of field IDs to alumni profile fields
+    // Create a map of field IDs to alumni profile and employment fields
     if (form && form.fields) {
-      mappedFields = form.fields.reduce((map, field) => {
+      form.fields.forEach(field => {
         if (field.mappedField && submission.content[field.id]) {
-          map[field.mappedField] = submission.content[field.id];
+          // Check if this is an employment history field
+          if (field.mappedField.startsWith('employment.')) {
+            const employmentField = field.mappedField.replace('employment.', '');
+            employmentFields[employmentField] = submission.content[field.id];
+          } else {
+            // Regular alumni profile field
+            mappedFields[field.mappedField] = submission.content[field.id];
+          }
         }
-        return map;
-      }, {} as Record<string, any>);
+      });
     }
   } catch (error) {
     console.warn("Could not fetch form details for mapping fields:", error);
@@ -70,6 +77,13 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
         if (Object.keys(mappedFields).length > 0) {
           await updateAlumniProfile(existingAlumni.id, mappedFields);
         }
+        
+        // Create employment history entry if we have sufficient data
+        if (Object.keys(employmentFields).length > 0 && 
+            employmentFields.jobTitle && 
+            (employmentFields.organizationName || employmentFields.startDate)) {
+          await createEmploymentHistoryEntry(existingAlumni.id, employmentFields);
+        }
       } else {
         console.log(`No alumni profile found for UVID ${submission.submittedByUvid}, creating new profile`);
         // Create a new alumni profile with minimal information
@@ -104,6 +118,13 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
         } else if (newAlumni) {
           console.log('Created new alumni profile:', newAlumni);
           submissionData.submitted_by_alumni_id = newAlumni.id;
+          
+          // Create employment history entry if we have sufficient data
+          if (Object.keys(employmentFields).length > 0 && 
+              employmentFields.jobTitle && 
+              (employmentFields.organizationName || employmentFields.startDate)) {
+            await createEmploymentHistoryEntry(newAlumni.id, employmentFields);
+          }
         }
       }
     } catch (error) {
@@ -116,6 +137,13 @@ export const submitFormResponse = async (submission: FormSubmissionRequest) => {
     submissionData.submitted_by_email = submission.submittedByEmail || 'unknown@example.com';
     if (submission.submittedByAlumniId) {
       submissionData.submitted_by_alumni_id = submission.submittedByAlumniId;
+      
+      // Create employment history entry if we have an alumni ID and sufficient data
+      if (Object.keys(employmentFields).length > 0 && 
+          employmentFields.jobTitle && 
+          (employmentFields.organizationName || employmentFields.startDate)) {
+        await createEmploymentHistoryEntry(submission.submittedByAlumniId, employmentFields);
+      }
     }
   }
 
@@ -163,6 +191,66 @@ const updateAlumniProfile = async (alumniId: string, mappedFields: Record<string
     }
   } catch (error) {
     console.error('Exception during alumni profile update:', error);
+  }
+};
+
+// Helper function to create a job history entry
+const createEmploymentHistoryEntry = async (alumniId: string, employmentData: Record<string, any>) => {
+  if (!alumniId || !employmentData.jobTitle) {
+    console.log('Insufficient data to create employment history entry');
+    return;
+  }
+  
+  try {
+    // Prepare the job history data
+    const jobData: any = {
+      alumni_id: alumniId,
+      job_title: employmentData.jobTitle,
+      organization_name: employmentData.organizationName || 'Unknown Organization',
+      description: employmentData.description || '',
+      is_current: employmentData.isCurrent === 'true' || employmentData.isCurrent === true || false
+    };
+    
+    // Handle start date
+    if (employmentData.startDate) {
+      // If it's a month-year format (YYYY-MM), append day to make it a valid date
+      if (/^\d{4}-\d{2}$/.test(employmentData.startDate)) {
+        jobData.start_date = `${employmentData.startDate}-01`;
+      } else {
+        jobData.start_date = employmentData.startDate;
+      }
+    } else {
+      // Default to today if no start date provided
+      jobData.start_date = new Date().toISOString().split('T')[0];
+    }
+    
+    // Handle end date
+    if (employmentData.endDate) {
+      // If it's a month-year format (YYYY-MM), append day to make it a valid date
+      if (/^\d{4}-\d{2}$/.test(employmentData.endDate)) {
+        jobData.end_date = `${employmentData.endDate}-01`;
+      } else {
+        jobData.end_date = employmentData.endDate;
+      }
+    } else if (!jobData.is_current) {
+      // If not current job and no end date, default to same as start date
+      jobData.end_date = jobData.start_date;
+    }
+    
+    console.log('Creating employment history entry:', jobData);
+    
+    const { data, error } = await supabase
+      .from('job_history')
+      .insert(jobData)
+      .select();
+      
+    if (error) {
+      console.error('Error creating employment history entry:', error);
+    } else {
+      console.log('Created employment history entry:', data);
+    }
+  } catch (error) {
+    console.error('Exception during employment history creation:', error);
   }
 };
 

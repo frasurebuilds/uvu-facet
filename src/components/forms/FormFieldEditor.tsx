@@ -20,6 +20,16 @@ const ALUMNI_PROFILE_FIELDS = [
   { id: "linkedIn", label: "LinkedIn Profile" }
 ];
 
+// Employment history fields that can be mapped
+const EMPLOYMENT_HISTORY_FIELDS = [
+  { id: "jobTitle", label: "Position/Job Title" },
+  { id: "organizationName", label: "Organization Name" },
+  { id: "startDate", label: "Start Date" },
+  { id: "endDate", label: "End Date" },
+  { id: "isCurrent", label: "Current Position" },
+  { id: "description", label: "Job Description" }
+];
+
 interface FormFieldEditorProps {
   field: FormField;
   onChange: (field: FormField) => void;
@@ -75,6 +85,7 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
               <SelectItem value="email">Email</SelectItem>
               <SelectItem value="number">Number</SelectItem>
               <SelectItem value="date">Date</SelectItem>
+              <SelectItem value="month-year">Month & Year</SelectItem>
               <SelectItem value="select">Dropdown</SelectItem>
               <SelectItem value="checkbox">Checkboxes</SelectItem>
               <SelectItem value="radio">Radio Buttons</SelectItem>
@@ -108,7 +119,7 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
       <div className="space-y-2">
         <Label htmlFor={`field-mapping-${field.id}`} className="flex items-center gap-2">
           <Link size={16} className="text-gray-500" />
-          Map to Alumni Profile Field
+          Map to Profile Field
         </Label>
         <Select 
           value={field.mappedField || ''}
@@ -119,15 +130,28 @@ const FormFieldEditor = ({ field, onChange }: FormFieldEditorProps) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">Not mapped</SelectItem>
+            
+            <SelectItem value="_separator_1" disabled className="font-semibold">
+              Alumni Profile
+            </SelectItem>
             {ALUMNI_PROFILE_FIELDS.map((profileField) => (
               <SelectItem key={profileField.id} value={profileField.id}>
                 {profileField.label}
               </SelectItem>
             ))}
+            
+            <SelectItem value="_separator_2" disabled className="font-semibold">
+              Employment History
+            </SelectItem>
+            {EMPLOYMENT_HISTORY_FIELDS.map((historyField) => (
+              <SelectItem key={historyField.id} value={`employment.${historyField.id}`}>
+                {historyField.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
-          Mapping a field allows form submissions to update alumni profiles
+          Mapping a field allows form submissions to update alumni profiles and employment history
         </p>
       </div>
 
