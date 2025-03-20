@@ -352,3 +352,18 @@ export const updateSubmissionStatus = async (
   
   return true;
 };
+
+// Function to delete a form submission
+export const deleteFormSubmission = async (submissionId: string) => {
+  const { error } = await supabase
+    .from('form_submissions')
+    .delete()
+    .eq('id', submissionId);
+    
+  if (error) {
+    console.error('Error deleting form submission:', error);
+    throw error;
+  }
+  
+  return true;
+};
