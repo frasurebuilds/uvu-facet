@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { FormField } from "@/types/models";
 import { v4 as uuidv4 } from "uuid";
@@ -7,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator, SelectLabel } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, Plus, Trash2 } from "lucide-react";
 
@@ -64,13 +63,6 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
     { value: 'employment.isCurrent', label: 'Current Position' },
     { value: 'employment.description', label: 'Job Description' },
     { value: 'employment.website', label: 'Company Website' },
-  ];
-
-  // Combined mapping options
-  const mappingOptions = [
-    { label: 'No Mapping', options: [{ value: '', label: 'None (No Mapping)' }] },
-    { label: 'Alumni Profile Fields', options: alumniProfileFields.filter(f => f.value !== '') },
-    { label: 'Employment History Fields', options: employmentFields },
   ];
 
   useEffect(() => {
@@ -240,29 +232,21 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
                   <SelectValue placeholder="Select field mapping" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mappingOptions.map((group) => (
-                    <SelectItem key={group.label} value={group.label} disabled>
-                      {group.label}
-                    </SelectItem>
-                  ))}
-                  {mappingOptions[0].options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                  {/* None option */}
+                  <SelectItem value="">None (No Mapping)</SelectItem>
                   
-                  <SelectItem value="alumni_profile_divider" disabled>
-                    --- Alumni Profile Fields ---
-                  </SelectItem>
+                  {/* Alumni Profile Fields */}
+                  <SelectSeparator />
+                  <SelectLabel>Alumni Profile Fields</SelectLabel>
                   {alumniProfileFields.filter(f => f.value !== '').map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
                   
-                  <SelectItem value="employment_divider" disabled>
-                    --- Employment History Fields ---
-                  </SelectItem>
+                  {/* Employment History Fields */}
+                  <SelectSeparator />
+                  <SelectLabel>Employment History Fields</SelectLabel>
                   {employmentFields.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
