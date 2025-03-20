@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { FormField } from "@/types/models";
 import { v4 as uuidv4 } from "uuid";
@@ -33,7 +32,6 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
   const fieldTypes = [
     { value: 'header', label: 'Header' },
     { value: 'description', label: 'Description Text' },
-    { value: 'divider', label: 'Divider Line' },
     { value: 'text', label: 'Text Input' },
     { value: 'textarea', label: 'Text Area' },
     { value: 'email', label: 'Email Input' },
@@ -65,7 +63,7 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
 
   // Handle field type changes
   const handleTypeChange = (value: string) => {
-    const isDisplayElementType = ['header', 'description', 'divider'].includes(value);
+    const isDisplayElementType = ['header', 'description'].includes(value);
     
     // For display elements, set required to false and clear placeholder
     if (isDisplayElementType) {
@@ -123,7 +121,7 @@ const FormFieldEditor: React.FC<FormFieldEditorProps> = ({
   };
 
   // Determine if the field is a display element (non-input)
-  const isDisplayElement = ['header', 'description', 'divider'].includes(editField.type);
+  const isDisplayElement = ['header', 'description'].includes(editField.type);
 
   return (
     <Card className="mb-4">

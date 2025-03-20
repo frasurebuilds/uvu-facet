@@ -95,6 +95,7 @@ const SortableFieldItem = ({
   };
 
   const isDisplayElement = ['header', 'description', 'divider'].includes(field.type);
+  const isDivider = field.type === 'divider';
   let fieldIcon;
   
   switch (field.type) {
@@ -123,10 +124,10 @@ const SortableFieldItem = ({
       <div className="flex justify-between items-center mb-2">
         <div 
           className="font-medium cursor-pointer flex-grow flex items-center"
-          onClick={() => onEdit(index === activeIndex ? null : index)}
+          onClick={() => isDivider ? null : onEdit(index === activeIndex ? null : index)}
         >
           {fieldIcon}
-          {field.label} {!isDisplayElement && field.required && <span className="text-red-500">*</span>}
+          {isDivider ? 'Divider Line' : field.label} {!isDisplayElement && field.required && <span className="text-red-500">*</span>}
         </div>
         <div className="flex gap-1 items-center">
           <Button 
@@ -180,7 +181,7 @@ const SortableFieldItem = ({
         </div>
       </div>
       
-      {children}
+      {!isDivider && children}
     </div>
   );
 };
@@ -272,7 +273,9 @@ const FormBuilder = ({
         fields: updatedFields
       }));
       
-      setActiveFieldIndex(updatedFields.length - 1);
+      if (type !== 'divider') {
+        setActiveFieldIndex(updatedFields.length - 1);
+      }
       
       console.log("New field added successfully", updatedFields);
     } catch (error) {
@@ -668,7 +671,7 @@ const FormBuilder = ({
                             onRemove={removeField}
                             updateField={updateField}
                           >
-                            {activeFieldIndex === index && (
+                            {activeFieldIndex === index && field.type !== 'divider' && (
                               <FormFieldEditor 
                                 field={field} 
                                 onSave={(updatedField) => {
