@@ -10,15 +10,21 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
   
-  // Make sure we're correctly identifying public form routes
+  // Make sure we're correctly identifying public form routes and form builder paths
   const isPublicFormRoute = location.pathname.startsWith('/public-form/') || 
                            location.pathname.startsWith('/form-submitted/');
                            
-  console.log("ProtectedRoute checking path:", location.pathname, "isPublicFormRoute:", isPublicFormRoute);
+  // Allow access to form functionality without authentication
+  const isFormFunctionalityRoute = location.pathname.startsWith('/forms') ||
+                                  location.pathname.includes('/form');
                            
-  if (isPublicFormRoute) {
-    // Completely bypass authentication for public form routes
-    console.log("Bypassing authentication for public form route");
+  console.log("ProtectedRoute checking path:", location.pathname, 
+              "isPublicFormRoute:", isPublicFormRoute,
+              "isFormFunctionalityRoute:", isFormFunctionalityRoute);
+                           
+  if (isPublicFormRoute || isFormFunctionalityRoute) {
+    // Completely bypass authentication for public form routes and form functionality
+    console.log("Bypassing authentication for form route");
     return <>{children}</>;
   }
 

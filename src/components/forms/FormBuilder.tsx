@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FormField, Form } from "@/types/models";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,23 +43,12 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
     status: initialForm?.status || 'draft',
     formType: initialForm?.formType || 'standard',
     fields: initialForm?.fields || [],
-    createdBy: initialForm?.createdBy || (user?.id as string)
+    createdBy: initialForm?.createdBy || (user?.id || 'anonymous-user')
   });
 
   const [activeFieldIndex, setActiveFieldIndex] = useState<number | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [localIsSubmitting, setLocalIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "You must be logged in to use the form builder",
-        variant: "destructive"
-      });
-      navigate("/auth");
-    }
-  }, [user, navigate, toast]);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, title: e.target.value }));
@@ -226,7 +214,6 @@ const FormBuilder = ({ initialForm, onSave, isSubmitting = false }: FormBuilderP
     }
   };
 
-  // Use either the passed in isSubmitting prop or local state
   const isSaving = isSubmitting || localIsSubmitting;
 
   return (

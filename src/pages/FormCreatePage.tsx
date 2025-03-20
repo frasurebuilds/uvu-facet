@@ -1,8 +1,7 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PageLayout from "@/components/layout/PageLayout";
 import FormBuilder from "@/components/forms/FormBuilder";
-import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { createForm } from "@/lib/api/formApi";
@@ -10,16 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Form } from "@/types/models";
 
 const FormCreatePage = () => {
-  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      navigate("/auth");
-    }
-  }, [user, isLoading, navigate]);
 
   // Create form mutation
   const createFormMutation = useMutation({
